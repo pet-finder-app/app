@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "role": "adopter",
+      "name": "Carla Lopes",
+      "email": "carla@petfinder.app",
+      "password": "123456",
+      "avatarUrl": null
+    },
+    {
+      "id": "2",
+      "role": "adopter",
+      "name": "Felipe Melo",
+      "email": "felipe@petfinder.app",
+      "password": "123456",
+      "avatarUrl": null
+    }
+  ]
+}
