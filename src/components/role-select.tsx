@@ -1,4 +1,6 @@
 import type { AccountRole } from "@/lib/users";
+import { pressBrutal, shadowBrutal } from "./ui/brutal";
+import { cn } from "./ui/cn";
 
 type RoleOption = {
   role: AccountRole;
@@ -27,7 +29,7 @@ type RoleSelectProps = {
 export function RoleSelect({ onSelect }: RoleSelectProps) {
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm font-semibold text-white">
+      <p className="text-sm font-semibold text-neutral-900">
         Como você quer se cadastrar?
       </p>
 
@@ -36,7 +38,11 @@ export function RoleSelect({ onSelect }: RoleSelectProps) {
           key={option.role}
           type="button"
           onClick={() => onSelect(option.role)}
-          className="flex flex-col gap-0.5 rounded-lg bg-white px-4 py-3.5 text-left transition-colors hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+          className={cn(
+            "flex flex-col gap-0.5 rounded-lg border-2 border-line bg-white px-4 py-3.5 text-left transition-colors hover:bg-primary-faint focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            shadowBrutal.md,
+            pressBrutal.md,
+          )}
         >
           <span className="text-sm font-bold text-neutral-900">
             {option.title}

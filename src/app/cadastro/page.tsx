@@ -1,6 +1,6 @@
 import { AuthLayout } from "@/components/auth-layout";
+import { TextLink } from "@/components/ui";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { RegisterFlow } from "./register-flow";
 
 export const metadata: Metadata = {
@@ -14,12 +14,9 @@ export default function RegisterPage() {
       footer={
         <>
           Já possui uma conta?{" "}
-          <Link
-            href="/login"
-            className="text-brand underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
+          <TextLink href="/login" tone="primary">
             Entre aqui.
-          </Link>
+          </TextLink>
         </>
       }
     >
