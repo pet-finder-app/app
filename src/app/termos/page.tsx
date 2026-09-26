@@ -81,7 +81,7 @@ export default function TermsPage() {
           </section>
         ))}
 
-        <footer className="border-t-2 border-line pt-4 text-sm">
+        <footer className="border-t border-neutral-200 pt-4 text-sm">
           <LinkButton href="/cadastro" variant="pill" size="sm">
             <ChevronLeft className={iconSize.sm} aria-hidden="true" />
             Voltar ao cadastro

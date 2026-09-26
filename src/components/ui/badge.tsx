@@ -5,10 +5,10 @@ export type BadgeTone = "neutral" | "info" | "success" | "warning" | "danger";
 export type BadgeSize = "sm" | "md";
 
 const tones: Record<BadgeTone, string> = {
-  neutral: "bg-neutral-100 text-neutral-800",
+  neutral: "bg-blue-400 text-neutral-900",
   info: "bg-primary-faint text-green-900",
   success: "bg-primary-soft text-green-900",
-  warning: "bg-accent-yellow text-neutral-900",
+  warning: "bg-orange-300 text-neutral-900",
   danger: "bg-accent-peach text-neutral-900",
 };
 
@@ -22,7 +22,7 @@ export type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   size?: BadgeSize;
 };
 
-/** Selo pequeno de status — só a cor pastel do fundo, sem borda nem sombra. */
+/** Selo pequeno de status — sem borda nem sombra por padrão. */
 export function Badge({
   tone = "neutral",
   size = "md",

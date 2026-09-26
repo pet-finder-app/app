@@ -37,14 +37,17 @@ fica o resumo que qualquer sessão precisa ler primeiro.
   Falta uma variação? Adicione uma `variant`/`tone` ao componente existente.
 - **Tokens** em `src/app/globals.css`: `primary` (green-500), `primary-hover`,
   `primary-soft`, `primary-faint`, `accent-yellow`, `accent-peach`, `line`
-  (preto puro). Use `bg-primary`, `border-line` etc. Nunca hexadecimal direto.
-- **Estilo: neo-brutalismo.** Borda preta grossa (`border-2 border-line`),
-  sombra dura sem blur e deslocada — nunca `shadow-sm`/`shadow-md` do
-  Tailwind, sempre `shadowBrutal.sm|md|lg|xl` de `components/ui/brutal.ts`
-  (escala fina, ~1–3px, não exagere no deslocamento). Elementos clicáveis
-  usam `pressBrutal` do mesmo tamanho, para "afundar" ao clicar. Cores
-  chapadas e saturadas, nunca pastel lavado. Cantos: `rounded-full` em
-  pílulas/selos, `rounded-lg` em botões/campos, `rounded-xl` em cartões.
+  (cinza claro, só para divisores sutis). Use `bg-primary` etc. Nunca
+  hexadecimal direto.
+- **Estilo: soft UI.** Cantos bem arredondados, sombra suave e difusa em
+  vez de borda grossa — sempre `shadowSoft.sm|md|lg|xl` de
+  `components/ui/elevation.ts`, nunca `shadow-sm`/`shadow-md` do Tailwind
+  soltos. Elementos clicáveis usam `pressSoft` do mesmo tamanho (encolhe
+  levemente ao clicar, sem deslocar). A maioria das superfícies não tem
+  borda — a sombra já contorna; quando precisar de uma (campo, item sobre
+  fundo branco), é fina (`border border-neutral-200`), nunca `border-2`.
+  Cores pastel. Cantos: `rounded-full` em pílulas/selos/avatares,
+  `rounded-2xl` em botões/campos/itens de lista, `rounded-3xl` em cartões.
   Nunca `backdrop-blur`.
 - **Ícones:** sempre `lucide-react`, nunca emoji ou glifo Unicode solto
   (✓, ‹, +...). Tamanho vem de `iconSize.sm|md|lg` (`components/ui/icon.ts`).
@@ -75,19 +78,30 @@ rolagem horizontal em 375px. Verifique no preview em largura de celular.
   que falta para publicar o primeiro pet. `src/lib/br-documents.ts`: CPF/CNPJ.
 - Cadastro da ONG é curto de propósito (tipo, nome, CPF/CNPJ, e-mail, senha,
   termos). O resto é preenchido em `/ong/perfil`.
+- `src/lib/pet.ts` + `src/lib/pets.ts`: modelo e storage dos pets publicados
+  (`pets.json`). Só ONGs com `verification.status === "verificada"` podem
+  cadastrar (`POST /api/ong/pets`) — ver `/ong/pets/novo`.
+- `src/lib/notification.ts` + `src/lib/notifications.ts`: notificações da
+  ONG sobre os pets (curtida = só demonstrou interesse passageiro; interesse
+  = quer adotar de verdade). Geradas de verdade pelo lado do adotante
+  (`toggleCurtida`/`createInteresse`) via `POST /api/pets/[id]/curtir` e
+  `/interesse`; `Notification.adopterId` liga cada uma a um `StoredUser`.
 - `src/lib/adopter.ts`: modelo do adotante em quatro camadas (identificação,
   moradia/rotina, preferências de adoção, termos/LGPD) e o checklist do que
   falta para o perfil ficar completo — mesmo padrão de `lib/ong.ts`. Cadastro
   do adotante é curto (nome, e-mail, senha); o resto é preenchido em
   `/adotante/perfil`, inclusive o aceite dos termos (não é pedido no
   cadastro).
+- Painel da ONG (`/`) segue o padrão "perfil do Instagram sem stories":
+  cabeçalho com avatar/nome/estatísticas/bio/"Editar perfil", grade de pets
+  publicados abaixo. Navegação fixa (`OngTabBar`): início, cadastrar pet,
+  notificações.
 - Painel do adotante (`/`, quando `role === "adopter"`): cabeçalho com
   avatar/nome/selo de verificação/checklist do perfil, feed de pets
   disponíveis de ONGs verificadas (`listAvailablePets`) com curtir/demonstrar
-  interesse (`AdopterPetCard`, via `POST /api/pets/[id]/curtir` e
-  `/interesse`). Navegação fixa (`AdopterTabBar`): início, notificações
-  (atividade própria, em `/adotante/notificacoes`), perfil.
-- Usuários de teste: `contato@quatropatas.org` (ONG verificada) e
-  `bia@petfinder.app` (ONG pendente), além de `carla@petfinder.app`
-  (adotante verificada, perfil completo) e `felipe@petfinder.app` (adotante
-  pendente, perfil vazio) — senha `123456` para todos.
+  interesse (`AdopterPetCard`). Navegação fixa (`AdopterTabBar`): início,
+  notificações (atividade própria, em `/adotante/notificacoes`), perfil.
+- Usuários de teste: `contato@quatropatas.org` (ONG verificada, com pets),
+  `bia@petfinder.app` (ONG pendente), `carla@petfinder.app` (adotante
+  verificada, perfil completo) e `felipe@petfinder.app` (adotante pendente,
+  perfil vazio) — senha `123456` para todos.

@@ -15,7 +15,7 @@ export default function LoginPage() {
       footer={
         <>
           Não possui uma conta?{" "}
-          <TextLink href="/cadastro" tone="primary">
+          <TextLink href="/cadastro" tone="primary-pastel">
             Crie uma aqui.
           </TextLink>
         </>

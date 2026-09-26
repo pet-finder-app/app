@@ -44,7 +44,7 @@ type OngRegisterFormProps = {
 /**
  * Cadastro curto da ONG: só o necessário para criar a conta e deixar a ONG
  * explorar o app. O restante (documentos, endereço, equipe...) é pedido em
- * /ong/perfil e só vira obrigatório na hora de publicar o primeiro pet.
+ * /ong/perfil/editar e só vira obrigatório na hora de publicar o primeiro pet.
  */
 export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
   const router = useRouter();

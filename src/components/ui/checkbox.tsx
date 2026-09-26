@@ -17,6 +17,13 @@ export type CheckboxProps = Omit<
 const labelClass: Record<FieldTone, string> = {
   primary: "text-neutral-900",
   light: "text-neutral-800",
+  brutal: "text-neutral-900",
+};
+
+const boxClass: Record<FieldTone, string> = {
+  primary: "border-neutral-300",
+  light: "border-neutral-300",
+  brutal: "border-neutral-900",
 };
 
 export function Checkbox({
@@ -36,7 +43,10 @@ export function Checkbox({
         type="checkbox"
         aria-invalid={invalid || undefined}
         aria-describedby={invalid ? errorId : undefined}
-        className="size-6 shrink-0 cursor-pointer rounded-md border border-neutral-300 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[invalid=true]:outline-2 aria-[invalid=true]:outline-red-500"
+        className={cn(
+          "size-6 shrink-0 cursor-pointer rounded-md border accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[invalid=true]:outline-2 aria-[invalid=true]:outline-red-500",
+          boxClass[tone],
+        )}
         {...props}
       />
       <label

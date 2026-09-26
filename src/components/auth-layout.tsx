@@ -11,9 +11,12 @@ type AuthLayoutProps = {
    * "vivid" (padrão, usada no cadastro): fundo no verde primário puro, com
    * o ícone acima do wordmark (PET escuro, FINDER. branco), sem textura.
    * "pastel" (só a tela de login, por pedido): fundo green-300, sem o
-   * ícone no título — ele reaparece bem mais claro, repetido, como marca
-   * d'água atrás do conteúdo. Wordmark todo escuro, porque o branco não
-   * teria contraste sobre um fundo tão claro.
+   * ícone no título — ele reaparece em verde escuro (tom sobre tom),
+   * repetido e compacto, como marca d'água atrás do conteúdo, e de novo
+   * em tamanho grande e sólido (green-800) centralizado no espaço vazio
+   * entre o título e o formulário, como ilustração principal da tela.
+   * Wordmark todo escuro, porque o branco não teria contraste sobre um
+   * fundo tão claro.
    */
   background?: "vivid" | "pastel";
 };
@@ -39,10 +42,10 @@ export function AuthLayout({
       {isPastel ? (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 opacity-60"
+          className="pointer-events-none absolute inset-0 -z-10 opacity-45"
           style={{
             backgroundImage: "url('/logo-pattern.svg')",
-            backgroundSize: "160px 160px",
+            backgroundSize: "120px 120px",
             backgroundRepeat: "repeat",
           }}
         />
@@ -63,7 +66,16 @@ export function AuthLayout({
           )}
         </h1>
 
-        <div className="flex-1" />
+        {isPastel ? (
+          <div
+            aria-hidden="true"
+            className="flex flex-1 items-center justify-center"
+          >
+            <PetfinderMark className="size-32 text-green-800" />
+          </div>
+        ) : (
+          <div className="flex-1" />
+        )}
 
         <h2 className="sr-only">{heading}</h2>
 

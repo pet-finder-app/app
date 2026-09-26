@@ -59,7 +59,10 @@ export async function listAvailablePets(): Promise<Pet[]> {
 
   return pets
     .filter(
-      (pet) => pet.status === "disponivel" && verifiedOngIds.has(pet.ongId),
+      (pet) =>
+        pet.status === "disponivel" &&
+        !pet.archived &&
+        verifiedOngIds.has(pet.ongId),
     )
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
@@ -73,6 +76,7 @@ export async function createPet(ongId: string, input: PetInput): Promise<Pet> {
     id: crypto.randomUUID(),
     ongId,
     status: "disponivel",
+    archived: false,
     createdAt: now,
     updatedAt: now,
   };
@@ -94,6 +98,26 @@ export async function updatePet(
   const updated: Pet = {
     ...pets[index],
     ...input,
+    updatedAt: new Date().toISOString(),
+  };
+  pets[index] = updated;
+  await writePets(pets);
+  return updated;
+}
+
+/** Retorna undefined se o pet não existir ou não pertencer a essa ONG. */
+export async function setPetArchived(
+  id: string,
+  ongId: string,
+  archived: boolean,
+): Promise<Pet | undefined> {
+  const pets = await readPets();
+  const index = pets.findIndex((p) => p.id === id && p.ongId === ongId);
+  if (index === -1) return undefined;
+
+  const updated: Pet = {
+    ...pets[index],
+    archived,
     updatedAt: new Date().toISOString(),
   };
   pets[index] = updated;

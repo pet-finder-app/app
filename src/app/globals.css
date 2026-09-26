@@ -17,10 +17,10 @@
   /* Hover de superfícies brancas: verde pastel bem claro */
   --color-primary-faint: #f0fdf4;
   /* Preenchimentos pastel dos cartões e selos */
-  --color-accent-yellow: #ffd400;
-  --color-accent-peach: #ff7a59;
-  /* Borda fina escura que contorna cartões, campos e botões */
-  --color-line: #000000;
+  --color-accent-yellow: #fdecc8;
+  --color-accent-peach: #fde1d3;
+  /* Divisor sutil entre superfícies (cartões flutuam por sombra, não por borda) */
+  --color-line: #e5e7eb;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   /* Só a marca "PETFINDER." usa isto — ver components/auth-layout.tsx. */

@@ -72,6 +72,8 @@ export type Pet = {
   description: string;
   photos: UploadedFile[];
   status: PetStatus;
+  /** Some da lista de publicados sem apagar o histórico do pet. */
+  archived: boolean;
   /** ISO datetime. */
   createdAt: string;
   updatedAt: string;

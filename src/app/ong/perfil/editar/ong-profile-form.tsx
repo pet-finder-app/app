@@ -19,7 +19,7 @@ import {
   Textarea,
   TextLink,
 } from "@/components/ui";
-import { pressBrutal, shadowBrutal } from "@/components/ui/brutal";
+import { pressSoft, shadowSoft } from "@/components/ui/elevation";
 import { VerificationBadge } from "@/components/verification-badge";
 import {
   DOCUMENT_LABEL,
@@ -171,8 +171,8 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
           {profile.verification.statusNote ? (
             <p
               className={cn(
-                "rounded-lg border-2 border-line bg-accent-peach px-3 py-2 text-sm text-neutral-900",
-                shadowBrutal.sm,
+                "rounded-2xl bg-accent-peach px-3 py-2 text-sm text-neutral-900",
+                shadowSoft.sm,
               )}
             >
               {profile.verification.statusNote}
@@ -189,12 +189,12 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
                 key={key}
                 href={`#${key}`}
                 className={cn(
-                  "inline-flex min-h-7 items-center gap-1 rounded-full border-2 border-line px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                  "inline-flex min-h-7 items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                   sectionDone(key)
                     ? "bg-primary-soft text-green-900"
                     : "bg-white text-neutral-800 hover:bg-primary-faint",
-                  shadowBrutal.sm,
-                  pressBrutal.sm,
+                  shadowSoft.sm,
+                  pressSoft.sm,
                 )}
               >
                 {sectionDone(key) ? (
@@ -720,8 +720,8 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
         >
           <div
             className={cn(
-              "rounded-lg border-2 border-line bg-accent-yellow px-4 py-3 text-xs text-neutral-800",
-              shadowBrutal.sm,
+              "rounded-2xl bg-accent-yellow px-4 py-3 text-xs text-neutral-800",
+              shadowSoft.sm,
             )}
           >
             <p className="font-semibold text-neutral-800">
@@ -790,7 +790,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
                     "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full",
                     item.done
                       ? "bg-primary text-neutral-900"
-                      : "border-2 border-line bg-white",
+                      : "border border-neutral-300 bg-white",
                   )}
                 >
                   {item.done ? (
@@ -954,8 +954,8 @@ function TeamEditor({
             <li
               key={member.id}
               className={cn(
-                "flex items-center justify-between gap-3 rounded-lg border-2 border-line bg-primary-faint px-3 py-2 text-sm",
-                shadowBrutal.sm,
+                "flex items-center justify-between gap-3 rounded-2xl bg-primary-faint px-3 py-2 text-sm",
+                shadowSoft.sm,
               )}
             >
               <div className="min-w-0">

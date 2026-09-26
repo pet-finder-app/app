@@ -8,59 +8,52 @@ em vez de copiar classes para a tela.
 import { Button, Input, Card } from "@/components/ui";
 ```
 
-## Estilo: neo-brutalismo
+## Estilo: soft UI
 
-Linguagem visual do UI System inteiro: borda preta grossa (`border-2`
-`border-line`), sombra dura sem blur e deslocada (nunca `shadow-sm`/blur),
-cores chapadas e saturadas (sem pastel lavado) e um efeito de "pressionar"
-no clique — o elemento anda na direção da sombra e ela some.
+Linguagem visual do UI System inteiro: cantos bem arredondados, sombra
+suave e difusa em vez de borda grossa (a superfície "flutua", não é
+contornada), cores pastel, e um leve encolhimento no clique — nunca
+deslocamento.
 
-- `shadowBrutal.sm | md | lg | xl` e `pressBrutal.sm | md | lg | xl`
-  (`components/ui/brutal.ts`) — use sempre a mesma chave nos dois, para o
-  deslocamento do "press" bater com o tamanho da sombra que ele apaga.
-- Escala de sombra por hierarquia: badge/chip = `sm`, botão = por `size`,
-  cartão = `lg`.
-- Cantos: `rounded-full` em pílulas/selos, `rounded-lg` em botões/campos,
-  `rounded-xl` em cartões. Nunca sem raspa (`rounded-none`) nem excesso
-  (`rounded-3xl`).
-- Nunca use `backdrop-blur`, `shadow-sm`/`shadow-md` do Tailwind, nem
-  bordas de 1px (`border` sozinho) — tudo é `border-2`.
-- Novo componente? Reaproveite `shadowBrutal`/`pressBrutal` em vez de
+- `shadowSoft.sm | md | lg | xl` e `pressSoft.sm | md | lg | xl`
+  (`components/ui/elevation.ts`) — use sempre a mesma chave nos dois.
+- Escala de sombra por hierarquia: badge/chip = sem sombra (só cor pastel),
+  botão = por `size`, cartão = `lg`.
+- Cantos: `rounded-full` em pílulas/selos/avatares, `rounded-2xl` em
+  botões/campos/itens de lista, `rounded-3xl` em cartões. Nunca sem raspa
+  (`rounded-none`).
+- Borda: a maioria das superfícies não tem borda (a sombra já contorna).
+  Quando precisar de uma (campo, item de lista sobre fundo branco), é
+  sempre fina — `border border-neutral-200` — nunca `border-2`.
+- Nunca use `backdrop-blur`.
+- Novo componente? Reaproveite `shadowSoft`/`pressSoft` em vez de
   escrever uma sombra solta.
 
 ```tsx
-import { Button, shadowBrutal } from "@/components/ui";
+import { Button, shadowSoft } from "@/components/ui";
 import { cn } from "@/components/ui";
 
-<div
-  className={cn(
-    "rounded-lg border-2 border-line bg-white p-4",
-    shadowBrutal.md,
-  )}
->
-  ...
-</div>;
+<div className={cn("rounded-3xl bg-white p-4", shadowSoft.lg)}>...</div>;
 ```
 
 ## Tokens (globals.css)
 
-| Token                | Valor                 | Uso                                              |
-| -------------------- | --------------------- | ------------------------------------------------ |
-| `primary`            | green-500 (`#22c55e`) | Botão principal, foco, progresso, destaques      |
-| `primary-hover`      | green-600 (`#16a34a`) | Hover do primário                                |
-| `primary-foreground` | neutral-900           | Texto sobre o primário                           |
-| `primary-soft`       | green-100             | Fundo suave de itens ativos/selecionados         |
-| `primary-faint`      | green-50              | Hover de superfícies brancas, selos informativos |
-| `accent-yellow`      | `#fdecc8`             | Pastel: botão secundário, caixas de informação   |
-| `accent-peach`       | `#fde1d3`             | Pastel: avisos e selos de perigo                 |
-| `line`               | neutral-800           | Borda fina de cartões, campos, botões e selos    |
+| Token                | Valor                   | Uso                                                 |
+| -------------------- | ----------------------- | --------------------------------------------------- |
+| `primary`            | green-500 (`#22c55e`)   | Botão principal, foco, progresso, destaques         |
+| `primary-hover`      | green-600 (`#16a34a`)   | Hover do primário                                   |
+| `primary-foreground` | neutral-900             | Texto sobre o primário                              |
+| `primary-soft`       | green-100               | Fundo suave de itens ativos/selecionados            |
+| `primary-faint`      | green-50                | Hover de superfícies brancas, selos informativos    |
+| `accent-yellow`      | `#fdecc8`               | Pastel: botão secundário, caixas de informação      |
+| `accent-peach`       | `#fde1d3`               | Pastel: avisos e selos de perigo                    |
+| `line`               | `#e5e7eb` (neutral-200) | Divisor sutil (`border-y`, `border-t` entre seções) |
 
 ## Estilo
 
-Visual "kit de UI": superfícies brancas com **borda fina escura** (`border-line`),
-cantos generosos (`rounded-xl` em campos e botões, `rounded-2xl` em cartões),
-sem sombras, e preenchimentos pastel para dar cor. O verde primário entra só
-onde há ação ou estado ativo.
+Visual "soft UI": superfícies brancas **sem contorno**, elevadas por sombra
+suave (`shadowSoft`), cantos bem arredondados, e preenchimentos pastel para
+dar cor. O verde primário entra só onde há ação ou estado ativo.
 
 Use as classes `bg-primary`, `text-primary`, `ring-primary`, `hover:bg-primary-hover`.
 Não use cores hexadecimais nem `neutral-400` direto para significar "primário":
@@ -82,7 +75,8 @@ Campos, checkbox e links aceitam `tone="primary" | "light"`:
 | `TextLink`                             | Link inline sublinhado.                                                                                                                                                                     |
 | `Input`, `Select`, `Textarea`          | Campos com rótulo, dica e erro acessíveis. Sempre passe `id` e `label`.                                                                                                                     |
 | `Checkbox`                             | Caixa com rótulo (o rótulo pode conter links).                                                                                                                                              |
-| `FileInput`                            | Escolha de arquivo; guarda só metadados (`UploadedFile`).                                                                                                                                   |
+| `FileInput`                            | Escolha de um arquivo; guarda só metadados (`UploadedFile`).                                                                                                                                |
+| `PhotoInput`                           | Escolha de várias fotos (`UploadedFile[]`), com miniatura em lista e remoção individual. Mesma ideia do `FileInput`, para quando há mais de um arquivo (fotos do pet, do perfil público).   |
 | `FormError`                            | Alerta de erro do formulário; use o `id` dele como `errorId` dos campos.                                                                                                                    |
 | `Card`, `CardTitle`, `CardDescription` | Cartão branco padrão.                                                                                                                                                                       |
 | `Badge`                                | Selo: neutral, info, success, warning, danger.                                                                                                                                              |
@@ -162,4 +156,5 @@ import { ChevronLeft } from "lucide-react";
 ## Componentes de domínio
 
 Ficam em `src/components/` (fora de `ui/`) e são compostos com o UI System:
-`auth-layout`, `role-select`, `verification-badge`, `splash-*`.
+`auth-layout`, `role-select`, `verification-badge`, `splash-*`, `ong-tab-bar`
+(navegação fixa do painel da ONG — início/grade de pets, cadastrar, notificações).

@@ -1,6 +1,6 @@
 import type { AccountRole } from "@/lib/users";
-import { pressBrutal, shadowBrutal } from "./ui/brutal";
 import { cn } from "./ui/cn";
+import { pressSoft, shadowSoft } from "./ui/elevation";
 
 type RoleOption = {
   role: AccountRole;
@@ -39,9 +39,9 @@ export function RoleSelect({ onSelect }: RoleSelectProps) {
           type="button"
           onClick={() => onSelect(option.role)}
           className={cn(
-            "flex flex-col gap-0.5 rounded-lg border-2 border-line bg-white px-4 py-3.5 text-left transition-colors hover:bg-primary-faint focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-            shadowBrutal.md,
-            pressBrutal.md,
+            "flex flex-col gap-0.5 rounded-2xl border border-neutral-200 bg-white px-4 py-3.5 text-left transition-colors hover:bg-primary-faint focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            shadowSoft.md,
+            pressSoft.md,
           )}
         >
           <span className="text-sm font-bold text-neutral-900">

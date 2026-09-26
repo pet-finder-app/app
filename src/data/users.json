@@ -233,7 +233,13 @@
           ]
         },
         "publicProfile": {
-          "logo": null,
+          "logo": {
+            "name": "ong-logo-quatro-patas.jpg",
+            "size": 65819,
+            "mimeType": "image/jpeg",
+            "uploadedAt": "2026-09-26T18:00:00.000Z",
+            "url": "/ong-logo-quatro-patas.jpg"
+          },
           "photos": [],
           "description": "Resgatamos, tratamos e encaminhamos para adoção cães e gatos abandonados na Grande São Paulo desde 2015.",
           "website": "https://quatropatas.org",
@@ -243,7 +249,8 @@
             "pixKey": "11222333000181",
             "bankAccount": "Banco 001 · Ag 1234 · CC 56789-0",
             "neededItems": ["Ração seca adulto", "Areia sanitária", "Vermífugo"]
-          }
+          },
+          "followersCount": 248
         },
         "legalConsent": {
           "terms": {
@@ -340,7 +347,8 @@
             "pixKey": "",
             "bankAccount": "",
             "neededItems": []
-          }
+          },
+          "followersCount": 0
         },
         "legalConsent": {
           "terms": {

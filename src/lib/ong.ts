@@ -5,8 +5,8 @@ import type { DocumentType } from "./br-documents";
  * `StoredUser.ong` no users.json — o backend pode quebrar em tabelas depois.
  *
  * Só o que está em `OngSignupInput` é pedido na tela de cadastro. O resto é
- * preenchido em /ong/perfil e exigido apenas na hora de publicar o primeiro
- * pet (ver `getOngChecklist`).
+ * preenchido em /ong/perfil/editar e exigido apenas na hora de publicar o
+ * primeiro pet (ver `getOngChecklist`).
  *
  * Este arquivo não importa nada do Node: pode ser usado no client.
  */
@@ -78,6 +78,13 @@ export type Address = {
   /** UF, ex.: "SP". */
   state: string;
 };
+
+/** "Rua X, 100 - Bairro, Cidade/UF", pulando o que não foi preenchido. */
+export function formatAddress(address: Address): string {
+  const street = [address.street, address.number].filter(Boolean).join(", ");
+  const cityState = [address.city, address.state].filter(Boolean).join("/");
+  return [street, address.neighborhood, cityState].filter(Boolean).join(" - ");
+}
 
 /** Situação cadastral na Receita — preenchido pelo backend após a consulta. */
 export type ReceitaStatus = "nao_consultado" | "ativa" | "inativa" | "erro";
@@ -236,6 +243,8 @@ export type OngPublicProfile = {
   instagram: string;
   facebook: string;
   donation: OngDonation;
+  /** Adotantes que seguem a ONG no app. */
+  followersCount: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -348,6 +357,7 @@ export function createEmptyOngProfile(input: OngSignupInput): OngProfile {
       instagram: "",
       facebook: "",
       donation: { pixKey: "", bankAccount: "", neededItems: [] },
+      followersCount: 0,
     },
     legalConsent: {
       terms: input.terms,
@@ -384,7 +394,7 @@ export type ChecklistItem = {
   id: string;
   label: string;
   done: boolean;
-  /** Seção de /ong/perfil onde o item é preenchido. */
+  /** Seção de /ong/perfil/editar onde o item é preenchido. */
   section: OngProfileSection;
 };
 
