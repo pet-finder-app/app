@@ -1,5 +1,6 @@
 "use client";
 
+import { LogoutButton } from "@/components/logout-button";
 import {
   ActionBar,
   Button,
@@ -149,10 +150,13 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
     <PageShell hasActionBar>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <Card as="header" className="gap-2">
-          <LinkButton href="/" variant="pill" size="sm" className="self-start">
-            <ChevronLeft className={iconSize.sm} aria-hidden="true" />
-            Início
-          </LinkButton>
+          <div className="flex items-center justify-between gap-2">
+            <LinkButton href="/" variant="pill" size="sm">
+              <ChevronLeft className={iconSize.sm} aria-hidden="true" />
+              Início
+            </LinkButton>
+            <LogoutButton />
+          </div>
           <h1 className="text-2xl font-bold text-neutral-900">
             {profile.legal.tradeName}
           </h1>
