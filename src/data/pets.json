@@ -9,11 +9,7 @@
       "sex": "macho",
       "size": "medio",
       "ageGroup": "adulto",
-      "temperament": [
-        "Brincalhão",
-        "Dócil",
-        "Bom com crianças"
-      ],
+      "temperament": ["Brincalhão", "Dócil", "Bom com crianças"],
       "health": {
         "vaccinated": true,
         "neutered": true,
@@ -44,10 +40,7 @@
       "sex": "femea",
       "size": "pequeno",
       "ageGroup": "filhote",
-      "temperament": [
-        "Independente",
-        "Curiosa"
-      ],
+      "temperament": ["Independente", "Curiosa"],
       "health": {
         "vaccinated": true,
         "neutered": false,
@@ -78,11 +71,7 @@
       "sex": "macho",
       "size": "medio",
       "ageGroup": "adulto",
-      "temperament": [
-        "Carinhoso",
-        "Dócil",
-        "Adora colo"
-      ],
+      "temperament": ["Carinhoso", "Dócil", "Adora colo"],
       "health": {
         "vaccinated": true,
         "neutered": true,
@@ -113,11 +102,7 @@
       "sex": "femea",
       "size": "pequeno",
       "ageGroup": "filhote",
-      "temperament": [
-        "Elegante",
-        "Observadora",
-        "Tranquila"
-      ],
+      "temperament": ["Elegante", "Observadora", "Tranquila"],
       "health": {
         "vaccinated": true,
         "neutered": false,
@@ -148,11 +133,7 @@
       "sex": "femea",
       "size": "medio",
       "ageGroup": "adulto",
-      "temperament": [
-        "Independente",
-        "Calma",
-        "Bem quieta"
-      ],
+      "temperament": ["Independente", "Calma", "Bem quieta"],
       "health": {
         "vaccinated": true,
         "neutered": true,
@@ -183,11 +164,7 @@
       "sex": "macho",
       "size": "pequeno",
       "ageGroup": "adulto",
-      "temperament": [
-        "Brincalhão",
-        "Falante",
-        "Bom com crianças"
-      ],
+      "temperament": ["Brincalhão", "Falante", "Bom com crianças"],
       "health": {
         "vaccinated": true,
         "neutered": true,
@@ -216,10 +193,7 @@
       "sex": "femea",
       "size": "pequeno",
       "ageGroup": "adulto",
-      "temperament": [
-        "Dócil",
-        "brincalhona"
-      ],
+      "temperament": ["Dócil", "brincalhona"],
       "health": {
         "vaccinated": true,
         "neutered": true,
