@@ -1,6 +1,6 @@
 import { AuthLayout } from "@/components/auth-layout";
+import { TextLink } from "@/components/ui";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
@@ -11,15 +11,13 @@ export default function LoginPage() {
   return (
     <AuthLayout
       heading="Entrar"
+      background="pastel"
       footer={
         <>
           Não possui uma conta?{" "}
-          <Link
-            href="/cadastro"
-            className="text-brand underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
+          <TextLink href="/cadastro" tone="primary">
             Crie uma aqui.
-          </Link>
+          </TextLink>
         </>
       }
     >

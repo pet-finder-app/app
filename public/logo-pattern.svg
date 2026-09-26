@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
+  <!--
+    Marca d'água do fundo do login: a própria marca (lupa + pegada, mesma
+    geometria de src/components/petfinder-mark.tsx), num cinza claro fixo
+    — não usa currentColor porque é referenciada via CSS background-image.
+    Um exemplar por ladrilho, levemente girado, com folga generosa ao
+    redor para não ficar denso quando repetido.
+  -->
+  <g transform="rotate(-8 80 80) translate(36.5,36.5) scale(0.75)">
+    <g fill="#d4d4d4" stroke="none">
+      <ellipse cx="50" cy="57" rx="6.5" ry="5.5" />
+      <ellipse cx="39" cy="48" rx="3.5" ry="4.5" transform="rotate(-20 39 48)" />
+      <ellipse cx="46" cy="42" rx="3.5" ry="4.5" transform="rotate(-8 46 42)" />
+      <ellipse cx="54" cy="42" rx="3.5" ry="4.5" transform="rotate(8 54 42)" />
+      <ellipse cx="61" cy="48" rx="3.5" ry="4.5" transform="rotate(20 61 48)" />
+    </g>
+    <g fill="none" stroke="#d4d4d4" stroke-linecap="round">
+      <circle cx="50" cy="50" r="25" stroke-width="7" />
+      <circle cx="50" cy="50" r="20" stroke-width="2" />
+      <line x1="68" y1="68" x2="82" y2="82" stroke-width="7" />
+      <circle cx="86" cy="86" r="5" fill="#d4d4d4" stroke="none" />
+    </g>
+  </g>
+</svg>
