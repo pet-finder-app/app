@@ -1,29 +1,36 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import {
+  createEmptyOngProfile,
+  type OngProfile,
+  type OngSignupInput,
+} from "./ong";
 
 /**
  * Camada de acesso aos usuários — hoje um arquivo JSON, amanhã o backend.
  *
  * Só este arquivo precisa mudar quando a API real entrar: troque o corpo de
- * `readUsers` e `createUser` por chamadas HTTP e mantenha as assinaturas.
+ * `readUsers`, `createUser` e `updateOngProfile` por chamadas HTTP e mantenha
+ * as assinaturas.
  */
 
 export const SESSION_COOKIE = "petfinder_session";
 
-/**
- * Adotante ou ONG — escolhido na primeira etapa do cadastro. Hoje os dois
- * usam o mesmo formulário (só o rótulo do nome muda); quando o formulário
- * específico da ONG existir, os campos extras entram aqui.
- */
+/** Adotante ou ONG — escolhido na primeira etapa do cadastro. */
 export type AccountRole = "adopter" | "ong";
 
 export type StoredUser = {
   id: string;
   role: AccountRole;
+  /** Adotante: nome. ONG: nome fantasia (espelha `ong.legal.tradeName`). */
   name: string;
   email: string;
   password: string;
   avatarUrl: string | null;
+  /** ISO datetime. */
+  createdAt: string;
+  /** Presente só quando `role === "ong"`. Ver `lib/ong.ts`. */
+  ong?: OngProfile;
 };
 
 /** O usuário como ele trafega para o front — nunca inclui a senha. */
@@ -32,13 +39,9 @@ export type PublicUser = Omit<StoredUser, "password">;
 const USERS_FILE = path.join(process.cwd(), "src", "data", "users.json");
 
 export function toPublicUser(user: StoredUser): PublicUser {
-  return {
-    id: user.id,
-    role: user.role,
-    name: user.name,
-    email: user.email,
-    avatarUrl: user.avatarUrl,
-  };
+  const { password: _password, ...publicUser } = user;
+  void _password;
+  return publicUser;
 }
 
 export function normalizeEmail(email: string): string {
@@ -50,6 +53,14 @@ export async function readUsers(): Promise<StoredUser[]> {
   return (JSON.parse(raw) as { users: StoredUser[] }).users;
 }
 
+async function writeUsers(users: StoredUser[]): Promise<void> {
+  await fs.writeFile(
+    USERS_FILE,
+    JSON.stringify({ users }, null, 2) + "\n",
+    "utf-8",
+  );
+}
+
 export async function findUserByEmail(
   email: string,
 ): Promise<StoredUser | undefined> {
@@ -59,28 +70,75 @@ export async function findUserByEmail(
   );
 }
 
-export async function createUser(input: {
-  role: AccountRole;
-  name: string;
-  email: string;
-  password: string;
-}): Promise<StoredUser> {
+export async function findUserById(
+  id: string,
+): Promise<StoredUser | undefined> {
   const users = await readUsers();
+  return users.find((user) => user.id === id);
+}
 
-  const user: StoredUser = {
+/** Já existe uma ONG com esse CPF/CNPJ? */
+export async function findOngByDocument(
+  document: string,
+): Promise<StoredUser | undefined> {
+  const users = await readUsers();
+  return users.find((user) => user.ong?.legal.document === document);
+}
+
+export type CreateUserInput =
+  | { role: "adopter"; name: string; email: string; password: string }
+  | {
+      role: "ong";
+      email: string;
+      password: string;
+      ong: Omit<OngSignupInput, "email">;
+    };
+
+export async function createUser(input: CreateUserInput): Promise<StoredUser> {
+  const users = await readUsers();
+  const email = normalizeEmail(input.email);
+
+  const base = {
     id: crypto.randomUUID(),
-    role: input.role,
-    name: input.name.trim(),
-    email: normalizeEmail(input.email),
+    email,
     password: input.password,
     avatarUrl: null,
+    createdAt: new Date().toISOString(),
   };
 
-  await fs.writeFile(
-    USERS_FILE,
-    JSON.stringify({ users: [...users, user] }, null, 2) + "\n",
-    "utf-8",
-  );
+  const user: StoredUser =
+    input.role === "adopter"
+      ? { ...base, role: "adopter", name: input.name.trim() }
+      : {
+          ...base,
+          role: "ong",
+          name: input.ong.tradeName.trim(),
+          ong: createEmptyOngProfile({
+            ...input.ong,
+            tradeName: input.ong.tradeName.trim(),
+            email,
+          }),
+        };
+
+  await writeUsers([...users, user]);
 
   return user;
+}
+
+export async function updateOngProfile(
+  userId: string,
+  profile: OngProfile,
+): Promise<StoredUser | undefined> {
+  const users = await readUsers();
+  const index = users.findIndex((user) => user.id === userId);
+  if (index === -1 || users[index].role !== "ong") return undefined;
+
+  const updated: StoredUser = {
+    ...users[index],
+    name: profile.legal.tradeName.trim() || users[index].name,
+    ong: profile,
+  };
+  users[index] = updated;
+  await writeUsers(users);
+  return updated;
 }

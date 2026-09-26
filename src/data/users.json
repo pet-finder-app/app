@@ -6,7 +6,8 @@
       "name": "Carla Lopes",
       "email": "carla@petfinder.app",
       "password": "123456",
-      "avatarUrl": null
+      "avatarUrl": null,
+      "createdAt": "2026-09-01T12:00:00.000Z"
     },
     {
       "id": "2",
@@ -14,7 +15,221 @@
       "name": "Felipe Melo",
       "email": "felipe@petfinder.app",
       "password": "123456",
-      "avatarUrl": null
+      "avatarUrl": null,
+      "createdAt": "2026-09-01T12:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "role": "ong",
+      "name": "Amigos de Quatro Patas",
+      "email": "contato@quatropatas.org",
+      "password": "123456",
+      "avatarUrl": null,
+      "createdAt": "2026-08-10T14:30:00.000Z",
+      "ong": {
+        "legal": {
+          "organizationType": "ong_formalizada",
+          "documentType": "cnpj",
+          "document": "11222333000181",
+          "receitaStatus": "ativa",
+          "legalName": "Associação Amigos de Quatro Patas",
+          "tradeName": "Amigos de Quatro Patas",
+          "rg": "",
+          "foundedAt": "2015-03-12",
+          "address": {
+            "cep": "01310100",
+            "street": "Avenida Paulista",
+            "number": "1000",
+            "complement": "Sala 12",
+            "neighborhood": "Bela Vista",
+            "city": "São Paulo",
+            "state": "SP"
+          }
+        },
+        "representative": {
+          "fullName": "Mariana Souza",
+          "cpf": "52998224725",
+          "position": "Presidente",
+          "email": "mariana@quatropatas.org",
+          "phone": "11987654321",
+          "emailVerifiedAt": "2026-08-10T14:35:00.000Z",
+          "phoneVerifiedAt": "2026-08-10T14:40:00.000Z",
+          "idDocument": {
+            "name": "rg-mariana.pdf",
+            "size": 184320,
+            "mimeType": "application/pdf",
+            "uploadedAt": "2026-08-11T09:00:00.000Z",
+            "url": null
+          }
+        },
+        "verification": {
+          "status": "verificada",
+          "statusUpdatedAt": "2026-08-15T16:00:00.000Z",
+          "statusNote": "",
+          "bylaws": {
+            "name": "estatuto-social.pdf",
+            "size": 512000,
+            "mimeType": "application/pdf",
+            "uploadedAt": "2026-08-11T09:05:00.000Z",
+            "url": null
+          },
+          "addressProof": {
+            "name": "conta-luz-agosto.pdf",
+            "size": 96000,
+            "mimeType": "application/pdf",
+            "uploadedAt": "2026-08-11T09:06:00.000Z",
+            "url": null
+          },
+          "animalProtectionRegistry": "SP-PA-2019-0042",
+          "veterinarianCrmv": "CRMV-SP 12345",
+          "references": []
+        },
+        "operations": {
+          "shelterCapacity": 80,
+          "currentAnimals": 63,
+          "species": ["caes", "gatos"],
+          "serviceAreas": [
+            "São Paulo - Zona Sul",
+            "São Paulo - Centro",
+            "Diadema"
+          ],
+          "homeVisit": true,
+          "requiresContract": true,
+          "chargesAdoptionFee": true,
+          "adoptionFee": 150,
+          "contactHours": "Seg a sex, 9h às 18h",
+          "preferredContact": "whatsapp",
+          "team": [
+            {
+              "id": "t1",
+              "name": "João Pereira",
+              "email": "joao@quatropatas.org",
+              "roles": ["cadastra_pet"],
+              "invitedAt": "2026-08-20T10:00:00.000Z"
+            }
+          ]
+        },
+        "publicProfile": {
+          "logo": null,
+          "photos": [],
+          "description": "Resgatamos, tratamos e encaminhamos para adoção cães e gatos abandonados na Grande São Paulo desde 2015.",
+          "website": "https://quatropatas.org",
+          "instagram": "@quatropatas",
+          "facebook": "",
+          "donation": {
+            "pixKey": "11222333000181",
+            "bankAccount": "Banco 001 · Ag 1234 · CC 56789-0",
+            "neededItems": ["Ração seca adulto", "Areia sanitária", "Vermífugo"]
+          }
+        },
+        "legalConsent": {
+          "terms": {
+            "version": "2026-09-26-rascunho",
+            "acceptedAt": "2026-08-10T14:30:00.000Z",
+            "ip": "127.0.0.1",
+            "userAgent": "seed"
+          },
+          "adoptionTermTemplate": {
+            "name": "termo-de-adocao.pdf",
+            "size": 40960,
+            "mimeType": "application/pdf",
+            "uploadedAt": "2026-08-12T11:00:00.000Z",
+            "url": null
+          },
+          "adoptersDataConsent": {
+            "version": "2026-09-26-rascunho",
+            "acceptedAt": "2026-08-12T11:00:00.000Z",
+            "ip": "127.0.0.1",
+            "userAgent": "seed"
+          }
+        }
+      }
+    },
+    {
+      "id": "4",
+      "role": "ong",
+      "name": "Resgates da Bia",
+      "email": "bia@petfinder.app",
+      "password": "123456",
+      "avatarUrl": null,
+      "createdAt": "2026-09-20T18:00:00.000Z",
+      "ong": {
+        "legal": {
+          "organizationType": "protetor_independente",
+          "documentType": "cpf",
+          "document": "39053344705",
+          "receitaStatus": "nao_consultado",
+          "legalName": "",
+          "tradeName": "Resgates da Bia",
+          "rg": "",
+          "foundedAt": "",
+          "address": {
+            "cep": "",
+            "street": "",
+            "number": "",
+            "complement": "",
+            "neighborhood": "",
+            "city": "",
+            "state": ""
+          }
+        },
+        "representative": {
+          "fullName": "",
+          "cpf": "",
+          "position": "",
+          "email": "bia@petfinder.app",
+          "phone": "",
+          "emailVerifiedAt": null,
+          "phoneVerifiedAt": null,
+          "idDocument": null
+        },
+        "verification": {
+          "status": "pendente",
+          "statusUpdatedAt": "2026-09-20T18:00:00.000Z",
+          "statusNote": "",
+          "bylaws": null,
+          "addressProof": null,
+          "animalProtectionRegistry": "",
+          "veterinarianCrmv": "",
+          "references": []
+        },
+        "operations": {
+          "shelterCapacity": null,
+          "currentAnimals": null,
+          "species": [],
+          "serviceAreas": [],
+          "homeVisit": false,
+          "requiresContract": false,
+          "chargesAdoptionFee": false,
+          "adoptionFee": null,
+          "contactHours": "",
+          "preferredContact": "whatsapp",
+          "team": []
+        },
+        "publicProfile": {
+          "logo": null,
+          "photos": [],
+          "description": "",
+          "website": "",
+          "instagram": "",
+          "facebook": "",
+          "donation": {
+            "pixKey": "",
+            "bankAccount": "",
+            "neededItems": []
+          }
+        },
+        "legalConsent": {
+          "terms": {
+            "version": "2026-09-26-rascunho",
+            "acceptedAt": "2026-09-20T18:00:00.000Z",
+            "ip": "127.0.0.1",
+            "userAgent": "seed"
+          },
+          "adoptionTermTemplate": null,
+          "adoptersDataConsent": null
+        }
+      }
     }
   ]
 }
