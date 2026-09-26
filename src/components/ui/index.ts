@@ -3,8 +3,12 @@
  * Regras e exemplos em ./README.md.
  */
 
-export { Badge, type BadgeProps, type BadgeTone } from "./badge";
-export { pressBrutal, shadowBrutal, type BrutalSize } from "./brutal";
+export {
+  Badge,
+  type BadgeProps,
+  type BadgeSize,
+  type BadgeTone,
+} from "./badge";
 export {
   Button,
   LinkButton,
@@ -17,6 +21,7 @@ export {
 export { Card, CardDescription, CardTitle } from "./card";
 export { Checkbox, type CheckboxProps } from "./checkbox";
 export { cn } from "./cn";
+export { pressSoft, shadowSoft, type ElevationSize } from "./elevation";
 export {
   Field,
   fieldControlClass,
@@ -26,11 +31,12 @@ export {
   type FieldBaseProps,
   type FieldTone,
 } from "./field";
-export { FileInput, type FileInputProps } from "./file-input";
+export { FileInput, formatSize, type FileInputProps } from "./file-input";
 export { FormError, type FormErrorProps } from "./form-error";
 export { iconSize } from "./icon";
 export { Input, type InputProps } from "./input";
 export { ActionBar, PageShell, type PageShellProps } from "./page-shell";
+export { PhotoInput, type PhotoInputProps } from "./photo-input";
 export { Progress, type ProgressProps } from "./progress";
 export { Select, type SelectOption, type SelectProps } from "./select";
 export { TextLink, type TextLinkProps } from "./text-link";

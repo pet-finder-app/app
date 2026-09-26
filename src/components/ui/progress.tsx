@@ -19,7 +19,7 @@ export function Progress({ value, max, label, className }: ProgressProps) {
       aria-valuenow={value}
       aria-label={label}
       className={cn(
-        "h-2.5 overflow-hidden rounded-full border-2 border-line bg-white",
+        "h-2.5 overflow-hidden rounded-full bg-neutral-100",
         className,
       )}
     >

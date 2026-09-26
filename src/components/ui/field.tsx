@@ -22,11 +22,12 @@ export const fieldHintClass: Record<FieldTone, string> = {
 };
 
 /**
- * Borda grossa preta + sombra dura de 2px; o foco "afunda" o campo
- * (some a sombra) em vez de só trocar a cor, reforçando o toque brutalista.
+ * Borda fina e sombra bem suave; o foco troca a borda para o verde
+ * primário e acrescenta um halo (`ring`) em vez de qualquer efeito de
+ * "afundar" — só cor e leve profundidade.
  */
 const fieldControlBase =
-  "w-full rounded-lg border-2 border-line bg-white px-4 py-3 text-sm text-neutral-900 shadow-[1px_1px_0_0_var(--color-line)] transition-shadow placeholder:text-neutral-500 focus-visible:shadow-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none aria-[invalid=true]:border-red-600 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-500 disabled:shadow-none disabled:opacity-60";
+  "w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors placeholder:text-neutral-500 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-200 disabled:opacity-60";
 
 export const fieldControlClass: Record<FieldTone, string> = {
   primary: fieldControlBase,

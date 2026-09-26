@@ -1,6 +1,6 @@
 import type { HTMLAttributes } from "react";
-import { shadowBrutal } from "./brutal";
 import { cn } from "./cn";
+import { shadowSoft } from "./elevation";
 
 type CardProps = HTMLAttributes<HTMLElement> & {
   /** Elemento semântico do cartão: section (padrão), header, article... */
@@ -12,10 +12,7 @@ export function Card({ as: Tag = "section", className, ...props }: CardProps) {
   return (
     <Tag
       className={cn(
-        cn(
-          "flex flex-col gap-4 rounded-xl border-2 border-line bg-white p-5",
-          shadowBrutal.lg,
-        ),
+        cn("flex flex-col gap-4 rounded-3xl bg-white p-5", shadowSoft.lg),
         className,
       )}
       {...props}

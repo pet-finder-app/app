@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { shadowBrutal } from "./brutal";
 import { cn } from "./cn";
+import { shadowSoft } from "./elevation";
 
 export type FormErrorProps = {
   id: string;
@@ -20,8 +20,8 @@ export function FormError({ id, children, className }: FormErrorProps) {
         "min-h-5 text-sm font-semibold",
         children
           ? cn(
-              "rounded-lg border-2 border-line bg-accent-peach px-3 py-2 text-neutral-900",
-              shadowBrutal.sm,
+              "rounded-2xl bg-accent-peach px-3 py-2 text-neutral-900",
+              shadowSoft.sm,
             )
           : "text-transparent",
         className,

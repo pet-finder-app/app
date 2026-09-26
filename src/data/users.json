@@ -7,7 +7,77 @@
       "email": "carla@petfinder.app",
       "password": "123456",
       "avatarUrl": null,
-      "createdAt": "2026-09-01T12:00:00.000Z"
+      "createdAt": "2026-09-01T12:00:00.000Z",
+      "adopter": {
+        "personal": {
+          "avatar": null,
+          "fullName": "Carla Lopes",
+          "cpf": "52998224725",
+          "birthDate": "1992-04-15",
+          "phone": "11991234567",
+          "phoneVerifiedAt": null,
+          "bio": "Apaixonada por animais, já cuidei de dois cães resgatados e hoje moro com uma gata idosa.",
+          "occupation": "Designer",
+          "instagram": "@carlalopes",
+          "idDocument": {
+            "name": "rg-carla.pdf",
+            "size": 152340,
+            "mimeType": "application/pdf",
+            "uploadedAt": "2026-09-02T09:00:00.000Z",
+            "url": null
+          },
+          "addressProof": {
+            "name": "conta-luz-carla.pdf",
+            "size": 88320,
+            "mimeType": "application/pdf",
+            "uploadedAt": "2026-09-02T09:05:00.000Z",
+            "url": null
+          },
+          "address": {
+            "cep": "04538132",
+            "street": "Avenida Brigadeiro Faria Lima",
+            "number": "2232",
+            "complement": "Apto 91",
+            "neighborhood": "Itaim Bibi",
+            "city": "São Paulo",
+            "state": "SP"
+          }
+        },
+        "housing": {
+          "type": "apartamento",
+          "ownership": "propria",
+          "landlordAllowsPets": false,
+          "hasYard": false,
+          "hasScreens": true,
+          "residentsCount": 2,
+          "hasChildren": false,
+          "hasOtherPets": true,
+          "otherPetsDescription": "Um gato idoso, a Mel.",
+          "hoursAloneOnWeekdays": 6,
+          "hasPetExperience": true,
+          "acceptsHomeVisit": true
+        },
+        "preferences": {
+          "species": ["cachorro", "gato"],
+          "sizes": ["pequeno", "medio"],
+          "ageGroups": ["adulto", "idoso"],
+          "acceptsSpecialNeeds": true,
+          "aboutIdealPet": "Um pet tranquilo que se dê bem com outra gata em casa."
+        },
+        "verification": {
+          "status": "verificada",
+          "statusUpdatedAt": "2026-09-05T12:00:00.000Z",
+          "statusNote": ""
+        },
+        "legalConsent": {
+          "terms": {
+            "version": "2026-09-26-rascunho",
+            "acceptedAt": "2026-09-02T09:10:00.000Z",
+            "ip": "127.0.0.1",
+            "userAgent": "seed"
+          }
+        }
+      }
     },
     {
       "id": "2",
@@ -16,7 +86,60 @@
       "email": "felipe@petfinder.app",
       "password": "123456",
       "avatarUrl": null,
-      "createdAt": "2026-09-01T12:00:00.000Z"
+      "createdAt": "2026-09-01T12:00:00.000Z",
+      "adopter": {
+        "personal": {
+          "avatar": null,
+          "fullName": "Felipe Melo",
+          "cpf": "",
+          "birthDate": "",
+          "phone": "",
+          "phoneVerifiedAt": null,
+          "bio": "",
+          "occupation": "",
+          "instagram": "",
+          "idDocument": null,
+          "addressProof": null,
+          "address": {
+            "cep": "",
+            "street": "",
+            "number": "",
+            "complement": "",
+            "neighborhood": "",
+            "city": "",
+            "state": ""
+          }
+        },
+        "housing": {
+          "type": "",
+          "ownership": "",
+          "landlordAllowsPets": false,
+          "hasYard": false,
+          "hasScreens": false,
+          "residentsCount": null,
+          "hasChildren": false,
+          "hasOtherPets": false,
+          "otherPetsDescription": "",
+          "hoursAloneOnWeekdays": null,
+          "hasPetExperience": false,
+          "acceptsHomeVisit": false
+        },
+        "preferences": {
+          "species": [],
+          "sizes": [],
+          "ageGroups": [],
+          "acceptsSpecialNeeds": false,
+          "aboutIdealPet": ""
+        },
+        "verification": {
+          "status": "pendente",
+          "statusUpdatedAt": "2026-09-01T12:00:00.000Z",
+          "statusNote": ""
+        },
+        "legalConsent": {
+          "terms": null
+        }
+      }
     },
     {
       "id": "3",

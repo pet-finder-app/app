@@ -36,7 +36,7 @@ export function Checkbox({
         type="checkbox"
         aria-invalid={invalid || undefined}
         aria-describedby={invalid ? errorId : undefined}
-        className="size-6 shrink-0 cursor-pointer rounded-sm border-2 border-line accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[invalid=true]:outline-2 aria-[invalid=true]:outline-red-500"
+        className="size-6 shrink-0 cursor-pointer rounded-md border border-neutral-300 accent-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[invalid=true]:outline-2 aria-[invalid=true]:outline-red-500"
         {...props}
       />
       <label

@@ -69,7 +69,7 @@ export function ActionBar({
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-0 z-20 border-t-2 border-line bg-white px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
+        "fixed inset-x-0 bottom-0 z-20 border-t border-neutral-100 bg-white px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-4px_16px_rgba(15,23,42,0.06)]",
         className,
       )}
     >

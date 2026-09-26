@@ -75,5 +75,19 @@ rolagem horizontal em 375px. Verifique no preview em largura de celular.
   que falta para publicar o primeiro pet. `src/lib/br-documents.ts`: CPF/CNPJ.
 - Cadastro da ONG é curto de propósito (tipo, nome, CPF/CNPJ, e-mail, senha,
   termos). O resto é preenchido em `/ong/perfil`.
-- Usuários de teste: `contato@quatropatas.org` (verificada) e
-  `bia@petfinder.app` (pendente), senha `123456`.
+- `src/lib/adopter.ts`: modelo do adotante em quatro camadas (identificação,
+  moradia/rotina, preferências de adoção, termos/LGPD) e o checklist do que
+  falta para o perfil ficar completo — mesmo padrão de `lib/ong.ts`. Cadastro
+  do adotante é curto (nome, e-mail, senha); o resto é preenchido em
+  `/adotante/perfil`, inclusive o aceite dos termos (não é pedido no
+  cadastro).
+- Painel do adotante (`/`, quando `role === "adopter"`): cabeçalho com
+  avatar/nome/selo de verificação/checklist do perfil, feed de pets
+  disponíveis de ONGs verificadas (`listAvailablePets`) com curtir/demonstrar
+  interesse (`AdopterPetCard`, via `POST /api/pets/[id]/curtir` e
+  `/interesse`). Navegação fixa (`AdopterTabBar`): início, notificações
+  (atividade própria, em `/adotante/notificacoes`), perfil.
+- Usuários de teste: `contato@quatropatas.org` (ONG verificada) e
+  `bia@petfinder.app` (ONG pendente), além de `carla@petfinder.app`
+  (adotante verificada, perfil completo) e `felipe@petfinder.app` (adotante
+  pendente, perfil vazio) — senha `123456` para todos.

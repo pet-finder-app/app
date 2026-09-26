@@ -1,0 +1,69 @@
+{
+  "notifications": [
+    {
+      "id": "n1",
+      "ongId": "3",
+      "petId": "p1",
+      "petName": "Caramelo",
+      "adopterId": "1",
+      "adopterName": "Carla Lopes",
+      "adopterAvatarUrl": null,
+      "type": "interesse",
+      "message": "Oi! Tenho quintal grande e já tive cachorro antes. Como faço para adotar o Caramelo?",
+      "createdAt": "2026-09-24T13:20:00.000Z",
+      "readAt": null
+    },
+    {
+      "id": "n2",
+      "ongId": "3",
+      "petId": "p1",
+      "petName": "Caramelo",
+      "adopterId": "2",
+      "adopterName": "Felipe Melo",
+      "adopterAvatarUrl": null,
+      "type": "curtida",
+      "message": "",
+      "createdAt": "2026-09-23T09:10:00.000Z",
+      "readAt": null
+    },
+    {
+      "id": "n3",
+      "ongId": "3",
+      "petId": "p2",
+      "petName": "Mimi",
+      "adopterId": "2",
+      "adopterName": "Felipe Melo",
+      "adopterAvatarUrl": null,
+      "type": "curtida",
+      "message": "",
+      "createdAt": "2026-09-18T17:45:00.000Z",
+      "readAt": "2026-09-19T08:00:00.000Z"
+    },
+    {
+      "id": "0c075052-bd45-4227-9dba-38e3913ffa10",
+      "ongId": "3",
+      "petId": "p6",
+      "petName": "Amendoim",
+      "adopterId": "1",
+      "adopterName": "Carla Lopes",
+      "adopterAvatarUrl": null,
+      "type": "curtida",
+      "message": "",
+      "createdAt": "2026-09-26T21:53:10.859Z",
+      "readAt": null
+    },
+    {
+      "id": "007e597c-529d-4ed1-9b31-cc1a671f41e9",
+      "ongId": "3",
+      "petId": "p3",
+      "petName": "Thor",
+      "adopterId": "1",
+      "adopterName": "Carla Lopes",
+      "adopterAvatarUrl": null,
+      "type": "interesse",
+      "message": "Adoro caes carinhosos e tenho quintal grande para o Thor.",
+      "createdAt": "2026-09-26T21:53:24.677Z",
+      "readAt": null
+    }
+  ]
+}

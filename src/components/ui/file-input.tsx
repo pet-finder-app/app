@@ -2,9 +2,9 @@
 
 import type { UploadedFile } from "@/lib/ong";
 import type { ChangeEvent } from "react";
-import { pressBrutal, shadowBrutal } from "./brutal";
 import { Button } from "./button";
 import { cn } from "./cn";
+import { pressSoft, shadowSoft } from "./elevation";
 import { Field, useFieldA11y, type FieldBaseProps } from "./field";
 
 export type FileInputProps = FieldBaseProps & {
@@ -13,7 +13,7 @@ export type FileInputProps = FieldBaseProps & {
   accept?: string;
 };
 
-function formatSize(bytes: number): string {
+export function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -60,8 +60,8 @@ export function FileInput({
       {value ? (
         <div
           className={cn(
-            "flex items-center justify-between gap-3 rounded-lg border-2 border-line bg-white px-4 py-3 text-sm",
-            shadowBrutal.sm,
+            "flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm",
+            shadowSoft.sm,
           )}
         >
           <span className="min-w-0 truncate text-neutral-900">
@@ -83,9 +83,8 @@ export function FileInput({
           htmlFor={id}
           aria-invalid={invalid || undefined}
           className={cn(
-            "flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-line bg-white px-4 py-3 text-sm font-semibold text-neutral-800 hover:bg-primary-faint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary aria-[invalid=true]:border-red-500",
-            shadowBrutal.sm,
-            pressBrutal.sm,
+            "flex cursor-pointer items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-700 hover:bg-primary-faint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary aria-[invalid=true]:border-red-500",
+            pressSoft.sm,
           )}
         >
           Escolher arquivo

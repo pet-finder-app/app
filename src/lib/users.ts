@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { createEmptyAdopterProfile, type AdopterProfile } from "./adopter";
 import {
   createEmptyOngProfile,
   type OngProfile,
@@ -31,6 +32,8 @@ export type StoredUser = {
   createdAt: string;
   /** Presente só quando `role === "ong"`. Ver `lib/ong.ts`. */
   ong?: OngProfile;
+  /** Presente só quando `role === "adopter"`. Ver `lib/adopter.ts`. */
+  adopter?: AdopterProfile;
 };
 
 /** O usuário como ele trafega para o front — nunca inclui a senha. */
@@ -108,7 +111,12 @@ export async function createUser(input: CreateUserInput): Promise<StoredUser> {
 
   const user: StoredUser =
     input.role === "adopter"
-      ? { ...base, role: "adopter", name: input.name.trim() }
+      ? {
+          ...base,
+          role: "adopter",
+          name: input.name.trim(),
+          adopter: createEmptyAdopterProfile(input.name.trim()),
+        }
       : {
           ...base,
           role: "ong",
@@ -137,6 +145,24 @@ export async function updateOngProfile(
     ...users[index],
     name: profile.legal.tradeName.trim() || users[index].name,
     ong: profile,
+  };
+  users[index] = updated;
+  await writeUsers(users);
+  return updated;
+}
+
+export async function updateAdopterProfile(
+  userId: string,
+  profile: AdopterProfile,
+): Promise<StoredUser | undefined> {
+  const users = await readUsers();
+  const index = users.findIndex((user) => user.id === userId);
+  if (index === -1 || users[index].role !== "adopter") return undefined;
+
+  const updated: StoredUser = {
+    ...users[index],
+    name: profile.personal.fullName.trim() || users[index].name,
+    adopter: profile,
   };
   users[index] = updated;
   await writeUsers(users);
