@@ -1,7 +1,7 @@
 "use client";
 
 import { ActionBar, cn, iconSize } from "@/components/ui";
-import { Heart, House, MessageCircle, User } from "lucide-react";
+import { Heart, House, MessageCircle, PawPrint, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,15 +15,16 @@ type Tab = {
 
 const TABS: Tab[] = [
   { href: "/ong/dashboard", label: "Início", icon: House },
-  { href: "/", label: "Perfil", icon: User },
   {
     href: "/ong/notificacoes",
     label: "Notificações",
     icon: Heart,
     hasFillWhenActive: true,
   },
+  { href: "/ong/pets", label: "Pets", icon: PawPrint },
   // Aba reservada: o chat com adotantes ainda não existe, só a navegação.
   { href: "/ong/mensagens", label: "Mensagens", icon: MessageCircle },
+  { href: "/", label: "Perfil", icon: User },
 ];
 
 type OngTabBarProps = {

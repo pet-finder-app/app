@@ -77,6 +77,7 @@ export async function createPet(ongId: string, input: PetInput): Promise<Pet> {
     ongId,
     status: "disponivel",
     archived: false,
+    views: 0,
     createdAt: now,
     updatedAt: now,
   };
@@ -103,6 +104,17 @@ export async function updatePet(
   pets[index] = updated;
   await writePets(pets);
   return updated;
+}
+
+/** Apaga o pet de vez. Retorna false se ele não existir ou não pertencer a essa ONG. */
+export async function deletePet(id: string, ongId: string): Promise<boolean> {
+  const pets = await readPets();
+  const index = pets.findIndex((p) => p.id === id && p.ongId === ongId);
+  if (index === -1) return false;
+
+  pets.splice(index, 1);
+  await writePets(pets);
+  return true;
 }
 
 /** Retorna undefined se o pet não existir ou não pertencer a essa ONG. */

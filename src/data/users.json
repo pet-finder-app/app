@@ -157,6 +157,7 @@
           "receitaStatus": "ativa",
           "legalName": "Associação Amigos de Quatro Patas",
           "tradeName": "Amigos de Quatro Patas",
+          "nickname": "AmigosQuatroPatas",
           "rg": "",
           "foundedAt": "2015-03-12",
           "address": {
@@ -291,6 +292,7 @@
           "receitaStatus": "nao_consultado",
           "legalName": "",
           "tradeName": "Resgates da Bia",
+          "nickname": "ResgatesDaBia",
           "rg": "",
           "foundedAt": "",
           "address": {

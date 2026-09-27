@@ -16,6 +16,8 @@ import {
   onlyDigits,
 } from "@/lib/br-documents";
 import {
+  isValidNickname,
+  normalizeNickname,
   ORGANIZATION_TYPE_KEYS,
   ORGANIZATION_TYPES,
   type OrganizationType,
@@ -30,6 +32,7 @@ type ErrorField =
   | "organizationType"
   | "name"
   | "document"
+  | "nickname"
   | "email"
   | "password"
   | "confirmPassword"
@@ -52,6 +55,7 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
     OrganizationType | ""
   >("");
   const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [document, setDocument] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -98,6 +102,12 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
         "document",
       );
     }
+    if (!isValidNickname(nickname)) {
+      return fail(
+        "O nome de usuário precisa ter de 3 a 24 letras, números ou _, sem espaços.",
+        "nickname",
+      );
+    }
     if (password !== confirmPassword) {
       return fail("As senhas não conferem.", "confirmPassword");
     }
@@ -118,6 +128,7 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
           role: "ong",
           organizationType,
           name,
+          nickname: normalizeNickname(nickname),
           document: onlyDigits(document),
           email,
           password,
@@ -187,6 +198,25 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
         value={name}
         onChange={(event) => setName(event.target.value)}
         invalid={errorField === "name"}
+        errorId={ERROR_ID}
+      />
+
+      <Input
+        tone="primary"
+        id="nickname"
+        label="Nome de usuário"
+        type="text"
+        autoComplete="off"
+        required
+        placeholder="AmigosQuatroPatas"
+        hint={
+          normalizeNickname(nickname)
+            ? `Seu perfil vai aparecer como @${normalizeNickname(nickname)}`
+            : "Só letras, números e _, sem espaços. É único — ninguém mais pode usar o mesmo."
+        }
+        value={nickname}
+        onChange={(event) => setNickname(event.target.value)}
+        invalid={errorField === "nickname"}
         errorId={ERROR_ID}
       />
 

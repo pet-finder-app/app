@@ -1,6 +1,8 @@
 import { isValidDocument, onlyDigits } from "@/lib/br-documents";
 import {
   isOrganizationType,
+  isValidNickname,
+  normalizeNickname,
   ORGANIZATION_TYPES,
   TERMS_VERSION,
 } from "@/lib/ong";
@@ -8,6 +10,7 @@ import type { AccountRole } from "@/lib/users";
 import {
   createUser,
   findOngByDocument,
+  findOngByNickname,
   findUserByEmail,
   SESSION_COOKIE,
   toPublicUser,
@@ -32,9 +35,10 @@ type RegisterBody = {
   name?: string;
   email?: string;
   password?: string;
-  /** ONG: tipo de organização, CPF/CNPJ (com ou sem máscara) e aceite. */
+  /** ONG: tipo de organização, CPF/CNPJ (com ou sem máscara), nickname e aceite. */
   organizationType?: string;
   document?: string;
+  nickname?: string;
   acceptedTerms?: boolean;
 };
 
@@ -110,6 +114,26 @@ export async function POST(request: Request) {
     );
   }
 
+  const nickname = normalizeNickname(body.nickname ?? "");
+
+  if (!isValidNickname(nickname)) {
+    return NextResponse.json(
+      {
+        message:
+          "O nome de usuário precisa ter de 3 a 24 letras, números ou _, sem espaços.",
+        field: "nickname",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (await findOngByNickname(nickname)) {
+    return NextResponse.json(
+      { message: "Esse nome de usuário já está em uso.", field: "nickname" },
+      { status: 409 },
+    );
+  }
+
   if (body.acceptedTerms !== true) {
     return NextResponse.json(
       {
@@ -128,6 +152,7 @@ export async function POST(request: Request) {
       organizationType: body.organizationType,
       document,
       tradeName: name,
+      nickname,
       terms: {
         version: TERMS_VERSION,
         acceptedAt: new Date().toISOString(),

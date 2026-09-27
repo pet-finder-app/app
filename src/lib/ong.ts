@@ -99,12 +99,29 @@ export type OngLegal = {
   legalName: string;
   /** Nome fantasia — como a ONG é conhecida. */
   tradeName: string;
+  /**
+   * Identificador único (estilo @usuario), sem o "@". Escolhido no cadastro
+   * e não pode repetir entre ONGs — ver `findOngByNickname` em `lib/users.ts`.
+   */
+  nickname: string;
   /** RG, só para pessoa física. */
   rg: string;
   /** ISO date (YYYY-MM-DD). */
   foundedAt: string;
   address: Address;
 };
+
+/** 3–24 caracteres, só letras, números e "_" — sem @ e sem espaço. */
+const NICKNAME_PATTERN = /^[a-zA-Z0-9_]{3,24}$/;
+
+/** Tira o "@" inicial (se a pessoa digitar) e os espaços nas pontas. */
+export function normalizeNickname(value: string): string {
+  return value.trim().replace(/^@+/, "");
+}
+
+export function isValidNickname(value: string): boolean {
+  return NICKNAME_PATTERN.test(normalizeNickname(value));
+}
 
 // ---------------------------------------------------------------------------
 // Arquivos: o front só guarda os metadados; o upload real fica para o backend.
@@ -290,6 +307,8 @@ export type OngSignupInput = {
   /** Só dígitos. */
   document: string;
   tradeName: string;
+  /** Sem o "@" — ver `normalizeNickname`. */
+  nickname: string;
   email: string;
   terms: TermsAcceptance;
 };
@@ -304,6 +323,7 @@ export function createEmptyOngProfile(input: OngSignupInput): OngProfile {
       receitaStatus: "nao_consultado",
       legalName: "",
       tradeName: input.tradeName,
+      nickname: normalizeNickname(input.nickname),
       rg: "",
       foundedAt: "",
       address: {

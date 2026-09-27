@@ -43,6 +43,17 @@ export async function countUnreadByOng(ongId: string): Promise<number> {
   return notifications.filter((n) => n.readAt === null).length;
 }
 
+/** Quantas notificações de um tipo (curtida/interesse) cada pet recebeu. */
+export function countNotificationsByPet(
+  notifications: Notification[],
+  type: Notification["type"],
+): Record<string, number> {
+  return notifications.reduce<Record<string, number>>((acc, n) => {
+    if (n.type === type) acc[n.petId] = (acc[n.petId] ?? 0) + 1;
+    return acc;
+  }, {});
+}
+
 export async function markAllReadByOng(ongId: string): Promise<void> {
   const notifications = await readNotifications();
   const now = new Date().toISOString();

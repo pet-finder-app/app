@@ -2,26 +2,33 @@
 
 import { cn, shadowSoft } from "@/components/ui";
 import type { Pet } from "@/lib/pet";
-import { Archive, MoreVertical, Pencil } from "lucide-react";
+import { Archive, MoreVertical, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-/** Menu de "..." no canto do card do pet: editar ou arquivar. */
+/** Menu de "..." no canto do card do pet: editar, arquivar ou excluir. */
 export function PetCardMenu({ pet }: { pet: Pet }) {
   const [open, setOpen] = useState(false);
   const [archiving, setArchiving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  function closeMenu() {
+    setOpen(false);
+    setConfirmingDelete(false);
+  }
 
   useEffect(() => {
     if (!open) return;
 
     function onPointerDown(event: PointerEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+      if (!rootRef.current?.contains(event.target as Node)) closeMenu();
     }
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") closeMenu();
     }
 
     document.addEventListener("pointerdown", onPointerDown);
@@ -39,6 +46,17 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ archived: true }),
     });
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    if (!confirmingDelete) {
+      setConfirmingDelete(true);
+      return;
+    }
+    setDeleting(true);
+    await fetch(`/api/ong/pets/${pet.id}`, { method: "DELETE" });
+    closeMenu();
     router.refresh();
   }
 
@@ -67,7 +85,7 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
             href={`/ong/pets/${pet.id}/editar`}
             role="menuitem"
             className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
-            onClick={() => setOpen(false)}
+            onClick={closeMenu}
           >
             <Pencil className="size-4" aria-hidden="true" />
             Editar
@@ -81,6 +99,23 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
           >
             <Archive className="size-4" aria-hidden="true" />
             {archiving ? "Arquivando…" : "Arquivar pet"}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={deleting}
+            onClick={handleDelete}
+            className={cn(
+              "flex items-center gap-2 border-t border-neutral-100 px-3 py-2 text-left text-sm hover:bg-red-50 disabled:opacity-60",
+              confirmingDelete ? "font-bold text-red-600" : "text-red-600",
+            )}
+          >
+            <Trash2 className="size-4" aria-hidden="true" />
+            {deleting
+              ? "Excluindo…"
+              : confirmingDelete
+                ? "Confirmar exclusão?"
+                : "Excluir pet"}
           </button>
         </div>
       ) : null}

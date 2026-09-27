@@ -1,7 +1,8 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "./cn";
 
-export type BadgeTone = "neutral" | "info" | "success" | "warning" | "danger";
+export type BadgeTone =
+  "neutral" | "info" | "success" | "warning" | "danger" | "outline";
 export type BadgeSize = "sm" | "md";
 
 const tones: Record<BadgeTone, string> = {
@@ -10,6 +11,8 @@ const tones: Record<BadgeTone, string> = {
   success: "bg-primary-soft text-green-900",
   warning: "bg-orange-300 text-neutral-900",
   danger: "bg-accent-peach text-neutral-900",
+  /** Tag neutra de metadado (espécie, raça, idade...) — não é status. */
+  outline: "border border-neutral-900 bg-white text-neutral-900",
 };
 
 const sizes: Record<BadgeSize, string> = {

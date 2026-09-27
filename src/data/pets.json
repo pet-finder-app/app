@@ -29,7 +29,8 @@
       "status": "disponivel",
       "createdAt": "2026-09-02T10:00:00.000Z",
       "updatedAt": "2026-09-26T22:58:26.190Z",
-      "archived": false
+      "archived": false,
+      "views": 97
     },
     {
       "id": "p2",
@@ -60,7 +61,8 @@
       "status": "adotado",
       "createdAt": "2026-09-10T15:30:00.000Z",
       "updatedAt": "2026-09-26T22:58:46.721Z",
-      "archived": false
+      "archived": false,
+      "views": 74
     },
     {
       "id": "p3",
@@ -91,7 +93,8 @@
       "status": "disponivel",
       "createdAt": "2026-09-25T11:00:00.000Z",
       "updatedAt": "2026-09-25T11:00:00.000Z",
-      "archived": false
+      "archived": false,
+      "views": 130
     },
     {
       "id": "p4",
@@ -122,7 +125,8 @@
       "status": "disponivel",
       "createdAt": "2026-09-25T11:10:00.000Z",
       "updatedAt": "2026-09-25T11:10:00.000Z",
-      "archived": false
+      "archived": false,
+      "views": 96
     },
     {
       "id": "p5",
@@ -153,7 +157,8 @@
       "status": "em_processo",
       "createdAt": "2026-09-25T11:20:00.000Z",
       "updatedAt": "2026-09-26T09:00:00.000Z",
-      "archived": false
+      "archived": false,
+      "views": 56
     },
     {
       "id": "p6",
@@ -184,7 +189,8 @@
       "status": "disponivel",
       "createdAt": "2026-09-25T11:30:00.000Z",
       "updatedAt": "2026-09-25T11:30:00.000Z",
-      "archived": false
+      "archived": false,
+      "views": 126
     },
     {
       "name": "Vivi",
@@ -215,7 +221,8 @@
       "status": "disponivel",
       "createdAt": "2026-09-26T22:15:02.537Z",
       "updatedAt": "2026-09-26T23:27:45.061Z",
-      "archived": true
+      "archived": true,
+      "views": 26
     }
   ]
 }

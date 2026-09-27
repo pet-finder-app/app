@@ -74,6 +74,8 @@ export type Pet = {
   status: PetStatus;
   /** Some da lista de publicados sem apagar o histórico do pet. */
   archived: boolean;
+  /** Só a ONG que publicou vê esse número — os adotantes só veem curtidas. */
+  views: number;
   /** ISO datetime. */
   createdAt: string;
   updatedAt: string;

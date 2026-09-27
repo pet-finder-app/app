@@ -88,6 +88,16 @@ export async function findOngByDocument(
   return users.find((user) => user.ong?.legal.document === document);
 }
 
+/** Já existe uma ONG com esse nickname? Comparação sem diferenciar maiúsculas. */
+export async function findOngByNickname(
+  nickname: string,
+): Promise<StoredUser | undefined> {
+  const users = await readUsers();
+  return users.find(
+    (user) => user.ong?.legal.nickname.toLowerCase() === nickname.toLowerCase(),
+  );
+}
+
 export type CreateUserInput =
   | { role: "adopter"; name: string; email: string; password: string }
   | {
