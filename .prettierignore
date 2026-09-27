@@ -1,0 +1,13 @@
+# Gerado automaticamente pelo pnpm — nunca fica "formatado" de verdade,
+# reescrever manualmente só quebra de novo no proximo install.
+pnpm-lock.yaml
+
+# Arquivos de config/infra do projeto, fora do escopo do UI System.
+.github/workflows/ci.yml
+eslint.config.mjs
+next.config.ts
+pnpm-workspace.yaml
+postcss.config.mjs
+prettier.config.mjs
+README.md
+tsconfig.json
