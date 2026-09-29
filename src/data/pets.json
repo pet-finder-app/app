@@ -1,0 +1,228 @@
+{
+  "pets": [
+    {
+      "id": "p1",
+      "ongId": "3",
+      "name": "Tirulipa",
+      "species": "cachorro",
+      "breed": "SRD",
+      "sex": "macho",
+      "size": "medio",
+      "ageGroup": "adulto",
+      "temperament": ["Brincalhão", "Dócil", "Bom com crianças"],
+      "health": {
+        "vaccinated": true,
+        "neutered": true,
+        "dewormed": true,
+        "specialNeeds": ""
+      },
+      "description": "Resgatado na Zona Sul, já castrado e com todas as vacinas em dia. Adora passear e é super sociável com outros cães.",
+      "photos": [
+        {
+          "name": "caramelo.jpg",
+          "size": 192087,
+          "mimeType": "image/jpeg",
+          "uploadedAt": "2026-09-26T18:04:00.000Z",
+          "url": "/pets/caramelo.jpg"
+        }
+      ],
+      "status": "disponivel",
+      "createdAt": "2026-09-02T10:00:00.000Z",
+      "updatedAt": "2026-09-26T22:58:26.190Z",
+      "archived": false,
+      "views": 97
+    },
+    {
+      "id": "p2",
+      "ongId": "3",
+      "name": "Mimi",
+      "species": "cachorro",
+      "breed": "SRD",
+      "sex": "femea",
+      "size": "pequeno",
+      "ageGroup": "filhote",
+      "temperament": ["Independente", "Curiosa"],
+      "health": {
+        "vaccinated": true,
+        "neutered": false,
+        "dewormed": true,
+        "specialNeeds": "Ainda é filhote, não pode ser castrada."
+      },
+      "description": "Filhote encontrada sozinha ainda pequena. Já está se adaptando bem a outros gatos e usa caixa de areia sem problemas.",
+      "photos": [
+        {
+          "name": "mimi.jpg",
+          "size": 104849,
+          "mimeType": "image/jpeg",
+          "uploadedAt": "2026-09-26T18:04:00.000Z",
+          "url": "/pets/mimi.jpg"
+        }
+      ],
+      "status": "adotado",
+      "createdAt": "2026-09-10T15:30:00.000Z",
+      "updatedAt": "2026-09-26T22:58:46.721Z",
+      "archived": false,
+      "views": 74
+    },
+    {
+      "id": "p3",
+      "ongId": "3",
+      "name": "Thor",
+      "species": "cachorro",
+      "breed": "SRD",
+      "sex": "macho",
+      "size": "medio",
+      "ageGroup": "adulto",
+      "temperament": ["Carinhoso", "Dócil", "Adora colo"],
+      "health": {
+        "vaccinated": true,
+        "neutered": true,
+        "dewormed": true,
+        "specialNeeds": ""
+      },
+      "description": "Resgatado das ruas, hoje é puro carinho: dá a pata, pede colo e não larga do lado de quem cuida dele.",
+      "photos": [
+        {
+          "name": "thor.jpg",
+          "size": 141760,
+          "mimeType": "image/jpeg",
+          "uploadedAt": "2026-09-25T11:00:00.000Z",
+          "url": "/pets/thor.jpg"
+        }
+      ],
+      "status": "disponivel",
+      "createdAt": "2026-09-25T11:00:00.000Z",
+      "updatedAt": "2026-09-25T11:00:00.000Z",
+      "archived": false,
+      "views": 130
+    },
+    {
+      "id": "p4",
+      "ongId": "3",
+      "name": "Nuvem",
+      "species": "gato",
+      "breed": "SRD (azul-russo)",
+      "sex": "femea",
+      "size": "pequeno",
+      "ageGroup": "filhote",
+      "temperament": ["Elegante", "Observadora", "Tranquila"],
+      "health": {
+        "vaccinated": true,
+        "neutered": false,
+        "dewormed": true,
+        "specialNeeds": "Ainda é filhote, não pode ser castrada."
+      },
+      "description": "Pelagem acinzentada macia e olhar atento. É tranquila, gosta de observar tudo de um cantinho alto antes de se aproximar.",
+      "photos": [
+        {
+          "name": "nuvem.jpg",
+          "size": 114655,
+          "mimeType": "image/jpeg",
+          "uploadedAt": "2026-09-25T11:10:00.000Z",
+          "url": "/pets/nuvem.jpg"
+        }
+      ],
+      "status": "disponivel",
+      "createdAt": "2026-09-25T11:10:00.000Z",
+      "updatedAt": "2026-09-25T11:10:00.000Z",
+      "archived": false,
+      "views": 96
+    },
+    {
+      "id": "p5",
+      "ongId": "3",
+      "name": "Tigresa",
+      "species": "gato",
+      "breed": "SRD (malhado)",
+      "sex": "femea",
+      "size": "medio",
+      "ageGroup": "adulto",
+      "temperament": ["Independente", "Calma", "Bem quieta"],
+      "health": {
+        "vaccinated": true,
+        "neutered": true,
+        "dewormed": true,
+        "specialNeeds": ""
+      },
+      "description": "Gata adulta de pelagem malhada, postura elegante e jeito discreto. Se dá bem sozinha, mas aceita carinho na hora certa.",
+      "photos": [
+        {
+          "name": "tigresa.jpg",
+          "size": 148919,
+          "mimeType": "image/jpeg",
+          "uploadedAt": "2026-09-25T11:20:00.000Z",
+          "url": "/pets/tigresa.jpg"
+        }
+      ],
+      "status": "em_processo",
+      "createdAt": "2026-09-25T11:20:00.000Z",
+      "updatedAt": "2026-09-26T09:00:00.000Z",
+      "archived": false,
+      "views": 56
+    },
+    {
+      "id": "p6",
+      "ongId": "3",
+      "name": "Amendoim",
+      "species": "gato",
+      "breed": "SRD (malhado)",
+      "sex": "macho",
+      "size": "pequeno",
+      "ageGroup": "adulto",
+      "temperament": ["Brincalhão", "Falante", "Bom com crianças"],
+      "health": {
+        "vaccinated": true,
+        "neutered": true,
+        "dewormed": true,
+        "specialNeeds": ""
+      },
+      "description": "Vira-lata caramelo dos gatos: sempre por perto, mia bastante para puxar assunto e adora subir no colo assim que alguém senta.",
+      "photos": [
+        {
+          "name": "amendoim.jpg",
+          "size": 90570,
+          "mimeType": "image/jpeg",
+          "uploadedAt": "2026-09-25T11:30:00.000Z",
+          "url": "/pets/amendoim.jpg"
+        }
+      ],
+      "status": "disponivel",
+      "createdAt": "2026-09-25T11:30:00.000Z",
+      "updatedAt": "2026-09-25T11:30:00.000Z",
+      "archived": false,
+      "views": 126
+    },
+    {
+      "name": "Vivi",
+      "species": "gato",
+      "breed": "SRD",
+      "sex": "femea",
+      "size": "pequeno",
+      "ageGroup": "adulto",
+      "temperament": ["Dócil", "brincalhona"],
+      "health": {
+        "vaccinated": true,
+        "neutered": true,
+        "dewormed": false,
+        "specialNeeds": ""
+      },
+      "description": "Gorda obesa mais fofa do mundo",
+      "photos": [
+        {
+          "name": "IMG_20250610_121302121.jpg",
+          "size": 2215164,
+          "mimeType": "image/jpeg",
+          "uploadedAt": "2026-09-26T22:14:52.512Z",
+          "url": null
+        }
+      ],
+      "id": "213adee4-2800-45d6-b4f3-bb6df962f852",
+      "ongId": "3",
+      "status": "disponivel",
+      "createdAt": "2026-09-26T22:15:02.537Z",
+      "updatedAt": "2026-09-26T23:27:45.061Z",
+      "archived": true,
+      "views": 26
+    }
+  ]
+}

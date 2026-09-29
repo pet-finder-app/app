@@ -3,13 +3,12 @@
 import { RoleSelect } from "@/components/role-select";
 import type { AccountRole } from "@/lib/users";
 import { useState } from "react";
+import { OngRegisterForm } from "./ong-register-form";
 import { RegisterForm } from "./register-form";
 
 /**
- * Primeiro passo do cadastro: escolher entre adotante e ONG. Hoje os dois
- * levam ao mesmo formulário (só o rótulo do nome muda) — quando o
- * formulário específico da ONG existir, é só trocar o que aparece aqui
- * quando `role === "ong"`.
+ * Primeiro passo do cadastro: escolher entre adotante e ONG. Cada papel
+ * tem seu formulário — o da ONG pede tipo de organização e CPF/CNPJ.
  */
 export function RegisterFlow() {
   const [role, setRole] = useState<AccountRole | null>(null);
@@ -18,5 +17,9 @@ export function RegisterFlow() {
     return <RoleSelect onSelect={setRole} />;
   }
 
-  return <RegisterForm role={role} onBack={() => setRole(null)} />;
+  if (role === "ong") {
+    return <OngRegisterForm onBack={() => setRole(null)} />;
+  }
+
+  return <RegisterForm onBack={() => setRole(null)} />;
 }

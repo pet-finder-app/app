@@ -1,7 +1,6 @@
 "use client";
 
-import { SubmitButton } from "@/components/submit-button";
-import { TextField } from "@/components/text-field";
+import { Button, FormError, Input } from "@/components/ui";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -43,7 +42,8 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <TextField
+      <Input
+        tone="primary"
         id="email"
         label="E-mail"
         type="email"
@@ -56,7 +56,8 @@ export function LoginForm() {
         errorId={ERROR_ID}
       />
 
-      <TextField
+      <Input
+        tone="primary"
         id="password"
         label="Senha"
         type="password"
@@ -69,21 +70,18 @@ export function LoginForm() {
         errorId={ERROR_ID}
       />
 
-      {/* Sempre montado: leitores de tela detectam a mudança de texto de
-          forma mais confiável do que a inserção tardia de um novo nó. */}
-      <p
-        id={ERROR_ID}
-        role="alert"
-        className="min-h-5 text-sm font-semibold text-red-400"
-      >
-        {error}
-      </p>
+      <FormError id={ERROR_ID}>{error}</FormError>
 
-      <SubmitButton
-        isSubmitting={isSubmitting}
-        label="ENTRAR"
+      <Button
+        type="submit"
+        variant="dark"
+        size="lg"
+        className="mt-3"
+        loading={isSubmitting}
         loadingLabel="ENTRANDO..."
-      />
+      >
+        ENTRAR
+      </Button>
     </form>
   );
 }

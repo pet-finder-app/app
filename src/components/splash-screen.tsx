@@ -1,36 +1,50 @@
 import { PawIcon } from "./paw-icon";
 import { PetfinderMark } from "./petfinder-mark";
 
-// As três paradas do trajeto — a lupa visita cada uma nessa ordem, como um
-// detetive seguindo rastros, até chegar ao centro da tela (onde a pegada
-// "sobe" para dentro da lente). As posições aqui precisam bater com os
+// As cinco paradas do trajeto — como o Mapa do Maroto, cada pegada "carimba"
+// o chão sozinha (o gato é invisível) e a lupa vai atrás, investigando uma
+// de cada vez, até chegar ao centro da tela (onde a última pegada "sobe"
+// para dentro da lente). As posições aqui precisam bater com os
 // deslocamentos usados em .splash-glass-chase, em globals.css.
 const TRAIL = [
   {
-    top: "68%",
-    left: "24%",
-    rotate: "-10deg",
+    top: "82%",
+    left: "12%",
+    rotate: "-14deg",
     pawClass: "splash-paw-1",
   },
   {
-    top: "56%",
-    left: "38%",
-    rotate: "6deg",
+    top: "74%",
+    left: "22%",
+    rotate: "10deg",
     pawClass: "splash-paw-2",
+  },
+  {
+    top: "64%",
+    left: "30%",
+    rotate: "-8deg",
+    pawClass: "splash-paw-3",
+  },
+  {
+    top: "56%",
+    left: "40%",
+    rotate: "6deg",
+    pawClass: "splash-paw-4",
   },
   {
     top: "50%",
     left: "50%",
     rotate: "0deg",
-    pawClass: "splash-paw-3",
+    pawClass: "splash-paw-5",
   },
 ];
 
 /**
- * Tela de carregamento exibida quando o app abre: a lupa "segue" três
- * pegadas pelo chão, como um detetive investigando rastros, até chegar à
- * última — onde a pegada some do chão e surge dentro da lente, formando a
- * marca completa.
+ * Tela de carregamento exibida quando o app abre: como no Mapa do Maroto,
+ * pegadas vão "carimbando" o chão sozinhas — um gato invisível passou por
+ * ali — e a lupa as segue devagar, uma de cada vez, como um detetive
+ * investigando rastros, até a última, onde a pegada some do chão e surge
+ * dentro da lente, formando a marca completa.
  *
  * Toda a animação é feita em CSS puro (classes `.splash-*` em globals.css)
  * para funcionar sem depender de JavaScript e para respeitar
@@ -41,7 +55,7 @@ export function SplashScreen() {
   return (
     <div
       role="status"
-      className="splash-overlay fixed inset-0 z-50 flex items-center justify-center bg-brand"
+      className="splash-overlay fixed inset-0 z-50 flex items-center justify-center bg-primary"
     >
       <span className="sr-only">Carregando Petfinder…</span>
 

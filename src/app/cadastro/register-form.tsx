@@ -1,8 +1,7 @@
 "use client";
 
-import { SubmitButton } from "@/components/submit-button";
-import { TextField } from "@/components/text-field";
-import type { AccountRole } from "@/lib/users";
+import { Button, FormError, iconSize, Input } from "@/components/ui";
+import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -11,21 +10,13 @@ const ERROR_ID = "register-error";
 /** Qual campo o erro atual se refere a, quando o backend informa um. */
 type ErrorField = "name" | "email" | "password" | "confirmPassword" | null;
 
-// O rótulo do nome muda conforme o tipo de conta; os demais campos, por
-// enquanto, são os mesmos para os dois — o formulário específico da ONG
-// (dados da instituição, etc.) ainda não existe.
-const NAME_FIELD_LABEL: Record<AccountRole, string> = {
-  adopter: "Nome",
-  ong: "Nome da ONG",
-};
-
 type RegisterFormProps = {
-  role: AccountRole;
   /** Volta para a etapa de escolha entre ONG e adotante. */
   onBack: () => void;
 };
 
-export function RegisterForm({ role, onBack }: RegisterFormProps) {
+/** Cadastro do adotante. O da ONG fica em ong-register-form.tsx. */
+export function RegisterForm({ onBack }: RegisterFormProps) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -52,7 +43,7 @@ export function RegisterForm({ role, onBack }: RegisterFormProps) {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role, name, email, password }),
+        body: JSON.stringify({ role: "adopter", name, email, password }),
       });
 
       const data = await response.json();
@@ -74,28 +65,32 @@ export function RegisterForm({ role, onBack }: RegisterFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <button
-        type="button"
+      <Button
+        variant="pill"
+        size="sm"
+        className="-mb-1 self-start"
         onClick={onBack}
-        className="-mb-1 self-start rounded-full bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
-        ‹ Trocar tipo de cadastro
-      </button>
+        <ChevronLeft className={iconSize.sm} aria-hidden="true" />
+        Trocar tipo de cadastro
+      </Button>
 
-      <TextField
+      <Input
+        tone="primary"
         id="name"
-        label={NAME_FIELD_LABEL[role]}
+        label="Nome"
         type="text"
-        autoComplete={role === "ong" ? "organization" : "name"}
+        autoComplete="name"
         required
-        placeholder={NAME_FIELD_LABEL[role]}
+        placeholder="Nome"
         value={name}
         onChange={(event) => setName(event.target.value)}
         invalid={errorField === "name"}
         errorId={ERROR_ID}
       />
 
-      <TextField
+      <Input
+        tone="primary"
         id="email"
         label="E-mail"
         type="email"
@@ -108,7 +103,8 @@ export function RegisterForm({ role, onBack }: RegisterFormProps) {
         errorId={ERROR_ID}
       />
 
-      <TextField
+      <Input
+        tone="primary"
         id="password"
         label="Senha"
         type="password"
@@ -123,7 +119,8 @@ export function RegisterForm({ role, onBack }: RegisterFormProps) {
         errorId={ERROR_ID}
       />
 
-      <TextField
+      <Input
+        tone="primary"
         id="confirmPassword"
         label="Confirmar senha"
         type="password"
@@ -136,21 +133,18 @@ export function RegisterForm({ role, onBack }: RegisterFormProps) {
         errorId={ERROR_ID}
       />
 
-      {/* Sempre montado: leitores de tela detectam a mudança de texto de
-          forma mais confiável do que a inserção tardia de um novo nó. */}
-      <p
-        id={ERROR_ID}
-        role="alert"
-        className="min-h-5 text-sm font-semibold text-red-400"
-      >
-        {error}
-      </p>
+      <FormError id={ERROR_ID}>{error}</FormError>
 
-      <SubmitButton
-        isSubmitting={isSubmitting}
-        label="CRIAR CONTA"
+      <Button
+        type="submit"
+        variant="secondary"
+        size="lg"
+        className="mt-3"
+        loading={isSubmitting}
         loadingLabel="CRIANDO..."
-      />
+      >
+        CRIAR CONTA
+      </Button>
     </form>
   );
 }

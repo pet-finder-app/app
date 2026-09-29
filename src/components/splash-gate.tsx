@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { SplashScreen } from "./splash-screen";
 
 // Precisam bater com os tempos definidos em globals.css (.splash-overlay).
-const FULL_DURATION_MS = 2970;
+const FULL_DURATION_MS = 5300;
 const REDUCED_MOTION_DURATION_MS = 550;
 
 type SplashGateProps = {

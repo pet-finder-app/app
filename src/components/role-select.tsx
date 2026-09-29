@@ -1,4 +1,6 @@
 import type { AccountRole } from "@/lib/users";
+import { cn } from "./ui/cn";
+import { pressSoft, shadowSoft } from "./ui/elevation";
 
 type RoleOption = {
   role: AccountRole;
@@ -27,7 +29,7 @@ type RoleSelectProps = {
 export function RoleSelect({ onSelect }: RoleSelectProps) {
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm font-semibold text-white">
+      <p className="text-sm font-semibold text-neutral-900">
         Como você quer se cadastrar?
       </p>
 
@@ -36,12 +38,16 @@ export function RoleSelect({ onSelect }: RoleSelectProps) {
           key={option.role}
           type="button"
           onClick={() => onSelect(option.role)}
-          className="flex flex-col gap-0.5 rounded-lg bg-white px-4 py-3.5 text-left transition-colors hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+          className={cn(
+            "flex flex-col gap-0.5 rounded-2xl border border-stone-300 bg-white px-4 py-3.5 text-left transition-colors hover:bg-primary-faint focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            shadowSoft.md,
+            pressSoft.md,
+          )}
         >
           <span className="text-sm font-bold text-neutral-900">
             {option.title}
           </span>
-          <span className="text-xs text-neutral-500">{option.description}</span>
+          <span className="text-xs text-neutral-600">{option.description}</span>
         </button>
       ))}
     </div>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!--
+    Textura decorativa de fundo: duas pegadas por quadro, em cantos opostos
+    e com rotações diferentes, para que o ladrilho repetido pareça um
+    espalhado orgânico em vez de uma grade óbvia. Cor fixa (não usa
+    currentColor — é referenciada via CSS background-image); a opacidade
+    fica a cargo de quem usa o arquivo.
+  -->
+  <g fill="#000000">
+    <g transform="translate(28,30) rotate(-14) scale(0.34) translate(-50,-50)">
+      <ellipse cx="50" cy="66" rx="19" ry="16" />
+      <ellipse cx="24" cy="42" rx="10" ry="13" transform="rotate(-18 24 42)" />
+      <ellipse cx="41" cy="28" rx="10" ry="13" transform="rotate(-6 41 28)" />
+      <ellipse cx="59" cy="28" rx="10" ry="13" transform="rotate(6 59 28)" />
+      <ellipse cx="76" cy="42" rx="10" ry="13" transform="rotate(18 76 42)" />
+    </g>
+    <g transform="translate(90,88) rotate(12) scale(0.34) translate(-50,-50)">
+      <ellipse cx="50" cy="66" rx="19" ry="16" />
+      <ellipse cx="24" cy="42" rx="10" ry="13" transform="rotate(-18 24 42)" />
+      <ellipse cx="41" cy="28" rx="10" ry="13" transform="rotate(-6 41 28)" />
+      <ellipse cx="59" cy="28" rx="10" ry="13" transform="rotate(6 59 28)" />
+      <ellipse cx="76" cy="42" rx="10" ry="13" transform="rotate(18 76 42)" />
+    </g>
+  </g>
+</svg>
