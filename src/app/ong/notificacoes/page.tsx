@@ -63,7 +63,7 @@ export default async function NotificationsPage() {
               >
                 <span
                   aria-hidden="true"
-                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-neutral-900"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-lime-800"
                 >
                   {initials(notification.adopterName)}
                 </span>

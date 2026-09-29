@@ -72,7 +72,7 @@ export function OngTabBar({
               {badge > 0 ? (
                 <span
                   aria-hidden="true"
-                  className="absolute top-0.5 right-2 flex size-4 items-center justify-center rounded-full border-2 border-white bg-red-500 text-[9px] font-bold text-white"
+                  className="absolute top-0.5 right-2 flex size-4 items-center justify-center rounded-full border-2 border-white bg-red-700 text-[9px] font-bold text-white"
                 >
                   {badge > 9 ? "9+" : badge}
                 </span>

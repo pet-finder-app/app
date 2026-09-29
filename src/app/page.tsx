@@ -124,7 +124,7 @@ export default async function App() {
                   className="object-cover"
                 />
               ) : (
-                <PawIcon className="size-8 text-neutral-900" />
+                <PawIcon className="size-8 text-lime-800" />
               )}
             </span>
             <div className="min-w-0 flex-1">

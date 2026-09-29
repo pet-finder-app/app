@@ -76,7 +76,7 @@ export default async function MessagesPage({
             aria-hidden="true"
             className="flex size-14 items-center justify-center rounded-full bg-primary-soft"
           >
-            <PawIcon className="size-7 text-neutral-900" />
+            <PawIcon className="size-7 text-lime-800" />
           </span>
           <CardTitle>Mensagens chegando em breve</CardTitle>
           <p className="text-sm text-neutral-600">

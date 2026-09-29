@@ -191,7 +191,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
                 className={cn(
                   "inline-flex min-h-7 items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                   sectionDone(key)
-                    ? "bg-primary-soft text-neutral-900"
+                    ? "bg-primary-soft text-lime-800"
                     : "bg-white text-neutral-900 hover:bg-primary-faint",
                   shadowSoft.sm,
                   pressSoft.sm,

@@ -7,8 +7,8 @@ export type BadgeSize = "sm" | "md";
 
 const tones: Record<BadgeTone, string> = {
   neutral: "bg-blue-400 text-neutral-900",
-  info: "bg-primary-faint text-neutral-900",
-  success: "bg-primary-soft text-neutral-900",
+  info: "bg-primary-faint text-lime-800",
+  success: "bg-primary-soft text-lime-800",
   warning: "bg-orange-300 text-neutral-900",
   danger: "bg-accent-peach text-neutral-900",
   /** Tag neutra de metadado (espécie, raça, idade...) — não é status. */

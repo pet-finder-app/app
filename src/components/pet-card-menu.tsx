@@ -107,7 +107,7 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
             onClick={handleDelete}
             className={cn(
               "flex items-center gap-2 border-t border-stone-300 px-3 py-2 text-left text-sm hover:bg-red-50 disabled:opacity-60",
-              confirmingDelete ? "font-bold text-red-500" : "text-red-500",
+              confirmingDelete ? "font-bold text-red-700" : "text-red-700",
             )}
           >
             <Trash2 className="size-4" aria-hidden="true" />

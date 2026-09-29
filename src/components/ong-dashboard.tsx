@@ -137,7 +137,7 @@ function StatCard({
 }) {
   const TrendIcon = trend.direction === "up" ? ArrowUpRight : ArrowDownRight;
   const trendColor =
-    trend.direction === "up" ? "text-neutral-900" : "text-red-500";
+    trend.direction === "up" ? "text-lime-800" : "text-red-700";
 
   return (
     <div
@@ -295,7 +295,7 @@ export function OngDashboard({
               </p>
               <p className="text-base font-bold text-neutral-900">
                 {currency.format(donationsTotal)}{" "}
-                <span className="text-xs font-semibold text-neutral-900">
+                <span className="text-xs font-semibold text-lime-800">
                   +{donationsByDate.length} doações
                 </span>
               </p>

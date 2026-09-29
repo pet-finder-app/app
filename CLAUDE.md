@@ -40,16 +40,22 @@ fica o resumo que qualquer sessão precisa ler primeiro.
   destaque. Nenhuma outra classe de cor do Tailwind. **Exceção:** cores de
   fundo (`bg-*`, pastéis dos tokens) continuam as de antes.
 
-  | Cor      | Primária      | Secundária    | Terciária   |
-  | -------- | ------------- | ------------- | ----------- |
-  | Verde    | `lime-600`    | `lime-300`    | —           |
-  | Amarelo  | `amber-400`   | `amber-200`   | —           |
-  | Vermelho | `red-500`     | `red-400`     | —           |
-  | Rosa     | `rose-500`    | `rose-400`    | —           |
-  | Azul     | `blue-600`    | `blue-400`    | —           |
-  | Roxo     | `violet-600`  | `violet-500`  | —           |
-  | Cinza    | `zinc-600`    | `gray-400`    | `stone-300` |
-  | Preto    | `neutral-900` | `neutral-600` | —           |
+  | Cor      | Primária      | Secundária    | Terciária   | Escura (só texto) |
+  | -------- | ------------- | ------------- | ----------- | ----------------- |
+  | Verde    | `lime-600`    | `lime-300`    | —           | `lime-800`        |
+  | Amarelo  | `amber-400`   | `amber-200`   | —           | —                 |
+  | Vermelho | `red-500`     | `red-400`     | —           | `red-700`         |
+  | Rosa     | `rose-500`    | `rose-400`    | —           | —                 |
+  | Azul     | `blue-600`    | `blue-400`    | —           | —                 |
+  | Roxo     | `violet-600`  | `violet-500`  | —           | —                 |
+  | Cinza    | `zinc-600`    | `gray-400`    | `stone-300` | —                 |
+  | Preto    | `neutral-900` | `neutral-600` | —           | —                 |
+
+  Verde e vermelho têm também uma cor **escura**, criada para acessibilidade:
+  use em **texto pequeno** sobre fundo claro/pastel e em fundo com texto
+  branco (as outras tonalidades não dão 4.5:1 de contraste nesses casos).
+  Texto verde = `text-lime-800`; texto vermelho e botão de perigo (fundo com
+  texto branco) = `red-700`.
 
 - **Tokens** em `src/app/globals.css`: `primary` (lime-600), `primary-hover`,
   `primary-soft`, `primary-faint`, `accent-yellow`, `accent-peach`, `line`

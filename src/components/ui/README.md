@@ -42,16 +42,22 @@ import { cn } from "@/components/ui";
 ação, destaque e estado importante. Secundária (e terciária) = versão sem
 muito destaque: fundos, detalhes, informação de apoio.
 
-| Cor | Primária | Secundária | Terciária |
-| --- | --- | --- | --- |
-| Verde | `lime-600` | `lime-300` | — |
-| Amarelo | `amber-400` | `amber-200` | — |
-| Vermelho | `red-500` | `red-400` | — |
-| Rosa | `rose-500` | `rose-400` | — |
-| Azul | `blue-600` | `blue-400` | — |
-| Roxo | `violet-600` | `violet-500` | — |
-| Cinza | `zinc-600` | `gray-400` | `stone-300` |
-| Preto | `neutral-900` | `neutral-600` | — |
+| Cor | Primária | Secundária | Terciária | Escura (só texto) |
+| --- | --- | --- | --- | --- |
+| Verde | `lime-600` | `lime-300` | — | `lime-800` |
+| Amarelo | `amber-400` | `amber-200` | — | — |
+| Vermelho | `red-500` | `red-400` | — | `red-700` |
+| Rosa | `rose-500` | `rose-400` | — | — |
+| Azul | `blue-600` | `blue-400` | — | — |
+| Roxo | `violet-600` | `violet-500` | — | — |
+| Cinza | `zinc-600` | `gray-400` | `stone-300` | — |
+| Preto | `neutral-900` | `neutral-600` | — | — |
+
+Verde e vermelho têm também uma cor **escura**, criada para acessibilidade:
+use em **texto pequeno** sobre fundo claro/pastel e em fundo com texto
+branco (as outras tonalidades não dão 4.5:1 de contraste nesses casos).
+Texto verde = `text-lime-800`; texto vermelho e botão de perigo (fundo com
+texto branco) = `red-700`.
 
 Qualquer outra classe de cor do Tailwind (ex.: `green-500`, `neutral-200`,
 `sky-400`) está fora da paleta. Os tokens de `globals.css` devem apontar
@@ -96,7 +102,7 @@ Campos, checkbox e links aceitam `tone="primary" | "light"`:
 ## Componentes
 
 | Componente                             | Para quê                                                                                                                                                                                    |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | `Button`                               | `variant`: primary, secondary (amarelo pastel), outline, pill (voltar/trocar etapa, igual ao selo), danger. `size`: sm, md, lg (lg = largura total). `loading` + `loadingLabel` para envio. |
 | `LinkButton`                           | Mesmo visual do `Button`, mas é um `<Link>`.                                                                                                                                                |
 | `TextLink`                             | Link inline sublinhado.                                                                                                                                                                     |
@@ -173,10 +179,9 @@ import { ChevronLeft } from "lucide-react";
   `aria-invalid` + `FormError` (`role="alert"`, sempre montado).
 - Alvos de toque com no mínimo 24px (`Button` sm = 28px, md = 44px, checkbox = 24px).
 - Foco visível em tudo que é interativo (`focus-visible:ring-2`).
-- Contraste mínimo 4.5:1: texto `neutral-900` sobre branco, pastel ou verde;
-  `neutral-600` para texto de apoio. Verdes, vermelhos e azuis da paleta não
-  têm 4.5:1 sobre branco em texto pequeno: use-os em ícone, borda, texto
-  grande/negrito ou fundo, e o texto em `neutral-900`. Nunca texto branco sobre o verde primário.
+- Contraste mínimo 4.5:1: texto `neutral-900` sobre branco, pastel ou verde (verde e vermelho em texto pequeno: use `lime-800`/`red-700`);
+  `neutral-600` para texto de apoio. as cores primárias/secundárias de verde e vermelho não têm 4.5:1
+  em texto pequeno: use `lime-800`/`red-700` (ver paleta). Nunca texto branco sobre o verde primário.
 - Ícones decorativos com `aria-hidden`; estado transmitido também em texto
   (ex.: "(concluída)" em `sr-only`), nunca só por cor.
 - Botões de ícone ou repetidos ("Remover") recebem `aria-label` específico.

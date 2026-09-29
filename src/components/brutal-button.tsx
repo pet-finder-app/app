@@ -23,8 +23,8 @@ const variants: Record<BrutalButtonVariant, string> = {
     "bg-accent-yellow text-neutral-900 hover:brightness-95 active:brightness-90 focus-visible:ring-amber-200",
   outline:
     "bg-white text-neutral-900 hover:bg-neutral-50 focus-visible:ring-stone-300",
-  pill: "rounded-full bg-primary-soft text-neutral-900 hover:bg-primary-faint focus-visible:ring-primary",
-  danger: "bg-red-500 text-white hover:bg-red-400 focus-visible:ring-red-400",
+  pill: "rounded-full bg-primary-soft text-lime-800 hover:bg-primary-faint focus-visible:ring-primary",
+  danger: "bg-red-700 text-white hover:bg-red-600 focus-visible:ring-red-400",
   dark: "bg-neutral-900 text-white hover:bg-neutral-800 focus-visible:ring-gray-400",
 };
 

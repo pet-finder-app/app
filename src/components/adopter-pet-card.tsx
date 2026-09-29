@@ -148,7 +148,7 @@ export function AdopterPetCard({
       </div>
 
       {hasInterest ? (
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-neutral-900">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-lime-800">
           <MessageCircleHeart className="size-4" aria-hidden="true" />
           Você já demonstrou interesse nesse pet.
         </p>
@@ -167,7 +167,7 @@ export function AdopterPetCard({
             <p
               id={errorId}
               role="alert"
-              className="text-xs font-semibold text-red-500"
+              className="text-xs font-semibold text-red-700"
             >
               {error}
             </p>
