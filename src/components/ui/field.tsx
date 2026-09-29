@@ -15,13 +15,13 @@ export type FieldTone = "primary" | "light" | "brutal";
 
 export const fieldLabelClass: Record<FieldTone, string> = {
   primary: "text-sm font-semibold text-neutral-900",
-  light: "text-sm font-semibold text-neutral-800",
+  light: "text-sm font-semibold text-neutral-900",
   brutal: "text-sm font-bold text-neutral-900",
 };
 
 export const fieldHintClass: Record<FieldTone, string> = {
-  primary: "text-xs text-neutral-800",
-  light: "text-xs text-neutral-500",
+  primary: "text-xs text-neutral-900",
+  light: "text-xs text-neutral-600",
   brutal: "text-xs text-neutral-600",
 };
 
@@ -31,11 +31,11 @@ export const fieldHintClass: Record<FieldTone, string> = {
  * "afundar" — só cor e leve profundidade.
  */
 const fieldControlBase =
-  "w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-900 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors placeholder:text-neutral-500 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-200 disabled:opacity-60";
+  "w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-neutral-900 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors placeholder:text-neutral-600 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-400 disabled:opacity-60";
 
 /** Mesma base, mas com a borda grossa `neutral-900` e sem sombra. */
 const fieldControlBrutal =
-  "w-full rounded-xl border border-neutral-900 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-500 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-200 disabled:opacity-60";
+  "w-full rounded-xl border border-neutral-900 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-600 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-400 disabled:opacity-60";
 
 export const fieldControlClass: Record<FieldTone, string> = {
   primary: fieldControlBase,

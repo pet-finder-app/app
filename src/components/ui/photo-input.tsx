@@ -14,16 +14,16 @@ import {
 import { formatSize } from "./file-input";
 
 const listItemClass: Record<FieldTone, string> = {
-  primary: cn("rounded-2xl border border-neutral-200 bg-white", shadowSoft.sm),
-  light: cn("rounded-2xl border border-neutral-200 bg-white", shadowSoft.sm),
+  primary: cn("rounded-2xl border border-stone-300 bg-white", shadowSoft.sm),
+  light: cn("rounded-2xl border border-stone-300 bg-white", shadowSoft.sm),
   brutal: "rounded-xl border border-neutral-900 bg-white",
 };
 
 const dropzoneClass: Record<FieldTone, string> = {
   primary:
-    "rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 hover:bg-primary-faint",
+    "rounded-2xl border border-dashed border-stone-300 bg-neutral-50 hover:bg-primary-faint",
   light:
-    "rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 hover:bg-primary-faint",
+    "rounded-2xl border border-dashed border-stone-300 bg-neutral-50 hover:bg-primary-faint",
   brutal:
     "rounded-xl border border-dashed border-neutral-900 bg-white hover:bg-neutral-50",
 };
@@ -93,7 +93,7 @@ export function PhotoInput({
             >
               <span className="min-w-0 truncate text-neutral-900">
                 {photo.name}{" "}
-                <span className="text-neutral-500">
+                <span className="text-neutral-600">
                   ({formatSize(photo.size)})
                 </span>
               </span>
@@ -116,7 +116,7 @@ export function PhotoInput({
           htmlFor={id}
           aria-invalid={invalid || undefined}
           className={cn(
-            "flex cursor-pointer items-center justify-center px-4 py-3 text-sm font-semibold text-neutral-700 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary aria-[invalid=true]:border-red-500",
+            "flex cursor-pointer items-center justify-center px-4 py-3 text-sm font-semibold text-neutral-900 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary aria-[invalid=true]:border-red-500",
             dropzoneClass[tone],
             pressSoft.sm,
           )}

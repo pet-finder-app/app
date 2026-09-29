@@ -51,7 +51,7 @@ export default async function MessagesPage({
               {interested.map((n) => (
                 <li
                   key={n.id}
-                  className="rounded-2xl border border-neutral-200 p-3"
+                  className="rounded-2xl border border-stone-300 p-3"
                 >
                   <p className="font-bold text-neutral-900">{n.adopterName}</p>
                   {n.message ? (
@@ -65,7 +65,7 @@ export default async function MessagesPage({
               Ninguém demonstrou interesse em adotar {pet.name} ainda.
             </p>
           )}
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-600">
             O chat ainda não existe — por enquanto, use o contato do seu perfil
             (WhatsApp, telefone ou e-mail) para responder.
           </p>
@@ -76,7 +76,7 @@ export default async function MessagesPage({
             aria-hidden="true"
             className="flex size-14 items-center justify-center rounded-full bg-primary-soft"
           >
-            <PawIcon className="size-7 text-green-900" />
+            <PawIcon className="size-7 text-neutral-900" />
           </span>
           <CardTitle>Mensagens chegando em breve</CardTitle>
           <p className="text-sm text-neutral-600">

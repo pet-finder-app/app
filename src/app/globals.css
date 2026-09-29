@@ -9,9 +9,9 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   /* Tokens do UI System — ver components/ui/README.md.
-     Primária: green-500 do Tailwind. */
-  --color-primary: #22c55e;
-  --color-primary-hover: #16a34a;
+     Primária: lime-600 (paleta do projeto — ver README). */
+  --color-primary: #65a30d;
+  --color-primary-hover: color-mix(in oklab, #65a30d 80%, #171717);
   --color-primary-foreground: #171717;
   --color-primary-soft: #dcfce7;
   /* Hover de superfícies brancas: verde pastel bem claro */
@@ -20,7 +20,7 @@
   --color-accent-yellow: #fdecc8;
   --color-accent-peach: #fde1d3;
   /* Divisor sutil entre superfícies (cartões flutuam por sombra, não por borda) */
-  --color-line: #e5e7eb;
+  --color-line: #d6d3d1;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   /* Só a marca "PETFINDER." usa isto — ver components/auth-layout.tsx. */

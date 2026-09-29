@@ -68,7 +68,7 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen((v) => !v)}
-        className="flex size-9 items-center justify-center rounded-full text-neutral-700 hover:bg-white/50"
+        className="flex size-9 items-center justify-center rounded-full text-neutral-900 hover:bg-white/50"
       >
         <MoreVertical className="size-5" aria-hidden="true" />
       </button>
@@ -84,7 +84,7 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
           <Link
             href={`/ong/pets/${pet.id}/editar`}
             role="menuitem"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+            className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-900 hover:bg-neutral-50"
             onClick={closeMenu}
           >
             <Pencil className="size-4" aria-hidden="true" />
@@ -95,7 +95,7 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
             role="menuitem"
             disabled={archiving}
             onClick={handleArchive}
-            className="flex items-center gap-2 px-3 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-50 disabled:opacity-60"
+            className="flex items-center gap-2 px-3 py-2 text-left text-sm text-neutral-900 hover:bg-neutral-50 disabled:opacity-60"
           >
             <Archive className="size-4" aria-hidden="true" />
             {archiving ? "Arquivando…" : "Arquivar pet"}
@@ -106,8 +106,8 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
             disabled={deleting}
             onClick={handleDelete}
             className={cn(
-              "flex items-center gap-2 border-t border-neutral-100 px-3 py-2 text-left text-sm hover:bg-red-50 disabled:opacity-60",
-              confirmingDelete ? "font-bold text-red-600" : "text-red-600",
+              "flex items-center gap-2 border-t border-stone-300 px-3 py-2 text-left text-sm hover:bg-red-50 disabled:opacity-60",
+              confirmingDelete ? "font-bold text-red-500" : "text-red-500",
             )}
           >
             <Trash2 className="size-4" aria-hidden="true" />

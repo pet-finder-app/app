@@ -53,7 +53,7 @@ export default function TermsPage() {
     <PageShell width="lg">
       <Card as="article" className="gap-6 sm:p-10">
         <header className="flex flex-col gap-2">
-          <p className="text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+          <p className="text-xs font-semibold tracking-wide text-neutral-600 uppercase">
             Rascunho · versão {TERMS_VERSION}
           </p>
           <h1 className="text-2xl font-bold text-neutral-900">
@@ -73,7 +73,7 @@ export default function TermsPage() {
             {section.paragraphs.map((paragraph, index) => (
               <p
                 key={index}
-                className="text-sm leading-relaxed text-neutral-700"
+                className="text-sm leading-relaxed text-neutral-900"
               >
                 {paragraph}
               </p>
@@ -81,7 +81,7 @@ export default function TermsPage() {
           </section>
         ))}
 
-        <footer className="border-t border-neutral-200 pt-4 text-sm">
+        <footer className="border-t border-stone-300 pt-4 text-sm">
           <LinkButton href="/cadastro" variant="pill" size="sm">
             <ChevronLeft className={iconSize.sm} aria-hidden="true" />
             Voltar ao cadastro

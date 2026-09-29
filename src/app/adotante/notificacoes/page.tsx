@@ -51,11 +51,11 @@ export default async function AdopterNotificationsPage() {
                 <span className="font-bold">{notification.petName}</span>
               </p>
               {notification.message ? (
-                <p className="text-sm text-neutral-700 italic">
+                <p className="text-sm text-neutral-900 italic">
                   &ldquo;{notification.message}&rdquo;
                 </p>
               ) : null}
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-600">
                 {new Date(notification.createdAt).toLocaleString("pt-BR")}
               </p>
             </li>

@@ -118,7 +118,7 @@ export function AdopterPetCard({
 
         <div className="min-w-0 flex-1">
           <p className="truncate font-bold text-neutral-900">{pet.name}</p>
-          <p className="truncate text-xs text-neutral-700">
+          <p className="truncate text-xs text-neutral-900">
             {PET_SPECIES_LABEL[pet.species]}
             {pet.breed ? ` · ${pet.breed}` : ""}
           </p>
@@ -137,7 +137,7 @@ export function AdopterPetCard({
           disabled={isToggling}
           aria-pressed={isLiked}
           aria-label={isLiked ? `Descurtir ${pet.name}` : `Curtir ${pet.name}`}
-          className="flex shrink-0 items-center justify-center rounded-full p-2.5 text-neutral-700 hover:bg-white/50 disabled:opacity-60"
+          className="flex shrink-0 items-center justify-center rounded-full p-2.5 text-neutral-900 hover:bg-white/50 disabled:opacity-60"
         >
           <Heart
             className="size-5"
@@ -148,7 +148,7 @@ export function AdopterPetCard({
       </div>
 
       {hasInterest ? (
-        <p className="flex items-center gap-1.5 text-xs font-semibold text-green-900">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-neutral-900">
           <MessageCircleHeart className="size-4" aria-hidden="true" />
           Você já demonstrou interesse nesse pet.
         </p>
@@ -167,7 +167,7 @@ export function AdopterPetCard({
             <p
               id={errorId}
               role="alert"
-              className="text-xs font-semibold text-red-700"
+              className="text-xs font-semibold text-red-500"
             >
               {error}
             </p>

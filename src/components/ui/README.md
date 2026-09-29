@@ -24,7 +24,7 @@ deslocamento.
   (`rounded-none`).
 - Borda: a maioria das superfícies não tem borda (a sombra já contorna).
   Quando precisar de uma (campo, item de lista sobre fundo branco), é
-  sempre fina — `border border-neutral-200` — nunca `border-2`.
+  sempre fina — `border border-stone-300` — nunca `border-2`.
 - Nunca use `backdrop-blur`.
 - Novo componente? Reaproveite `shadowSoft`/`pressSoft` em vez de
   escrever uma sombra solta.
@@ -36,18 +36,45 @@ import { cn } from "@/components/ui";
 <div className={cn("rounded-3xl bg-white p-4", shadowSoft.lg)}>...</div>;
 ```
 
+## Paleta de cores (obrigatória)
+
+**Só estas cores podem ser usadas no projeto.** Primária = cor viva, para
+ação, destaque e estado importante. Secundária (e terciária) = versão sem
+muito destaque: fundos, detalhes, informação de apoio.
+
+| Cor | Primária | Secundária | Terciária |
+| --- | --- | --- | --- |
+| Verde | `lime-600` | `lime-300` | — |
+| Amarelo | `amber-400` | `amber-200` | — |
+| Vermelho | `red-500` | `red-400` | — |
+| Rosa | `rose-500` | `rose-400` | — |
+| Azul | `blue-600` | `blue-400` | — |
+| Roxo | `violet-600` | `violet-500` | — |
+| Cinza | `zinc-600` | `gray-400` | `stone-300` |
+| Preto | `neutral-900` | `neutral-600` | — |
+
+Qualquer outra classe de cor do Tailwind (ex.: `green-500`, `neutral-200`,
+`sky-400`) está fora da paleta. Os tokens de `globals.css` devem apontar
+para cores desta tabela.
+
+**Exceção — fundos:** cores de fundo (`bg-*`: `bg-white`, `bg-neutral-50`,
+`bg-neutral-100`, os pastéis `primary-soft`, `primary-faint`,
+`accent-yellow`, `accent-peach`, `bg-green-300` do login etc.) continuam
+as mesmas de antes. A paleta vale para texto, ícone, borda, anel/foco,
+gráfico e para o verde da marca (`primary`).
+
 ## Tokens (globals.css)
 
 | Token                | Valor                   | Uso                                                 |
 | -------------------- | ----------------------- | --------------------------------------------------- |
-| `primary`            | green-500 (`#22c55e`)   | Botão principal, foco, progresso, destaques         |
-| `primary-hover`      | green-600 (`#16a34a`)   | Hover do primário                                   |
+| `primary`            | lime-600 (`#65a30d`)    | Botão principal, foco, progresso, destaques         |
+| `primary-hover`      | lime-600 escurecido     | Hover do primário e ícone ativo da navegação        |
 | `primary-foreground` | neutral-900             | Texto sobre o primário                              |
 | `primary-soft`       | green-100               | Fundo suave de itens ativos/selecionados            |
 | `primary-faint`      | green-50                | Hover de superfícies brancas, selos informativos    |
 | `accent-yellow`      | `#fdecc8`               | Pastel: botão secundário, caixas de informação      |
 | `accent-peach`       | `#fde1d3`               | Pastel: avisos e selos de perigo                    |
-| `line`               | `#e5e7eb` (neutral-200) | Divisor sutil (`border-y`, `border-t` entre seções) |
+| `line`               | `#d6d3d1` (stone-300)   | Divisor sutil (`border-y`, `border-t` entre seções) |
 
 ## Estilo
 
@@ -146,8 +173,10 @@ import { ChevronLeft } from "lucide-react";
   `aria-invalid` + `FormError` (`role="alert"`, sempre montado).
 - Alvos de toque com no mínimo 24px (`Button` sm = 28px, md = 44px, checkbox = 24px).
 - Foco visível em tudo que é interativo (`focus-visible:ring-2`).
-- Contraste mínimo 4.5:1: texto `neutral-800`/`900` sobre branco, pastel ou verde;
-  `neutral-500` só em dicas sobre branco. Nunca texto branco sobre o verde primário.
+- Contraste mínimo 4.5:1: texto `neutral-900` sobre branco, pastel ou verde;
+  `neutral-600` para texto de apoio. Verdes, vermelhos e azuis da paleta não
+  têm 4.5:1 sobre branco em texto pequeno: use-os em ícone, borda, texto
+  grande/negrito ou fundo, e o texto em `neutral-900`. Nunca texto branco sobre o verde primário.
 - Ícones decorativos com `aria-hidden`; estado transmitido também em texto
   (ex.: "(concluída)" em `sr-only`), nunca só por cor.
 - Botões de ícone ou repetidos ("Remover") recebem `aria-label` específico.

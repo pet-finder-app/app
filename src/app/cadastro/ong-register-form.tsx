@@ -323,7 +323,7 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
         CRIAR CONTA
       </Button>
 
-      <p className="text-center text-xs text-neutral-800">
+      <p className="text-center text-xs text-neutral-900">
         Documentos e dados da sede só são pedidos quando você for publicar o
         primeiro pet.
       </p>

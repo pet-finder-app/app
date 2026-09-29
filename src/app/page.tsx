@@ -124,7 +124,7 @@ export default async function App() {
                   className="object-cover"
                 />
               ) : (
-                <PawIcon className="size-8 text-green-900" />
+                <PawIcon className="size-8 text-neutral-900" />
               )}
             </span>
             <div className="min-w-0 flex-1">
@@ -143,7 +143,7 @@ export default async function App() {
 
           {status !== "verificada" ? (
             <div className="flex flex-col gap-1.5">
-              <p className="text-sm text-neutral-700">
+              <p className="text-sm text-neutral-900">
                 {status === "em_analise"
                   ? "Estamos conferindo seu perfil. Avisamos por e-mail quando terminar."
                   : "Complete seu perfil para passar mais confiança às ONGs na hora de adotar."}
@@ -176,7 +176,7 @@ export default async function App() {
         </Card>
 
         <div>
-          <div className="mb-2 flex items-center gap-2 text-neutral-500">
+          <div className="mb-2 flex items-center gap-2 text-neutral-600">
             <PawIcon className={iconSize.md} aria-hidden="true" />
             <span className="text-xs font-bold tracking-wide uppercase">
               Pets para adoção

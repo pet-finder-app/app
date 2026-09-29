@@ -35,9 +35,25 @@ fica o resumo que qualquer sessão precisa ler primeiro.
 
 - **Não crie componentes novos** nem escreva classes de cor soltas nas telas.
   Falta uma variação? Adicione uma `variant`/`tone` ao componente existente.
-- **Tokens** em `src/app/globals.css`: `primary` (green-500), `primary-hover`,
+- **Paleta fechada (obrigatória):** só estas cores no projeto. Primária
+  quando precisar de cor viva/destacada; secundária para o que tem pouco
+  destaque. Nenhuma outra classe de cor do Tailwind. **Exceção:** cores de
+  fundo (`bg-*`, pastéis dos tokens) continuam as de antes.
+
+  | Cor      | Primária      | Secundária    | Terciária   |
+  | -------- | ------------- | ------------- | ----------- |
+  | Verde    | `lime-600`    | `lime-300`    | —           |
+  | Amarelo  | `amber-400`   | `amber-200`   | —           |
+  | Vermelho | `red-500`     | `red-400`     | —           |
+  | Rosa     | `rose-500`    | `rose-400`    | —           |
+  | Azul     | `blue-600`    | `blue-400`    | —           |
+  | Roxo     | `violet-600`  | `violet-500`  | —           |
+  | Cinza    | `zinc-600`    | `gray-400`    | `stone-300` |
+  | Preto    | `neutral-900` | `neutral-600` | —           |
+
+- **Tokens** em `src/app/globals.css`: `primary` (lime-600), `primary-hover`,
   `primary-soft`, `primary-faint`, `accent-yellow`, `accent-peach`, `line`
-  (cinza claro, só para divisores sutis). Use `bg-primary` etc. Nunca
+  (stone-300, só para divisores sutis). Use `bg-primary` etc. Nunca
   hexadecimal direto.
 - **Estilo: soft UI.** Cantos bem arredondados, sombra suave e difusa em
   vez de borda grossa — sempre `shadowSoft.sm|md|lg|xl` de
@@ -45,7 +61,7 @@ fica o resumo que qualquer sessão precisa ler primeiro.
   soltos. Elementos clicáveis usam `pressSoft` do mesmo tamanho (encolhe
   levemente ao clicar, sem deslocar). A maioria das superfícies não tem
   borda — a sombra já contorna; quando precisar de uma (campo, item sobre
-  fundo branco), é fina (`border border-neutral-200`), nunca `border-2`.
+  fundo branco), é fina (`border border-stone-300`), nunca `border-2`.
   Cores pastel. Cantos: `rounded-full` em pílulas/selos/avatares,
   `rounded-2xl` em botões/campos/itens de lista, `rounded-3xl` em cartões.
   Nunca `backdrop-blur`.

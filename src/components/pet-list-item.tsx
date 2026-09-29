@@ -65,14 +65,14 @@ export function PetListItem({
 
       <div className="min-w-0 flex-1">
         <p className="truncate font-bold text-neutral-900">{pet.name}</p>
-        <p className="truncate text-xs text-neutral-700">
+        <p className="truncate text-xs text-neutral-900">
           {PET_SPECIES_LABEL[pet.species]}
           {pet.breed ? ` · ${pet.breed}` : ""}
         </p>
-        <p className="truncate text-xs text-neutral-500">
+        <p className="truncate text-xs text-neutral-600">
           {PET_SEX_LABEL[pet.sex]} · {PET_AGE_GROUP_LABEL[pet.ageGroup]}
         </p>
-        <p className="flex items-center gap-1 truncate text-xs text-neutral-500">
+        <p className="flex items-center gap-1 truncate text-xs text-neutral-600">
           <Eye className="size-3.5 shrink-0" aria-hidden="true" />
           {pet.views} visualizações
         </p>
@@ -89,7 +89,7 @@ export function PetListItem({
       </div>
 
       <div className="flex shrink-0 items-center gap-1">
-        <span className="relative flex size-9 items-center justify-center text-neutral-700">
+        <span className="relative flex size-9 items-center justify-center text-neutral-900">
           <Heart className="size-5" aria-hidden="true" />
           {likesCount > 0 ? (
             <span
@@ -104,7 +104,7 @@ export function PetListItem({
 
         <Link
           href={`/ong/mensagens?pet=${pet.id}`}
-          className="relative flex size-9 items-center justify-center rounded-full text-neutral-700 hover:bg-white/50"
+          className="relative flex size-9 items-center justify-center rounded-full text-neutral-900 hover:bg-white/50"
         >
           <MessageCircle className="size-5" aria-hidden="true" />
           {interestedCount > 0 ? (

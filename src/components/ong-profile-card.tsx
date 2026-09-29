@@ -12,7 +12,7 @@ function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex min-w-0 flex-col items-center gap-0.5">
       <span className="text-sm font-bold text-neutral-900">{value}</span>
-      <span className="w-full truncate text-center text-[11px] leading-tight text-neutral-500">
+      <span className="w-full truncate text-center text-[11px] leading-tight text-neutral-600">
         {label}
       </span>
     </div>
@@ -52,7 +52,7 @@ export function OngProfileCard({ ong, pets, children }: OngProfileCardProps) {
               className="object-cover"
             />
           ) : (
-            <PawIcon className="size-8 text-green-900" />
+            <PawIcon className="size-8 text-neutral-900" />
           )}
         </span>
         <div className="min-w-0 flex-1">
@@ -70,7 +70,7 @@ export function OngProfileCard({ ong, pets, children }: OngProfileCardProps) {
         </div>
       </div>
 
-      <p className="text-sm text-neutral-700">
+      <p className="text-sm text-neutral-900">
         {ong.publicProfile.description || "Adicione uma descrição da sua ONG."}
       </p>
 

@@ -36,5 +36,5 @@ export function CardDescription({
   className,
   ...props
 }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-xs text-neutral-500", className)} {...props} />;
+  return <p className={cn("text-xs text-neutral-600", className)} {...props} />;
 }

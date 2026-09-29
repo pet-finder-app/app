@@ -61,7 +61,7 @@ export function OngTabBar({
                 "relative flex min-h-11 min-w-14 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1.5 text-[10px] font-bold",
                 active
                   ? "text-primary-hover"
-                  : "text-neutral-500 hover:text-neutral-800",
+                  : "text-neutral-600 hover:text-neutral-900",
               )}
             >
               <Icon

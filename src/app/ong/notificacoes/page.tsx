@@ -63,7 +63,7 @@ export default async function NotificationsPage() {
               >
                 <span
                   aria-hidden="true"
-                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-green-900"
+                  className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-neutral-900"
                 >
                   {initials(notification.adopterName)}
                 </span>
@@ -77,11 +77,11 @@ export default async function NotificationsPage() {
                     {unread ? <span className="sr-only"> (novo)</span> : null}
                   </p>
                   {notification.message ? (
-                    <p className="mt-1 text-sm text-neutral-700 italic">
+                    <p className="mt-1 text-sm text-neutral-900 italic">
                       &ldquo;{notification.message}&rdquo;
                     </p>
                   ) : null}
-                  <p className="mt-1 text-xs text-neutral-500">
+                  <p className="mt-1 text-xs text-neutral-600">
                     {new Date(notification.createdAt).toLocaleString("pt-BR")}
                   </p>
                 </div>

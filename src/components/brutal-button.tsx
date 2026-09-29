@@ -20,12 +20,12 @@ const variants: Record<BrutalButtonVariant, string> = {
   primary:
     "bg-primary text-primary-foreground hover:bg-primary-hover focus-visible:ring-primary",
   secondary:
-    "bg-accent-yellow text-neutral-900 hover:brightness-95 active:brightness-90 focus-visible:ring-amber-300",
+    "bg-accent-yellow text-neutral-900 hover:brightness-95 active:brightness-90 focus-visible:ring-amber-200",
   outline:
-    "bg-white text-neutral-900 hover:bg-neutral-50 focus-visible:ring-neutral-300",
-  pill: "rounded-full bg-primary-soft text-green-900 hover:bg-primary-faint focus-visible:ring-primary",
-  danger: "bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-300",
-  dark: "bg-neutral-900 text-white hover:bg-neutral-800 focus-visible:ring-neutral-400",
+    "bg-white text-neutral-900 hover:bg-neutral-50 focus-visible:ring-stone-300",
+  pill: "rounded-full bg-primary-soft text-neutral-900 hover:bg-primary-faint focus-visible:ring-primary",
+  danger: "bg-red-500 text-white hover:bg-red-400 focus-visible:ring-red-400",
+  dark: "bg-neutral-900 text-white hover:bg-neutral-800 focus-visible:ring-gray-400",
 };
 
 const sizes: Record<BrutalButtonSize, string> = {

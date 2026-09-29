@@ -19,8 +19,8 @@ export type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, "id"> &
   };
 
 const chevronClass: Record<FieldTone, string> = {
-  primary: "text-neutral-500",
-  light: "text-neutral-500",
+  primary: "text-neutral-600",
+  light: "text-neutral-600",
   brutal: "text-neutral-900",
 };
 

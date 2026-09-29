@@ -60,13 +60,13 @@ export function FileInput({
       {value ? (
         <div
           className={cn(
-            "flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm",
+            "flex items-center justify-between gap-3 rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm",
             shadowSoft.sm,
           )}
         >
           <span className="min-w-0 truncate text-neutral-900">
             {value.name}{" "}
-            <span className="text-neutral-500">({formatSize(value.size)})</span>
+            <span className="text-neutral-600">({formatSize(value.size)})</span>
           </span>
           <Button
             variant="danger"
@@ -83,7 +83,7 @@ export function FileInput({
           htmlFor={id}
           aria-invalid={invalid || undefined}
           className={cn(
-            "flex cursor-pointer items-center justify-center rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-700 hover:bg-primary-faint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary aria-[invalid=true]:border-red-500",
+            "flex cursor-pointer items-center justify-center rounded-2xl border border-dashed border-stone-300 bg-neutral-50 px-4 py-3 text-sm font-semibold text-neutral-900 hover:bg-primary-faint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary aria-[invalid=true]:border-red-500",
             pressSoft.sm,
           )}
         >

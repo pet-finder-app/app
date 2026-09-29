@@ -79,14 +79,14 @@ function PetPost({
               className="object-cover"
             />
           ) : (
-            <PawIcon className="absolute inset-0 m-auto size-4 text-green-900" />
+            <PawIcon className="absolute inset-0 m-auto size-4 text-neutral-900" />
           )}
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-bold text-neutral-900">
             {ongName}
           </p>
-          <p className="truncate text-xs text-neutral-500">@{ongNickname}</p>
+          <p className="truncate text-xs text-neutral-600">@{ongNickname}</p>
         </div>
         <PetCardMenu pet={pet} />
       </div>
@@ -123,7 +123,7 @@ function PetPost({
       </span>
 
       <div className="flex items-center gap-1 border-t border-neutral-900 px-1 py-1">
-        <span className="relative flex size-9 items-center justify-center text-neutral-700">
+        <span className="relative flex size-9 items-center justify-center text-neutral-900">
           <Heart className="size-5" aria-hidden="true" />
           {likesCount > 0 ? (
             <span
@@ -138,7 +138,7 @@ function PetPost({
 
         <Link
           href={`/ong/mensagens?pet=${pet.id}`}
-          className="relative flex size-9 items-center justify-center rounded-full text-neutral-700 hover:bg-neutral-100"
+          className="relative flex size-9 items-center justify-center rounded-full text-neutral-900 hover:bg-neutral-100"
         >
           <MessageCircle className="size-5" aria-hidden="true" />
           {interestedCount > 0 ? (
@@ -156,7 +156,7 @@ function PetPost({
         </Link>
       </div>
 
-      <p className="px-3 pt-1 text-sm text-neutral-800">
+      <p className="px-3 pt-1 text-sm text-neutral-900">
         <span className="font-bold text-neutral-900">@{ongNickname}</span>{" "}
         {pet.description}
       </p>
@@ -205,7 +205,7 @@ export function OngPetsPhotoFeed({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-neutral-500">
+        <div className="flex items-center gap-2 text-neutral-600">
           <PawIcon className={iconSize.md} aria-hidden="true" />
           <span className="text-xs font-bold tracking-wide uppercase">
             Fotos dos pets
@@ -226,7 +226,7 @@ export function OngPetsPhotoFeed({
               "flex size-8 items-center justify-center rounded-full",
               view === "grid"
                 ? "text-neutral-900"
-                : "text-neutral-400 hover:text-neutral-600",
+                : "text-gray-400 hover:text-neutral-600",
             )}
           >
             <LayoutGrid
@@ -244,7 +244,7 @@ export function OngPetsPhotoFeed({
               "flex size-8 items-center justify-center rounded-full",
               view === "list"
                 ? "text-neutral-900"
-                : "text-neutral-400 hover:text-neutral-600",
+                : "text-gray-400 hover:text-neutral-600",
             )}
           >
             <List

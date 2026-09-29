@@ -22,14 +22,14 @@ const variants: Record<ButtonVariant, string> = {
   /** Amarelo pastel com texto escuro, como o "Confirm" da referência. O
    *  hover escurece o próprio amarelo (nunca troca de matiz — consistência). */
   secondary:
-    "bg-accent-yellow text-neutral-900 hover:brightness-95 active:brightness-90 focus-visible:ring-amber-300",
+    "bg-accent-yellow text-neutral-900 hover:brightness-95 active:brightness-90 focus-visible:ring-amber-200",
   outline:
-    "border border-neutral-200 bg-white text-neutral-900 hover:bg-neutral-50 focus-visible:ring-neutral-300",
+    "border border-stone-300 bg-white text-neutral-900 hover:bg-neutral-50 focus-visible:ring-stone-300",
   /** Pílula pequena, igual ao selo "ONG verificada": voltar, trocar etapa. */
-  pill: "rounded-full bg-primary-soft text-green-900 hover:bg-primary-faint focus-visible:ring-primary",
-  danger: "bg-red-500 text-white hover:bg-red-600 focus-visible:ring-red-300",
+  pill: "rounded-full bg-primary-soft text-neutral-900 hover:bg-primary-faint focus-visible:ring-primary",
+  danger: "bg-red-500 text-white hover:bg-red-400 focus-visible:ring-red-400",
   /** Neutro escuro — usado hoje só no botão de entrar do login. */
-  dark: "bg-neutral-900 text-white hover:bg-neutral-800 focus-visible:ring-neutral-400",
+  dark: "bg-neutral-900 text-white hover:bg-neutral-800 focus-visible:ring-gray-400",
 };
 
 const sizes: Record<ButtonSize, string> = {

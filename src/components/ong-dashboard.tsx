@@ -17,20 +17,20 @@ import { ArrowDownRight, ArrowUpRight } from "lucide-react";
  * gráfico tem um trabalho diferente de cor de interface.
  */
 const STATUS_COLOR: Record<PetStatus, string> = {
-  disponivel: "#0ca30c",
-  em_processo: "#fab219",
-  adotado: "#898781",
+  disponivel: "#65a30d",
+  em_processo: "#fbbf24",
+  adotado: "#9ca3af",
 };
 
 /** Ordem fixa por espécie — nunca reatribuída conforme os valores mudam. */
 const SPECIES_COLOR: Record<PetSpecies, string> = {
-  cachorro: "#2a78d6",
-  gato: "#eb6834",
-  outro: "#1baf7a",
+  cachorro: "#2563eb",
+  gato: "#f43f5e",
+  outro: "#7c3aed",
 };
 
 /** Série única (mesma métrica comparada entre itens): sempre um hue só. */
-const BRAND = "#16a34a";
+const BRAND = "#65a30d";
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -71,7 +71,7 @@ function StackedBar({ data }: { data: ChartDatum[] }) {
               className="size-2.5 shrink-0 rounded-full border border-neutral-900"
               style={{ backgroundColor: d.color }}
             />
-            <span className="text-neutral-700">{d.label}</span>
+            <span className="text-neutral-900">{d.label}</span>
             <span className="font-bold text-neutral-900">{d.value}</span>
           </li>
         ))}
@@ -95,7 +95,7 @@ function BarList({
       {data.map((d) => (
         <li key={d.label} className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-2 text-xs">
-            <span className="min-w-0 truncate font-semibold text-neutral-700">
+            <span className="min-w-0 truncate font-semibold text-neutral-900">
               {d.label}
             </span>
             <span className="shrink-0 font-bold text-neutral-900">
@@ -137,7 +137,7 @@ function StatCard({
 }) {
   const TrendIcon = trend.direction === "up" ? ArrowUpRight : ArrowDownRight;
   const trendColor =
-    trend.direction === "up" ? "text-green-700" : "text-red-600";
+    trend.direction === "up" ? "text-neutral-900" : "text-red-500";
 
   return (
     <div
@@ -159,7 +159,7 @@ function StatCard({
           style={{ width: `${Math.min(100, percent)}%` }}
         />
       </div>
-      <p className="text-[11px] leading-tight text-neutral-700">
+      <p className="text-[11px] leading-tight text-neutral-900">
         {label}
         <span className="sr-only">
           {" "}
@@ -256,7 +256,7 @@ export function OngDashboard({
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <p className="mb-2 text-xs font-bold tracking-wide text-neutral-500 uppercase">
+        <p className="mb-2 text-xs font-bold tracking-wide text-neutral-600 uppercase">
           Análises
         </p>
         <div className="grid grid-cols-3 gap-2">
@@ -282,7 +282,7 @@ export function OngDashboard({
       </div>
 
       <BrutalCard className="gap-3">
-        <p className="text-xs text-neutral-500">Total em doações</p>
+        <p className="text-xs text-neutral-600">Total em doações</p>
         <p className="text-2xl font-bold text-neutral-900">
           {currency.format(donationsTotal)}
         </p>
@@ -295,7 +295,7 @@ export function OngDashboard({
               </p>
               <p className="text-base font-bold text-neutral-900">
                 {currency.format(donationsTotal)}{" "}
-                <span className="text-xs font-semibold text-green-700">
+                <span className="text-xs font-semibold text-neutral-900">
                   +{donationsByDate.length} doações
                 </span>
               </p>
@@ -303,7 +303,7 @@ export function OngDashboard({
             <MiniSparkline values={donationsByDate.map((d) => d.amount)} />
           </div>
         ) : (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-600">
             Nenhuma doação registrada ainda.
           </p>
         )}
@@ -314,7 +314,7 @@ export function OngDashboard({
         {pets.length > 0 ? (
           <StackedBar data={statusData} />
         ) : (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-600">
             Cadastre pets para ver o gráfico.
           </p>
         )}
@@ -325,7 +325,7 @@ export function OngDashboard({
         {speciesData.length > 0 ? (
           <BarList data={speciesData} />
         ) : (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-600">
             Cadastre pets para ver o gráfico.
           </p>
         )}
@@ -336,7 +336,7 @@ export function OngDashboard({
         {engagementData.some((d) => d.value > 0) ? (
           <BarList data={engagementData} />
         ) : (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-neutral-600">
             Ainda sem curtidas ou interesses registrados.
           </p>
         )}

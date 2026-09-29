@@ -15,13 +15,11 @@ export type TextLinkProps = Omit<
 
 const toneClass: Record<TextLinkTone, string> = {
   primary: "text-neutral-900 focus-visible:outline-neutral-900",
-  /** Só para o fundo "pastel" do AuthLayout (login): verde escuro o
-   *  bastante para 4.5:1 sobre green-300, dando destaque de cor que o
-   *  neutral-900 escuro (igual ao resto do texto) não dava. Sobre o
-   *  fundo "vivid" (green-500) esse mesmo tom não teria contraste
-   *  suficiente — por isso é uma tonalidade separada, não o "primary". */
-  "primary-pastel": "text-green-900 focus-visible:outline-green-900",
-  light: "text-green-700 focus-visible:outline-primary",
+  /** Só para o fundo "pastel" do AuthLayout (login). Hoje igual ao
+   *  "primary": a paleta do projeto não tem verde escuro com 4.5:1 sobre
+   *  o fundo pastel, então o destaque vem do sublinhado. */
+  "primary-pastel": "text-neutral-900 focus-visible:outline-neutral-900",
+  light: "text-neutral-900 focus-visible:outline-primary",
   brutal: "text-neutral-900 focus-visible:outline-neutral-900",
 };
 

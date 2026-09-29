@@ -16,13 +16,13 @@ export type CheckboxProps = Omit<
 
 const labelClass: Record<FieldTone, string> = {
   primary: "text-neutral-900",
-  light: "text-neutral-800",
+  light: "text-neutral-900",
   brutal: "text-neutral-900",
 };
 
 const boxClass: Record<FieldTone, string> = {
-  primary: "border-neutral-300",
-  light: "border-neutral-300",
+  primary: "border-stone-300",
+  light: "border-stone-300",
   brutal: "border-neutral-900",
 };
 

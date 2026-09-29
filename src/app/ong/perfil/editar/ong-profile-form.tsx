@@ -160,7 +160,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
           <h1 className="text-2xl font-bold text-neutral-900">
             {profile.legal.tradeName}
           </h1>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-700">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-900">
             <VerificationBadge status={status} />
             <span>
               {ORGANIZATION_TYPES[profile.legal.organizationType].label} ·{" "}
@@ -191,8 +191,8 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
                 className={cn(
                   "inline-flex min-h-7 items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                   sectionDone(key)
-                    ? "bg-primary-soft text-green-900"
-                    : "bg-white text-neutral-800 hover:bg-primary-faint",
+                    ? "bg-primary-soft text-neutral-900"
+                    : "bg-white text-neutral-900 hover:bg-primary-faint",
                   shadowSoft.sm,
                   pressSoft.sm,
                 )}
@@ -247,7 +247,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
             onChange={(e) => patch("legal", { foundedAt: e.target.value })}
           />
 
-          <p className="mt-2 text-sm font-bold text-neutral-800">
+          <p className="mt-2 text-sm font-bold text-neutral-900">
             Endereço {isCompany ? "da sede" : "do abrigo"}
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -504,7 +504,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
           </div>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-semibold text-neutral-800">
+            <legend className="mb-1 text-sm font-semibold text-neutral-900">
               Espécies atendidas
             </legend>
             {(Object.keys(SPECIES_LABEL) as Species[]).map((species) => (
@@ -533,7 +533,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
           />
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-semibold text-neutral-800">
+            <legend className="mb-1 text-sm font-semibold text-neutral-900">
               Processo de adoção
             </legend>
             <Checkbox
@@ -668,7 +668,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
             />
           </div>
 
-          <p className="mt-2 text-sm font-bold text-neutral-800">Doações</p>
+          <p className="mt-2 text-sm font-bold text-neutral-900">Doações</p>
           <Input
             id="pixKey"
             label="Chave Pix"
@@ -720,11 +720,11 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
         >
           <div
             className={cn(
-              "rounded-2xl bg-accent-yellow px-4 py-3 text-xs text-neutral-800",
+              "rounded-2xl bg-accent-yellow px-4 py-3 text-xs text-neutral-900",
               shadowSoft.sm,
             )}
           >
-            <p className="font-semibold text-neutral-800">
+            <p className="font-semibold text-neutral-900">
               Termos de uso aceitos
             </p>
             <p>
@@ -768,7 +768,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
             label="Comprometo-me a tratar os dados dos adotantes recebidos pelo app apenas para fins de adoção, conforme a LGPD."
           />
           {profile.legalConsent.adoptersDataConsent?.ip ? (
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-600">
               Registrado em{" "}
               {new Date(
                 profile.legalConsent.adoptersDataConsent.acceptedAt,
@@ -790,7 +790,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
                     "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full",
                     item.done
                       ? "bg-primary text-neutral-900"
-                      : "border border-neutral-300 bg-white",
+                      : "border border-stone-300 bg-white",
                   )}
                 >
                   {item.done ? (
@@ -801,8 +801,8 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
                   href={`#${item.section}`}
                   className={
                     item.done
-                      ? "text-neutral-500 line-through"
-                      : "text-neutral-800"
+                      ? "text-neutral-600 line-through"
+                      : "text-neutral-900"
                   }
                 >
                   {item.label}
@@ -820,7 +820,7 @@ export function OngProfileForm({ initialProfile }: OngProfileFormProps) {
           <FormError id={ERROR_ID} className="min-h-4 text-xs">
             {error ??
               (savedAt ? (
-                <span className="text-neutral-500">Salvo às {savedAt}.</span>
+                <span className="text-neutral-600">Salvo às {savedAt}.</span>
               ) : null)}
           </FormError>
           <div className="flex gap-2">
@@ -940,10 +940,10 @@ function TeamEditor({
 
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-1 text-sm font-semibold text-neutral-800">
+      <legend className="mb-1 text-sm font-semibold text-neutral-900">
         Equipe
       </legend>
-      <p className="-mt-1 text-xs text-neutral-500">
+      <p className="-mt-1 text-xs text-neutral-600">
         Outras pessoas que vão usar o app pela ONG. O convite por e-mail chega
         com o backend.
       </p>
@@ -962,7 +962,7 @@ function TeamEditor({
                 <p className="truncate font-semibold text-neutral-900">
                   {member.name}
                 </p>
-                <p className="truncate text-xs text-neutral-500">
+                <p className="truncate text-xs text-neutral-600">
                   {member.email} ·{" "}
                   {member.roles.map((r) => TEAM_ROLE_LABEL[r]).join(", ")}
                 </p>

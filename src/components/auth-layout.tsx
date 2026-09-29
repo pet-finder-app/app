@@ -13,7 +13,7 @@ type AuthLayoutProps = {
    * "pastel" (só a tela de login, por pedido): fundo green-300, sem o
    * ícone no título — ele reaparece em verde escuro (tom sobre tom),
    * repetido e compacto, como marca d'água atrás do conteúdo, e de novo
-   * em tamanho grande e sólido (green-800) centralizado no espaço vazio
+   * em tamanho grande e sólido (lime-600) centralizado no espaço vazio
    * entre o título e o formulário, como ilustração principal da tela.
    * Wordmark todo escuro, porque o branco não teria contraste sobre um
    * fundo tão claro.
@@ -71,7 +71,7 @@ export function AuthLayout({
             aria-hidden="true"
             className="flex flex-1 items-center justify-center"
           >
-            <PetfinderMark className="size-32 text-green-800" />
+            <PetfinderMark className="size-32 text-lime-600" />
           </div>
         ) : (
           <div className="flex-1" />

@@ -160,7 +160,7 @@ export function AdopterProfileForm({
           <h1 className="text-2xl font-bold text-neutral-900">
             {profile.personal.fullName || "Seu perfil"}
           </h1>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-700">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-900">
             <VerificationBadge
               status={status}
               label={ADOPTER_VERIFICATION_STATUS_LABEL[status]}
@@ -188,8 +188,8 @@ export function AdopterProfileForm({
                 className={cn(
                   "inline-flex min-h-7 items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition-colors",
                   sectionDone(key)
-                    ? "bg-primary-soft text-green-900"
-                    : "bg-neutral-100 text-neutral-700 hover:bg-primary-faint",
+                    ? "bg-primary-soft text-neutral-900"
+                    : "bg-neutral-100 text-neutral-900 hover:bg-primary-faint",
                   shadowSoft.sm,
                   pressSoft.sm,
                 )}
@@ -300,7 +300,7 @@ export function AdopterProfileForm({
             onChange={(file) => patch("personal", { addressProof: file })}
           />
 
-          <p className="mt-2 text-sm font-bold text-neutral-800">Endereço</p>
+          <p className="mt-2 text-sm font-bold text-neutral-900">Endereço</p>
           <div className="grid grid-cols-2 gap-3">
             <Input
               id="cep"
@@ -552,7 +552,7 @@ export function AdopterProfileForm({
           description="O que você procura, para o feed te mostrar os pets certos."
         >
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-semibold text-neutral-800">
+            <legend className="mb-1 text-sm font-semibold text-neutral-900">
               Espécies
             </legend>
             {(Object.keys(PET_SPECIES_LABEL) as PetSpecies[]).map((species) => (
@@ -575,7 +575,7 @@ export function AdopterProfileForm({
           </fieldset>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-semibold text-neutral-800">
+            <legend className="mb-1 text-sm font-semibold text-neutral-900">
               Porte
             </legend>
             {(Object.keys(PET_SIZE_LABEL) as PetSize[]).map((size) => (
@@ -596,7 +596,7 @@ export function AdopterProfileForm({
           </fieldset>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-semibold text-neutral-800">
+            <legend className="mb-1 text-sm font-semibold text-neutral-900">
               Idade
             </legend>
             {(Object.keys(PET_AGE_GROUP_LABEL) as PetAgeGroup[]).map(
@@ -674,7 +674,7 @@ export function AdopterProfileForm({
             }
           />
           {profile.legalConsent.terms?.ip ? (
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-600">
               Registrado em{" "}
               {new Date(profile.legalConsent.terms.acceptedAt).toLocaleString(
                 "pt-BR",
@@ -707,8 +707,8 @@ export function AdopterProfileForm({
                   href={`#${item.section}`}
                   className={
                     item.done
-                      ? "text-neutral-500 line-through"
-                      : "text-neutral-800"
+                      ? "text-neutral-600 line-through"
+                      : "text-neutral-900"
                   }
                 >
                   {item.label}
@@ -726,7 +726,7 @@ export function AdopterProfileForm({
           <FormError id={ERROR_ID} className="min-h-4 text-xs">
             {error ??
               (savedAt ? (
-                <span className="text-neutral-500">Salvo às {savedAt}.</span>
+                <span className="text-neutral-600">Salvo às {savedAt}.</span>
               ) : null)}
           </FormError>
           <div className="flex gap-2">

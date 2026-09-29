@@ -39,7 +39,7 @@ export function RoleSelect({ onSelect }: RoleSelectProps) {
           type="button"
           onClick={() => onSelect(option.role)}
           className={cn(
-            "flex flex-col gap-0.5 rounded-2xl border border-neutral-200 bg-white px-4 py-3.5 text-left transition-colors hover:bg-primary-faint focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
+            "flex flex-col gap-0.5 rounded-2xl border border-stone-300 bg-white px-4 py-3.5 text-left transition-colors hover:bg-primary-faint focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
             shadowSoft.md,
             pressSoft.md,
           )}
@@ -47,7 +47,7 @@ export function RoleSelect({ onSelect }: RoleSelectProps) {
           <span className="text-sm font-bold text-neutral-900">
             {option.title}
           </span>
-          <span className="text-xs text-neutral-500">{option.description}</span>
+          <span className="text-xs text-neutral-600">{option.description}</span>
         </button>
       ))}
     </div>
