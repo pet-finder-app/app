@@ -78,7 +78,27 @@ export async function POST(request: Request) {
   }
 
   if (role === "adopter") {
-    const created = await createUser({ role, name, email, password });
+    if (body.acceptedTerms !== true) {
+      return NextResponse.json(
+        {
+          message: "É preciso aceitar os termos de uso para continuar.",
+          field: "acceptedTerms",
+        },
+        { status: 400 },
+      );
+    }
+    const created = await createUser({
+      role,
+      name,
+      email,
+      password,
+      terms: {
+        version: TERMS_VERSION,
+        acceptedAt: new Date().toISOString(),
+        ip: getClientIp(request),
+        userAgent: request.headers.get("user-agent") ?? "",
+      },
+    });
     return respondWithSession(created);
   }
 

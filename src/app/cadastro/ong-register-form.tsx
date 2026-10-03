@@ -47,7 +47,7 @@ type OngRegisterFormProps = {
 /**
  * Cadastro curto da ONG: só o necessário para criar a conta e deixar a ONG
  * explorar o app. O restante (documentos, endereço, equipe...) é pedido em
- * /ong/perfil/editar e só vira obrigatório na hora de publicar o primeiro pet.
+ * /ong/configuracoes e só vira obrigatório na hora de publicar o primeiro pet.
  */
 export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
   const router = useRouter();
@@ -56,6 +56,8 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
   >("");
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
+  // Enquanto a pessoa não mexer no endereço, ele é sugerido a partir do nome.
+  const [nicknameTouched, setNicknameTouched] = useState(false);
   const [document, setDocument] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,9 +85,30 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
     setOrganizationType(next);
   }
 
+  function toNickname(value: string) {
+    return value
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .replace(/s+/g, "_")
+      .replace(/[^a-zA-Z0-9_@]/g, "")
+      .slice(0, 24);
+  }
+
+  function handleNameChange(value: string) {
+    setName(value);
+    if (!nicknameTouched) setNickname(toNickname(value));
+  }
+
   function fail(message: string, field: ErrorField) {
     setError(message);
     setErrorField(field);
+    // O erro fica no fim do formulário: leva a pessoa até o campo com problema.
+    requestAnimationFrame(() => {
+      const target = field ? globalThis.document.getElementById(field) : null;
+      target?.scrollIntoView({ block: "center", behavior: "smooth" });
+      target?.focus({ preventScroll: true });
+    });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -104,7 +127,7 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
     }
     if (!isValidNickname(nickname)) {
       return fail(
-        "O nome de usuário precisa ter de 3 a 24 letras, números ou _, sem espaços.",
+        "O endereço do perfil precisa ter de 3 a 24 letras, números ou _ (sem espaços). Ex.: patinhas_felizes.",
         "nickname",
       );
     }
@@ -169,7 +192,7 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
       <Select
         tone="primary"
         id="organizationType"
-        label="Tipo de organização"
+        label="Qual é o seu caso?"
         required
         placeholder="Selecione..."
         value={organizationType}
@@ -181,7 +204,7 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
         hint={
           organizationType
             ? ORGANIZATION_TYPES[organizationType].description
-            : "Protetores independentes e abrigos sem CNPJ também podem se cadastrar."
+            : 'Não tem CNPJ? Escolha "Protetor(a) independente": você também pode se cadastrar.'
         }
         invalid={errorField === "organizationType"}
         errorId={ERROR_ID}
@@ -196,7 +219,7 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
         required
         placeholder="Como vocês são conhecidos"
         value={name}
-        onChange={(event) => setName(event.target.value)}
+        onChange={(event) => handleNameChange(event.target.value)}
         invalid={errorField === "name"}
         errorId={ERROR_ID}
       />
@@ -204,18 +227,21 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
       <Input
         tone="primary"
         id="nickname"
-        label="Nome de usuário"
+        label="Endereço do seu perfil"
         type="text"
         autoComplete="off"
         required
-        placeholder="AmigosQuatroPatas"
+        placeholder="ex.: patinhas_felizes"
         hint={
           normalizeNickname(nickname)
             ? `Seu perfil vai aparecer como @${normalizeNickname(nickname)}`
-            : "Só letras, números e _, sem espaços. É único — ninguém mais pode usar o mesmo."
+            : 'É o seu "@" no app. Só letras, números e _ (sem espaços). Ninguém mais pode usar o mesmo.'
         }
         value={nickname}
-        onChange={(event) => setNickname(event.target.value)}
+        onChange={(event) => {
+          setNicknameTouched(true);
+          setNickname(toNickname(event.target.value));
+        }}
         invalid={errorField === "nickname"}
         errorId={ERROR_ID}
       />
@@ -314,7 +340,7 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
 
       <Button
         type="submit"
-        variant="secondary"
+        variant="dark"
         size="lg"
         className="mt-3"
         loading={isSubmitting}
@@ -324,8 +350,8 @@ export function OngRegisterForm({ onBack }: OngRegisterFormProps) {
       </Button>
 
       <p className="text-center text-xs text-neutral-900">
-        Documentos e dados da sede só são pedidos quando você for publicar o
-        primeiro pet.
+        Depois de criar a conta, você completa o cadastro (documentos e
+        endereço) e nossa equipe aprova antes de você publicar pets e posts.
       </p>
     </form>
   );
