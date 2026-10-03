@@ -1,3 +1,4 @@
+import { startOrAppendConversation } from "@/lib/conversations";
 import { createInteresse } from "@/lib/notifications";
 import { getPetById } from "@/lib/pets";
 import { findUserById, SESSION_COOKIE } from "@/lib/users";
@@ -40,6 +41,13 @@ export async function POST(
     );
   }
 
+  if (pet.status !== "disponivel") {
+    return NextResponse.json(
+      { message: "Este pet não está mais disponível para adoção." },
+      { status: 409 },
+    );
+  }
+
   const body = (await request.json()) as { message?: string };
   const message = body.message?.trim();
   if (!message) {
@@ -59,5 +67,18 @@ export async function POST(
     message,
   });
 
-  return NextResponse.json({ notification }, { status: 201 });
+  // O pedido de adoção é a primeira mensagem da conversa com a ONG.
+  const conversation = await startOrAppendConversation({
+    petId: pet.id,
+    petName: pet.name,
+    ongId: pet.ongId,
+    adopterId: user.id,
+    adopterName: user.name,
+    text: message,
+  });
+
+  return NextResponse.json(
+    { notification, conversationId: conversation.id },
+    { status: 201 },
+  );
 }
