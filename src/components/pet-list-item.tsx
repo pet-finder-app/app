@@ -9,7 +9,7 @@ import {
   type Pet,
   type PetStatus,
 } from "@/lib/pet";
-import { Eye, Heart, MessageCircle } from "lucide-react";
+import { Eye, Heart, MessageCircle, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -17,6 +17,7 @@ const PET_STATUS_TONE: Record<PetStatus, BadgeTone> = {
   disponivel: "success",
   em_processo: "warning",
   adotado: "neutral",
+  indisponivel: "neutral",
 };
 
 /**
@@ -34,18 +35,22 @@ export function PetListItem({
   tone,
   likesCount,
   interestedCount,
+  index = 0,
 }: {
   pet: Pet;
   tone: string;
   likesCount: number;
   interestedCount: number;
+  /** Posição na lista: escalona a animação de entrada. */
+  index?: number;
 }) {
   const photoUrl = pet.photos[0]?.url;
 
   return (
     <li
+      style={{ animationDelay: `${Math.min(index, 8) * 60}ms` }}
       className={cn(
-        "flex items-center gap-3 rounded-xl border border-neutral-900 p-3",
+        "rise-in relative flex items-center gap-3 rounded-xl border border-neutral-900 p-3 transition-transform duration-200 hover:-translate-y-0.5 has-[[aria-expanded=true]]:z-20 motion-reduce:transition-none motion-reduce:hover:translate-y-0",
         tone,
       )}
     >
@@ -101,6 +106,14 @@ export function PetListItem({
           ) : null}
           <span className="sr-only">{likesCount} curtidas de adotantes</span>
         </span>
+
+        <Link
+          href={`/ong/pets/${pet.id}/interessados`}
+          className="flex size-9 items-center justify-center rounded-full text-neutral-900 hover:bg-white/50"
+        >
+          <Users className="size-5" aria-hidden="true" />
+          <span className="sr-only">Ver interessados em {pet.name}</span>
+        </Link>
 
         <Link
           href={`/ong/mensagens?pet=${pet.id}`}

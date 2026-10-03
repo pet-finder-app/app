@@ -74,7 +74,6 @@ export default async function NotificationsPage() {
                     </span>{" "}
                     {NOTIFICATION_TYPE_LABEL[notification.type]}{" "}
                     <span className="font-bold">{notification.petName}</span>
-                    {unread ? <span className="sr-only"> (novo)</span> : null}
                   </p>
                   {notification.message ? (
                     <p className="mt-1 text-sm text-neutral-900 italic">

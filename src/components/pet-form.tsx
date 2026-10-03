@@ -40,6 +40,26 @@ const STATUS_OPTIONS = (Object.keys(PET_STATUS_LABEL) as PetStatus[]).map(
   (key) => ({ value: key, label: PET_STATUS_LABEL[key] }),
 );
 
+/** Erros que pertencem a um campo (aparecem embaixo dele, não no fim da página). */
+const FIELD_ERROR = {
+  name: "Dê um nome para o pet.",
+  sex: "Escolha o sexo do pet.",
+  ageGroup: "Escolha a idade do pet.",
+  description: "Escreva uma descrição do pet.",
+  photos: "Adicione ao menos uma foto.",
+} as const;
+
+const DUPLICATE_PREFIX = "Você já tem um pet chamado";
+
+const FIELD_BY_ERROR: [string, string][] = [
+  ["nome", "name"],
+  ["você já tem", "name"],
+  ["foto", "photos"],
+  ["sexo", "sex"],
+  ["idade", "ageGroup"],
+  ["descrição", "description"],
+];
+
 type PetFormProps =
   | { mode: "create" }
   | {
@@ -62,6 +82,10 @@ export function PetForm(props: PetFormProps) {
   const [status, setStatus] = useState<PetStatus>(
     props.mode === "edit" ? props.initialStatus : "disponivel",
   );
+  // No cadastro, sexo e idade começam em branco: um valor pré-marcado seria
+  // salvo errado sem a pessoa perceber.
+  const [sexChosen, setSexChosen] = useState(props.mode === "edit");
+  const [ageChosen, setAgeChosen] = useState(props.mode === "edit");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,13 +93,39 @@ export function PetForm(props: PetFormProps) {
     setInput((prev) => ({ ...prev, ...changes }));
   }
 
+  /** Mensagem de erro logo abaixo do campo a que ela se refere. */
+  function inlineError(field: keyof typeof FIELD_ERROR) {
+    return error === FIELD_ERROR[field] ||
+      (field === "name" && error?.startsWith(DUPLICATE_PREFIX)) ? (
+      <FormError id={`${field}-error`}>{error}</FormError>
+    ) : null;
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
 
-    const validationError = validatePetInput(input);
+    // Mesma ordem em que os campos aparecem na tela.
+    const validationError = !input.name.trim()
+      ? "Dê um nome para o pet."
+      : !sexChosen
+        ? "Escolha o sexo do pet."
+        : !ageChosen
+          ? "Escolha a idade do pet."
+          : !input.description.trim()
+            ? "Escreva uma descrição do pet."
+            : validatePetInput(input);
     if (validationError) {
       setError(validationError);
+      // O botão fica no fim da página: leva a pessoa até o campo com problema.
+      const field = FIELD_BY_ERROR.find(([text]) =>
+        validationError.toLowerCase().includes(text),
+      )?.[1];
+      requestAnimationFrame(() =>
+        globalThis.document
+          .getElementById(field ?? "name")
+          ?.scrollIntoView({ block: "center", behavior: "smooth" }),
+      );
       return;
     }
 
@@ -104,10 +154,18 @@ export function PetForm(props: PetFormProps) {
               ? "Não foi possível salvar as alterações."
               : "Não foi possível cadastrar o pet."),
         );
+        if (response.status === 409) {
+          // Nome repetido: leva a pessoa até o campo Nome.
+          requestAnimationFrame(() => {
+            const field = globalThis.document.getElementById("name");
+            field?.scrollIntoView({ block: "center", behavior: "smooth" });
+            field?.focus({ preventScroll: true });
+          });
+        }
         return;
       }
 
-      router.push("/");
+      router.push(props.mode === "edit" ? "/" : "/?criado=pet");
       router.refresh();
     } catch {
       setError("Falha de conexão. Tente de novo.");
@@ -118,7 +176,7 @@ export function PetForm(props: PetFormProps) {
 
   return (
     <PageShell>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
         <BrutalCard as="header" className="gap-2">
           <BrutalLinkButton
             href="/"
@@ -155,19 +213,23 @@ export function PetForm(props: PetFormProps) {
         <BrutalCard className="gap-3">
           <Input
             id="name"
-            label="Nome"
+            label="Nome (obrigatório)"
             required
             tone="brutal"
             value={input.name}
             onChange={(e) => patch({ name: e.target.value })}
-            invalid={error === "Dê um nome para o pet."}
-            errorId={ERROR_ID}
+            invalid={
+              error === "Dê um nome para o pet." ||
+              error?.startsWith(DUPLICATE_PREFIX)
+            }
+            errorId="name-error"
           />
+          {inlineError("name")}
 
           <div className="grid grid-cols-2 gap-3">
             <Select
               id="species"
-              label="Espécie"
+              label="Espécie (obrigatório)"
               tone="brutal"
               value={input.species}
               onChange={(e) => patch({ species: e.target.value as PetSpecies })}
@@ -178,7 +240,7 @@ export function PetForm(props: PetFormProps) {
             />
             <Input
               id="breed"
-              label="Raça"
+              label="Raça (opcional)"
               placeholder="SRD (vira-lata)"
               tone="brutal"
               value={input.breed}
@@ -189,10 +251,16 @@ export function PetForm(props: PetFormProps) {
           <div className="grid grid-cols-2 gap-3">
             <Select
               id="sex"
-              label="Sexo"
+              label="Sexo (obrigatório)"
               tone="brutal"
-              value={input.sex}
-              onChange={(e) => patch({ sex: e.target.value as PetSex })}
+              value={sexChosen ? input.sex : ""}
+              placeholder="Escolha"
+              invalid={error === "Escolha o sexo do pet."}
+              errorId="sex-error"
+              onChange={(e) => {
+                setSexChosen(true);
+                patch({ sex: e.target.value as PetSex });
+              }}
               options={(Object.keys(PET_SEX_LABEL) as PetSex[]).map((key) => ({
                 value: key,
                 label: PET_SEX_LABEL[key],
@@ -200,7 +268,7 @@ export function PetForm(props: PetFormProps) {
             />
             <Select
               id="size"
-              label="Porte"
+              label="Porte (obrigatório)"
               tone="brutal"
               value={input.size}
               onChange={(e) => patch({ size: e.target.value as PetSize })}
@@ -212,12 +280,37 @@ export function PetForm(props: PetFormProps) {
               )}
             />
           </div>
+          {inlineError("sex")}
+
+          <Input
+            id="sizeCm"
+            label="Tamanho aproximado em cm (opcional)"
+            tone="brutal"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={300}
+            value={input.sizeCm ?? ""}
+            onChange={(e) =>
+              patch({
+                sizeCm: e.target.value === "" ? null : Number(e.target.value),
+              })
+            }
+          />
+
           <Select
             id="ageGroup"
-            label="Idade"
+            label="Idade (obrigatório)"
             tone="brutal"
-            value={input.ageGroup}
-            onChange={(e) => patch({ ageGroup: e.target.value as PetAgeGroup })}
+            value={ageChosen ? input.ageGroup : ""}
+            placeholder="Escolha"
+            hint="Para dizer a idade exata (ex.: 2 anos, 6 meses), conte na descrição."
+            invalid={error === "Escolha a idade do pet."}
+            errorId="ageGroup-error"
+            onChange={(e) => {
+              setAgeChosen(true);
+              patch({ ageGroup: e.target.value as PetAgeGroup });
+            }}
             options={(Object.keys(PET_AGE_GROUP_LABEL) as PetAgeGroup[]).map(
               (key) => ({
                 value: key,
@@ -225,41 +318,47 @@ export function PetForm(props: PetFormProps) {
               }),
             )}
           />
+          {inlineError("ageGroup")}
 
           <ListField
             id="temperament"
-            label="Temperamento"
-            hint="Dócil, brincalhão, independente... separados por vírgula."
+            label="Temperamento (opcional)"
+            hint="Dócil, brincalhão, independente... separe com vírgula."
             value={input.temperament}
             onChange={(list) => patch({ temperament: list })}
           />
 
           <Textarea
             id="description"
-            label="Descrição"
+            label="Descrição (obrigatório)"
             required
             tone="brutal"
             placeholder="História, personalidade, o que ele mais gosta..."
             value={input.description}
             onChange={(e) => patch({ description: e.target.value })}
             invalid={error === "Escreva uma descrição do pet."}
-            errorId={ERROR_ID}
+            errorId="description-error"
           />
+          {inlineError("description")}
 
           <PhotoInput
             id="photos"
-            label="Fotos"
+            label="Fotos (obrigatório)"
             tone="brutal"
             hint="Pelo menos uma foto, de frente e com boa luz."
             value={input.photos}
-            onChange={(photos) => patch({ photos })}
+            onChange={(photos) => {
+              patch({ photos });
+              setError(null);
+            }}
             invalid={error === "Adicione ao menos uma foto."}
-            errorId={ERROR_ID}
+            errorId="photos-error"
           />
+          {inlineError("photos")}
         </BrutalCard>
 
         <BrutalCard className="gap-3">
-          <CardTitle>Saúde</CardTitle>
+          <CardTitle>Saúde (opcional)</CardTitle>
           <div className="flex flex-col gap-2">
             <Checkbox
               id="vaccinated"
@@ -297,7 +396,7 @@ export function PetForm(props: PetFormProps) {
           </div>
           <Input
             id="specialNeeds"
-            label="Necessidades especiais"
+            label="Necessidades especiais (opcional)"
             tone="brutal"
             hint="Se houver algum cuidado contínuo. Deixe em branco se não."
             value={input.health.specialNeeds}
@@ -309,7 +408,12 @@ export function PetForm(props: PetFormProps) {
           />
         </BrutalCard>
 
-        <FormError id={ERROR_ID}>{error}</FormError>
+        <FormError id={ERROR_ID}>
+          {Object.values(FIELD_ERROR).includes(error as never) ||
+          error?.startsWith(DUPLICATE_PREFIX)
+            ? null
+            : error}
+        </FormError>
 
         <BrutalButton
           type="submit"

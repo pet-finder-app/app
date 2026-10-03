@@ -22,7 +22,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 type OngProfileCardProps = {
   ong: OngProfile;
   pets: Pet[];
-  /** Ações no rodapé do cartão (ex.: "Cadastrar pet", "Editar informações"). */
+  /** Ações no rodapé do cartão (ex.: "Cadastrar pet", "Configurações"). */
   children?: ReactNode;
 };
 
@@ -62,6 +62,9 @@ export function OngProfileCard({ ong, pets, children }: OngProfileCardProps) {
             </h1>
             <VerificationBadge status={status} compact />
           </div>
+          <p className="truncate text-xs text-neutral-600">
+            @{ong.legal.nickname}
+          </p>
           <div className="mt-2 grid grid-cols-3 gap-1">
             <Stat value={pets.length} label="Pets" />
             <Stat value={availableCount} label="Disponíveis" />

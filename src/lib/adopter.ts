@@ -114,8 +114,8 @@ export type AdopterVerification = {
 // ---------------------------------------------------------------------------
 
 export type AdopterLegalConsent = {
-  /** Null até o adotante aceitar em /adotante/perfil — o cadastro não pede
-   *  isso na hora da conta (ver `register-form.tsx`). */
+  /** Aceito no cadastro (`register-form.tsx`). Null só em contas antigas, que
+   *  aceitam depois em /adotante/perfil. */
   terms: TermsAcceptance | null;
 };
 
@@ -199,7 +199,7 @@ export const ADOPTER_SECTION_LABEL: Record<AdopterProfileSection, string> = {
   personal: "Identificação",
   housing: "Moradia e rotina",
   preferences: "Preferências de adoção",
-  legalConsent: "Termos e LGPD",
+  legalConsent: "Termos e privacidade",
 };
 
 export const ADOPTER_SECTION_KEYS = Object.keys(
@@ -212,6 +212,8 @@ export type AdopterChecklistItem = {
   done: boolean;
   /** Seção de /adotante/perfil onde o item é preenchido. */
   section: AdopterProfileSection;
+  /** O que falta dentro do item, em palavras simples (vazio se pronto). */
+  missing: string;
 };
 
 export function getAdopterChecklist(
@@ -225,6 +227,19 @@ export function getAdopterChecklist(
     personal.address.state,
   );
 
+  const missingPersonal = [
+    !personal.fullName && "nome completo",
+    !personal.cpf && "CPF",
+    !personal.birthDate && "data de nascimento",
+    !personal.phone && "telefone",
+  ].filter(Boolean);
+  const missingAddress = [
+    !personal.address.cep && "CEP",
+    !personal.address.street && "rua",
+    !personal.address.city && "cidade",
+    !personal.address.state && "estado",
+  ].filter(Boolean);
+
   return [
     {
       id: "personal-info",
@@ -236,36 +251,47 @@ export function getAdopterChecklist(
         personal.phone,
       ),
       section: "personal",
+      missing: missingPersonal.join(", "),
     },
     {
       id: "address",
-      label: "Endereço completo com CEP",
+      label: "Endereço (CEP, rua, cidade e estado)",
       done: addressDone,
       section: "personal",
+      missing: missingAddress.join(", "),
     },
     {
       id: "id-document",
       label: "Documento com foto",
       done: personal.idDocument !== null,
       section: "personal",
+      missing: "foto do documento",
     },
     {
       id: "housing",
       label: "Tipo de moradia e situação do imóvel",
       done: Boolean(housing.type && housing.ownership),
       section: "housing",
+      missing: [
+        !housing.type && "tipo de moradia",
+        !housing.ownership && "situação do imóvel",
+      ]
+        .filter(Boolean)
+        .join(", "),
     },
     {
       id: "preferences",
       label: "Espécies que você quer adotar",
       done: preferences.species.length > 0,
       section: "preferences",
+      missing: "escolher ao menos uma espécie",
     },
     {
       id: "consent",
-      label: "Aceite dos termos de uso e da LGPD",
+      label: "Aceite dos termos de uso e da política de privacidade",
       done: legalConsent.terms !== null,
       section: "legalConsent",
+      missing: "marcar o aceite",
     },
   ];
 }

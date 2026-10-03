@@ -75,8 +75,15 @@ fica o resumo que qualquer sessão precisa ler primeiro.
   (✓, ‹, +...). Tamanho vem de `iconSize.sm|md|lg` (`components/ui/icon.ts`).
 - **Moldura:** toda página usa `PageShell`; cabeçalhos dentro de `Card`;
   ações fixas em `ActionBar`. Nada fica solto fora do quadro.
-- **Telas de autenticação** usam `AuthLayout` (fundo verde), campos com
-  `tone="primary"` e botão de envio `variant="secondary"`.
+- **Telas de autenticação** usam `AuthLayout`, campos com `tone="primary"`
+  (borda `neutral-900`; `leading`/`trailing` para ícone e botão de senha) e
+  envio `variant="dark"`. O login (`background="pastel"`) tem fundo verde-limão
+  (mistura de `lime-200`/`lime-300`), manchas orgânicas nos cantos
+  (`text-primary`, `text-lime-100`), marca d'água irregular
+  (`public/logo-scatter.svg`), ilustração `PetfinderMark` com animações
+  (`auth-float`, `auth-stamp`, `auth-paw-pulse`), `TextLink subtle` em
+  "Esqueceu a senha?" e "CRIAR CONTA" em `variant="secondary"`. `Button` mostra
+  spinner (`Loader2`) quando `loading`.
 - **Voltar / trocar etapa:** `Button` ou `LinkButton` com `variant="pill"`.
 
 ## Melhorias de UX/UI
@@ -99,10 +106,17 @@ rolagem horizontal em 375px. Verifique no preview em largura de celular.
 - `src/lib/ong.ts`: modelo completo da ONG em seis camadas e o checklist do
   que falta para publicar o primeiro pet. `src/lib/br-documents.ts`: CPF/CNPJ.
 - Cadastro da ONG é curto de propósito (tipo, nome, CPF/CNPJ, e-mail, senha,
-  termos). O resto é preenchido em `/ong/perfil`.
+  termos). O resto é preenchido em `/ong/configuracoes`.
 - `src/lib/pet.ts` + `src/lib/pets.ts`: modelo e storage dos pets publicados
   (`pets.json`). Só ONGs com `verification.status === "verificada"` podem
   cadastrar (`POST /api/ong/pets`) — ver `/ong/pets/novo`.
+- `src/lib/post.ts` + `src/lib/posts.ts`: posts da ONG (estilo Instagram) em
+  `posts.json`: legenda, várias fotos/vídeos (salvos em `public/uploads/posts`,
+  ignorado no git) e o pet marcado (`petId`, opcional — pode cadastrar um pet
+  novo direto no formulário). A grade do perfil lista posts, não pets; tocar
+  abre `/ong/posts/[id]`; criar/editar em `/ong/posts/novo` e
+  `/ong/posts/[id]/editar` (`PostForm`, `POST/PUT/DELETE /api/ong/posts`,
+  multipart). Mídia nova usa `MediaInput` (UI System).
 - `src/lib/notification.ts` + `src/lib/notifications.ts`: notificações da
   ONG sobre os pets (curtida = só demonstrou interesse passageiro; interesse
   = quer adotar de verdade). Geradas de verdade pelo lado do adotante
@@ -111,18 +125,52 @@ rolagem horizontal em 375px. Verifique no preview em largura de celular.
 - `src/lib/adopter.ts`: modelo do adotante em quatro camadas (identificação,
   moradia/rotina, preferências de adoção, termos/LGPD) e o checklist do que
   falta para o perfil ficar completo — mesmo padrão de `lib/ong.ts`. Cadastro
-  do adotante é curto (nome, e-mail, senha); o resto é preenchido em
-  `/adotante/perfil`, inclusive o aceite dos termos (não é pedido no
-  cadastro).
+  do adotante é curto (nome, e-mail, senha, aceite dos termos); o resto é
+  preenchido em `/adotante/perfil`.
 - Painel da ONG (`/`) segue o padrão "perfil do Instagram sem stories":
   cabeçalho com avatar/nome/estatísticas/bio/"Editar perfil", grade de pets
-  publicados abaixo. Navegação fixa (`OngTabBar`): início, cadastrar pet,
+  publicados abaixo. Navegação fixa (`OngTabBar`, com "+" central para novo post): início, cadastrar pet,
   notificações.
-- Painel do adotante (`/`, quando `role === "adopter"`): cabeçalho com
-  avatar/nome/selo de verificação/checklist do perfil, feed de pets
-  disponíveis de ONGs verificadas (`listAvailablePets`) com curtir/demonstrar
-  interesse (`AdopterPetCard`). Navegação fixa (`AdopterTabBar`): início,
-  notificações (atividade própria, em `/adotante/notificacoes`), perfil.
+- Painel do adotante (`/`, quando `role === "adopter"`): cabeçalho compacto com
+  avatar/nome/selo/passos do perfil e feed estilo Instagram em duas abas
+  (`AdopterFeedTabs`): "Recomendações" (posts das ONGs + pets ainda sem post)
+  e "Seguindo" (só ONGs seguidas; `lib/follows.ts`, `POST /api/ongs/[id]/seguir`,
+  `FollowButton`). Cards de pet abrem `/pets/[id]` (detalhe). Navegação fixa
+  (`AdopterTabBar`): início, favoritos (`/adotante/favoritos`), atividade
+  (`/adotante/notificacoes`, histórico das próprias ações) e perfil. Ainda não
+  há chat: o app avisa que a ONG responde por telefone/e-mail do perfil.
+- Chat e adoção: `lib/conversation(s).ts` (uma conversa por pet + adotante, aberta
+  pelo "Quero adotar"; telas `/adotante/conversas` e `/ong/mensagens`, com
+  `ChatThread`, que consulta mensagens a cada 4s). `lib/adoption.ts` +
+  `lib/adoptions.ts`: processo de adoção (ficha → análise/visita opcional →
+  termo → entrega → acompanhamento 7/30/90 dias); toda mudança passa por
+  `performAction` e avisa no chat. Termo: modelo por ONG
+  (`lib/term-template.ts`, editor em `/ong/configuracoes/termo`), assinatura
+  eletrônica própria com código (no protótipo o código aparece na tela; com
+  backend sai por e-mail/SMS), SHA-256 e página imprimível em
+  `/adocoes/[id]/termo`. Plano completo: `docs/plano-processo-de-adocao.md`.
+- Requisitos do Notion (RF/RNF): `lib/dislikes.ts` + `POST /api/pets/[id]/descartar` ("Não tenho interesse": some do feed, lista em `/adotante/descartados`); `/adotante/descobrir` (`AdopterReels`, rolagem vertical com snap); feed e rolagem ordenam por proximidade usando o CEP do perfil (`distancesFromCep` em `lib/geo.ts`); `PetStatus` tem `indisponivel` (menu do pet da ONG, `PATCH /api/ong/pets/[id]` com `status`); pet tem `sizeCm` opcional e espécie `passaro`; recuperar senha em `/esqueci-senha` e `/redefinir-senha` (`lib/password-resets.ts`, link aparece na tela no protótipo); entrega com encontro marcado (`Adoption.handover`: local, data/hora, OTP do adotante, confirmação de entrega pela ONG e de recebimento pelo adotante; lembrete no painel quando o encontro é em até 24h). Também: localização do navegador opcional (`LocationButton`, `POST /api/location`, cookie; `lib/location.ts` escolhe GPS ou CEP), OTP da entrega opcional (checkbox ao marcar o encontro), `/ong/pets/[id]/interessados` (quem curtiu/quer adotar + `POST /api/ong/pets/[id]/conversar` para a ONG puxar assunto) e exclusão de conta (`DELETE /api/account`, `DeleteAccountButton`; adoções e conversas ficam por obrigação legal). Só existem os papéis ONG e adotante.
+- Doação em dinheiro (adotante → ONG): `lib/donation.ts` + `lib/donations.ts`.
+  O Pix acontece fora do app, direto na conta da ONG (chave em
+  `publicProfile.donation`). O adotante escolhe a ONG em `/adotante/doar`
+  (também pelo cartão da ONG em `/pets/[id]`), vê/copia a chave e toca em "Já
+  fiz o Pix" (`POST /api/doacoes`) → doação `informada`. A ONG confere o extrato
+  em `/ong/doacoes` e confirma ("Recebi o Pix") ou marca "não encontrei"
+  (`POST /api/doacoes/[id]`). Só as `confirmada` (ou sem `status`, as de teste
+  antigas) entram nos totais do dashboard.
+- Entrega de pet à ONG ("acolhimento", o processo inverso da adoção):
+  `lib/surrender.ts` + `lib/surrenders.ts`, `surrenders.json`. O adotante abre o
+  pedido em `/adotante/acolhimentos/novo` (pet novo, ou devolução de um pet
+  adotado pelo app, que traz os dados do pet e fixa a ONG de origem) → análise
+  da ONG (`/ong/acolhimentos`; aceitar, pedir ajustes ou recusar com motivo) →
+  termo de entrega (`SURRENDER_TERM_TEMPLATE`, mesma assinatura eletrônica da
+  adoção, página `/acolhimentos/[id]/termo`) → ONG marca o encontro e confirma o
+  recebimento. Ao receber, o pet entra no catálogo da ONG como "indisponível"
+  (ou reabre o cadastro, na devolução) para ela avaliar e publicar; a adoção de
+  origem vira `devolvida`. Mesmo esqueleto do painel de adoção (`SurrenderPanel`,
+  peças comuns em `components/process-cards.tsx`); toda mudança passa por
+  `performAction` e avisa no chat (conversa com `surrenderId`).
+- Avisos de "tem algo para você": `lib/alerts.ts` (mensagens não lidas + adoções em que é a vez da pessoa), `GET /api/avisos` e `useAvisos` (selo no menu de baixo do adotante e da ONG, atualizado a cada 15s) e o cartão "Tem novidade para você" no Início do adotante. Erros das ações da adoção aparecem num aviso fixo perto da barra de baixo (`ErrorToast`), e atos sem volta pedem confirmação (`ConfirmButton`), ambos em `components/process-cards.tsx`. `Card` tem `tone` (default, highlight, success); não passe `bg-*` solto no `className`, ele não sobrescreve o fundo. Acompanhamento pós-adoção: um relato por vez, com foto opcional (`POST /api/adocoes/[id]/acompanhamento`, salva em `public/uploads/acompanhamento`).
 - Usuários de teste: `contato@quatropatas.org` (ONG verificada, com pets),
   `bia@petfinder.app` (ONG pendente), `carla@petfinder.app` (adotante
   verificada, perfil completo) e `felipe@petfinder.app` (adotante pendente,

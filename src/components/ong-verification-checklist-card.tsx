@@ -8,7 +8,14 @@ import { getOngChecklist, type OngProfile } from "@/lib/ong";
  * mostra o checklist do que falta para publicar o primeiro pet. Usado no
  * Perfil (`/`) e na tela de Pets (`/ong/pets`).
  */
-export function OngVerificationChecklistCard({ ong }: { ong: OngProfile }) {
+export function OngVerificationChecklistCard({
+  ong,
+  blockedAction,
+}: {
+  ong: OngProfile;
+  /** Quando a pessoa tentou algo bloqueado (ex.: "cadastrar pets"), explica o motivo. */
+  blockedAction?: string;
+}) {
   const checklist = getOngChecklist(ong);
   const done = checklist.filter((item) => item.done).length;
   const status = ong.verification.status;
@@ -17,14 +24,18 @@ export function OngVerificationChecklistCard({ ong }: { ong: OngProfile }) {
     <BrutalCard className="gap-3">
       <div>
         <p className="text-sm font-bold text-neutral-900">
-          {status === "em_analise"
-            ? "Cadastro em análise"
-            : "Complete o cadastro para publicar pets"}
+          {blockedAction
+            ? status === "em_analise"
+              ? `Para ${blockedAction}, aguarde a aprovação`
+              : `Para ${blockedAction}, complete o cadastro primeiro`
+            : status === "em_analise"
+              ? "Cadastro em análise"
+              : "Complete o cadastro para publicar pets"}
         </p>
         <p className="text-sm text-neutral-600">
           {status === "em_analise"
-            ? "Estamos conferindo seus documentos. Avisamos por e-mail quando terminar."
-            : "Os documentos só são exigidos na hora de publicar o primeiro pet."}
+            ? "Nossa equipe está conferindo seus documentos e avisa por e-mail quando terminar. Depois disso você poderá cadastrar pets e fazer posts."
+            : "São 2 passos: 1) preencher os itens abaixo e enviar; 2) nossa equipe confere e aprova. Só depois você pode cadastrar pets e fazer posts."}
         </p>
       </div>
 
@@ -42,8 +53,8 @@ export function OngVerificationChecklistCard({ ong }: { ong: OngProfile }) {
         />
       </div>
 
-      <BrutalLinkButton href="/ong/perfil/editar" size="lg">
-        {status === "pendente" ? "COMPLETAR CADASTRO" : "VER PERFIL DA ONG"}
+      <BrutalLinkButton href="/ong/configuracoes" size="lg">
+        {status === "pendente" ? "COMPLETAR CADASTRO" : "VER MEU CADASTRO"}
       </BrutalLinkButton>
     </BrutalCard>
   );

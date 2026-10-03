@@ -2,7 +2,14 @@
 
 import { cn, shadowSoft } from "@/components/ui";
 import type { Pet } from "@/lib/pet";
-import { Archive, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import {
+  Archive,
+  CircleCheck,
+  EyeOff,
+  MoreVertical,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -12,6 +19,9 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
   const [open, setOpen] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [togglingStatus, setTogglingStatus] = useState(false);
+  const canToggleAvailability =
+    pet.status === "disponivel" || pet.status === "indisponivel";
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -49,6 +59,23 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
     router.refresh();
   }
 
+  async function handleToggleAvailability() {
+    setTogglingStatus(true);
+    try {
+      await fetch(`/api/ong/pets/${pet.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: pet.status === "indisponivel" ? "disponivel" : "indisponivel",
+        }),
+      });
+      closeMenu();
+      router.refresh();
+    } finally {
+      setTogglingStatus(false);
+    }
+  }
+
   async function handleDelete() {
     if (!confirmingDelete) {
       setConfirmingDelete(true);
@@ -77,7 +104,7 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
         <div
           role="menu"
           className={cn(
-            "absolute top-9 right-0 z-10 flex w-40 flex-col overflow-hidden rounded-xl border border-neutral-900 bg-white py-1",
+            "absolute top-9 right-0 z-10 flex w-48 flex-col overflow-hidden rounded-xl border border-neutral-900 bg-white py-1",
             shadowSoft.md,
           )}
         >
@@ -90,6 +117,24 @@ export function PetCardMenu({ pet }: { pet: Pet }) {
             <Pencil className="size-4" aria-hidden="true" />
             Editar
           </Link>
+          {canToggleAvailability ? (
+            <button
+              type="button"
+              role="menuitem"
+              disabled={togglingStatus}
+              onClick={() => void handleToggleAvailability()}
+              className="flex items-center gap-2 px-3 py-2 text-left text-sm text-neutral-900 hover:bg-neutral-50 disabled:opacity-60"
+            >
+              {pet.status === "indisponivel" ? (
+                <CircleCheck className="size-4" aria-hidden="true" />
+              ) : (
+                <EyeOff className="size-4" aria-hidden="true" />
+              )}
+              {pet.status === "indisponivel"
+                ? "Voltar a disponível"
+                : "Marcar indisponível"}
+            </button>
+          ) : null}
           <button
             type="button"
             role="menuitem"
