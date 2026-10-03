@@ -1,0 +1,142 @@
+{
+  "conversations": [
+    {
+      "id": "1cdfe3e7-eb85-40db-8b38-524bf525a221",
+      "petId": "2fe13785-18ec-4071-a4c7-91812e787c9c",
+      "petName": "Biscoito",
+      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "adopterId": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
+      "adopterName": "Marlene Souza",
+      "messages": [
+        {
+          "id": "7de49252-89c4-4cef-8915-c08317ba1ce5",
+          "senderId": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
+          "text": "Oi! Tenho interesse em adotar.",
+          "createdAt": "2026-10-03T00:24:07.425Z"
+        },
+        {
+          "id": "41c525f7-07c9-473e-9c3b-992676d5208e",
+          "senderId": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
+          "text": "Posso visitar neste sábado?",
+          "createdAt": "2026-10-03T00:24:08.564Z"
+        }
+      ],
+      "lastReadAt": {
+        "adopter": "2026-10-03T00:34:52.422Z",
+        "ong": "2026-10-03T00:24:08.564Z"
+      },
+      "createdAt": "2026-10-03T00:24:07.425Z",
+      "updatedAt": "2026-10-03T00:35:40.487Z"
+    },
+    {
+      "id": "9e835161-15b4-4219-a7d3-8918b0fcb520",
+      "petId": "fd52a828-2804-4e97-9f61-155a4a0e9981",
+      "petName": "Tom",
+      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "adopterId": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
+      "adopterName": "Marlene Souza",
+      "messages": [
+        {
+          "id": "3cff54b0-6cb9-4dd3-84e2-c23a27e847be",
+          "senderId": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
+          "text": "Ola! Quero adotar o Tom. Moro em casa com quintal e ja tive gatos.",
+          "createdAt": "2026-10-03T00:46:51.681Z"
+        },
+        {
+          "id": "e0b4df42-ffc5-4724-9765-64e4ff03e7e5",
+          "senderId": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
+          "text": "O Tom se da bem com criancas?",
+          "createdAt": "2026-10-03T00:47:16.402Z"
+        },
+        {
+          "id": "4375a5d9-2bfa-477d-84b3-15639ed391de",
+          "senderId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+          "text": "Oi, Marlene! Que bom o seu interesse no Tom. Ele e um gato bem calmo e adora criancas, muito carinhoso com elas.",
+          "createdAt": "2026-10-03T00:54:13.421Z"
+        },
+        {
+          "id": "43f4a936-3126-4108-aa59-d32f8c68e9b1",
+          "senderId": "system",
+          "text": "A ONG iniciou o processo de adoção de Tom. Preencha a ficha de adoção para continuar.",
+          "kind": "system",
+          "createdAt": "2026-10-03T00:54:30.173Z"
+        },
+        {
+          "id": "3fd06d3d-5cfb-4b04-b2ec-138dbd002c18",
+          "senderId": "system",
+          "text": "Marlene Souza enviou a ficha de adoção. A ONG vai analisar.",
+          "kind": "system",
+          "createdAt": "2026-10-03T00:57:17.053Z"
+        },
+        {
+          "id": "5548e03a-8307-4fe7-a825-7d056b8eb365",
+          "senderId": "system",
+          "text": "A ONG pediu uma visita: sábado, 10h.",
+          "kind": "system",
+          "createdAt": "2026-10-03T00:58:36.911Z"
+        },
+        {
+          "id": "71978d34-34d8-42b7-a06f-6312cb45d626",
+          "senderId": "system",
+          "text": "Adoção aprovada! O termo de adoção de Tom está pronto para assinar, pela ONG e por você.",
+          "kind": "system",
+          "createdAt": "2026-10-03T00:58:54.138Z"
+        },
+        {
+          "id": "a65a4670-55dc-437b-b7f9-16184df81efe",
+          "senderId": "system",
+          "text": "A ONG assinou o termo. Falta a assinatura de Marlene Souza.",
+          "kind": "system",
+          "createdAt": "2026-10-03T00:59:25.477Z"
+        },
+        {
+          "id": "a358d9bf-28bf-44df-acc0-f83d9d27feeb",
+          "senderId": "system",
+          "text": "Termo assinado pelas duas partes! Combinem aqui a entrega de Tom.",
+          "kind": "system",
+          "createdAt": "2026-10-03T01:02:35.223Z"
+        },
+        {
+          "id": "ed686daf-fc4e-4c1c-9ed6-a7f0358cb612",
+          "senderId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+          "text": "Pode buscar o Tom sabado as 10h aqui na ONG.",
+          "createdAt": "2026-10-03T01:04:13.125Z"
+        },
+        {
+          "id": "88be57a3-32e9-4c22-bead-07f219065d23",
+          "senderId": "system",
+          "text": "Encontro marcado: sábado, 3 de outubro de 2026 às 10:00, em Sede da ONG. Vocês receberão um lembrete perto do horário.",
+          "kind": "system",
+          "createdAt": "2026-10-03T01:28:59.128Z"
+        },
+        {
+          "id": "b8646353-41d9-4f90-a69e-e26703ec4980",
+          "senderId": "system",
+          "text": "A ONG confirmou a entrega de Tom. Falta Marlene Souza confirmar o recebimento.",
+          "kind": "system",
+          "createdAt": "2026-10-03T01:32:28.465Z"
+        },
+        {
+          "id": "bb16ff22-c3c5-4515-a087-5e7cdb33d971",
+          "senderId": "system",
+          "text": "Tom foi entregue e recebido! Vamos pedir notícias dele daqui a 1 semana, 1 mês e 3 meses.",
+          "kind": "system",
+          "createdAt": "2026-10-03T01:33:36.963Z"
+        },
+        {
+          "id": "a9afd759-6cff-4c00-b6fd-fee3bdfabb50",
+          "senderId": "system",
+          "text": "Marlene Souza mandou notícias de Tom.",
+          "kind": "system",
+          "createdAt": "2026-10-03T01:34:10.373Z"
+        }
+      ],
+      "lastReadAt": {
+        "adopter": "2026-10-03T01:28:59.128Z",
+        "ong": "2026-10-03T01:32:28.465Z"
+      },
+      "createdAt": "2026-10-03T00:46:51.681Z",
+      "updatedAt": "2026-10-03T01:34:10.373Z"
+    }
+  ]
+}

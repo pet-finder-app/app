@@ -1,15 +1,29 @@
 import { AdopterTabBar } from "@/components/adopter-tab-bar";
-import { Card, CardTitle, cn, PageShell } from "@/components/ui";
+import {
+  Badge,
+  Card,
+  CardTitle,
+  cn,
+  LinkButton,
+  PageShell,
+} from "@/components/ui";
 import { shadowSoft } from "@/components/ui/elevation";
 import { NOTIFICATION_TYPE_LABEL } from "@/lib/notification";
 import { listNotificationsByAdopter } from "@/lib/notifications";
+import {
+  isSurrenderActive,
+  SURRENDER_STATUS_LABEL,
+  whoActsNow,
+} from "@/lib/surrender";
+import { listSurrendersByAdopter } from "@/lib/surrenders";
 import { findUserById, SESSION_COOKIE } from "@/lib/users";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Notificações – Petfinder",
+  title: "Minha atividade – Petfinder",
 };
 
 export default async function AdopterNotificationsPage() {
@@ -19,15 +33,62 @@ export default async function AdopterNotificationsPage() {
   if (!user) redirect("/login");
   if (user.role !== "adopter" || !user.adopter) redirect("/");
 
-  const notifications = await listNotificationsByAdopter(user.id);
+  const [notifications, surrenders] = await Promise.all([
+    listNotificationsByAdopter(user.id),
+    listSurrendersByAdopter(user.id),
+  ]);
 
   return (
     <PageShell hasActionBar>
       <Card as="header" className="gap-2">
-        <CardTitle>Suas interações</CardTitle>
+        <CardTitle>Minha atividade</CardTitle>
         <p className="text-sm text-neutral-600">
-          Pets que você curtiu ou em que demonstrou interesse de adotar.
+          O que você já fez: pets favoritados e pedidos de adoção enviados. As
+          respostas das ONGs chegam pelo telefone ou e-mail do seu perfil.
         </p>
+      </Card>
+
+      <Card className="gap-3">
+        <CardTitle>Doações e entregas de pets</CardTitle>
+        <div className="flex flex-wrap gap-2">
+          <LinkButton href="/adotante/doar" variant="outline" size="sm">
+            Doar para uma ONG
+          </LinkButton>
+          <LinkButton
+            href="/adotante/acolhimentos/novo"
+            variant="outline"
+            size="sm"
+          >
+            Deixar um pet com a ONG
+          </LinkButton>
+        </div>
+        {surrenders.length > 0 ? (
+          <ul className="flex flex-col gap-2">
+            {surrenders.map((surrender) => (
+              <li key={surrender.id}>
+                <Link
+                  href={`/adotante/acolhimentos/${surrender.id}`}
+                  className="flex items-center gap-3 rounded-2xl border border-stone-300 p-3 focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:outline-none"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-neutral-900">
+                      {surrender.adoptionId ? "Devolução" : "Entrega"} de{" "}
+                      {surrender.pet.name}
+                    </p>
+                    <p className="truncate text-xs text-neutral-600">
+                      {surrender.ongName} ·{" "}
+                      {SURRENDER_STATUS_LABEL[surrender.status]}
+                    </p>
+                  </div>
+                  {isSurrenderActive(surrender.status) &&
+                  whoActsNow(surrender) === "adopter" ? (
+                    <Badge tone="warning">Sua vez</Badge>
+                  ) : null}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </Card>
 
       {notifications.length === 0 ? (

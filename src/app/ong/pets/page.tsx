@@ -1,15 +1,16 @@
 import { BrutalLinkButton } from "@/components/brutal-button";
 import { BrutalCard } from "@/components/brutal-card";
+import { OngPetsManager } from "@/components/ong-pets-manager";
 import { OngTabBar } from "@/components/ong-tab-bar";
 import { OngVerificationChecklistCard } from "@/components/ong-verification-checklist-card";
-import { PetListItem } from "@/components/pet-list-item";
-import { PageShell } from "@/components/ui";
+import { iconSize, PageShell } from "@/components/ui";
 import {
   countNotificationsByPet,
   listNotificationsByOng,
 } from "@/lib/notifications";
 import { listPetsByOng } from "@/lib/pets";
 import { findUserById, SESSION_COOKIE } from "@/lib/users";
+import { ChevronLeft, PawPrint, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -17,8 +18,6 @@ import { redirect } from "next/navigation";
 export const metadata: Metadata = {
   title: "Meus pets – Petfinder",
 };
-
-const CARD_TONE = ["bg-primary-faint", "bg-accent-yellow", "bg-accent-peach"];
 
 /** Gestão dos pets publicados: status de adoção, curtidas, interessados, editar e arquivar. */
 export default async function OngPetsPage() {
@@ -42,14 +41,41 @@ export default async function OngPetsPage() {
 
   return (
     <PageShell hasActionBar>
-      <BrutalCard as="header" className="gap-2">
-        <h1 className="text-lg font-bold text-neutral-900">Meus pets</h1>
-        <p className="text-sm text-neutral-600">
-          Acompanhe o status de adoção, curtidas e interessados. Edite ou
-          arquive pelo menu de cada pet.
-        </p>
+      <BrutalCard
+        as="header"
+        className="rise-in relative gap-3 overflow-hidden bg-primary-faint"
+      >
+        <PawPrint
+          className="pointer-events-none absolute -top-3 -right-3 size-28 -rotate-12 text-primary/15"
+          aria-hidden="true"
+        />
+        <BrutalLinkButton
+          href="/ong/dashboard"
+          variant="pill"
+          size="sm"
+          className="self-start"
+        >
+          <ChevronLeft className={iconSize.sm} aria-hidden="true" />
+          Início
+        </BrutalLinkButton>
+        <div className="relative flex items-center gap-3">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-full border border-neutral-900 bg-primary text-primary-foreground">
+            <PawPrint className={iconSize.lg} aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-neutral-900">Meus pets</h1>
+            <p className="text-sm text-neutral-600">
+              Status, curtidas e interessados de cada pet.
+            </p>
+          </div>
+        </div>
         {verified ? (
-          <BrutalLinkButton href="/ong/pets/novo" size="md">
+          <BrutalLinkButton
+            href="/ong/pets/novo"
+            size="md"
+            className="relative"
+          >
+            <Plus className={iconSize.md} aria-hidden="true" />
             Cadastrar pet
           </BrutalLinkButton>
         ) : null}
@@ -58,17 +84,13 @@ export default async function OngPetsPage() {
       {!verified ? (
         <OngVerificationChecklistCard ong={ong} />
       ) : pets.length > 0 ? (
-        <ul className="flex flex-col gap-2">
-          {pets.map((pet, index) => (
-            <PetListItem
-              key={pet.id}
-              pet={pet}
-              tone={CARD_TONE[index % CARD_TONE.length]}
-              likesCount={likesByPet[pet.id] ?? 0}
-              interestedCount={interestedByPet[pet.id] ?? 0}
-            />
-          ))}
-        </ul>
+        <>
+          <OngPetsManager
+            pets={pets}
+            likesByPet={likesByPet}
+            interestedByPet={interestedByPet}
+          />
+        </>
       ) : (
         <BrutalCard className="items-center gap-3 text-center">
           <p className="text-sm text-neutral-600">

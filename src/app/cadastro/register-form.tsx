@@ -1,6 +1,13 @@
 "use client";
 
-import { Button, FormError, iconSize, Input } from "@/components/ui";
+import {
+  Button,
+  Checkbox,
+  FormError,
+  iconSize,
+  Input,
+  TextLink,
+} from "@/components/ui";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -8,7 +15,8 @@ import { useState, type FormEvent } from "react";
 const ERROR_ID = "register-error";
 
 /** Qual campo o erro atual se refere a, quando o backend informa um. */
-type ErrorField = "name" | "email" | "password" | "confirmPassword" | null;
+type ErrorField =
+  "name" | "email" | "password" | "confirmPassword" | "acceptedTerms" | null;
 
 type RegisterFormProps = {
   /** Volta para a etapa de escolha entre ONG e adotante. */
@@ -24,6 +32,7 @@ export function RegisterForm({ onBack }: RegisterFormProps) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [errorField, setErrorField] = useState<ErrorField>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -37,13 +46,25 @@ export function RegisterForm({ onBack }: RegisterFormProps) {
       return;
     }
 
+    if (!acceptedTerms) {
+      setError("É preciso aceitar os termos de uso para continuar.");
+      setErrorField("acceptedTerms");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: "adopter", name, email, password }),
+        body: JSON.stringify({
+          role: "adopter",
+          name,
+          email,
+          password,
+          acceptedTerms,
+        }),
       });
 
       const data = await response.json();
@@ -131,6 +152,24 @@ export function RegisterForm({ onBack }: RegisterFormProps) {
         onChange={(event) => setConfirmPassword(event.target.value)}
         invalid={errorField === "confirmPassword"}
         errorId={ERROR_ID}
+      />
+
+      <Checkbox
+        tone="primary"
+        id="acceptedTerms"
+        checked={acceptedTerms}
+        onChange={(event) => setAcceptedTerms(event.target.checked)}
+        invalid={errorField === "acceptedTerms"}
+        errorId={ERROR_ID}
+        label={
+          <>
+            Li e aceito os{" "}
+            <TextLink href="/termos" target="_blank" tone="primary">
+              termos de uso e a política de privacidade
+            </TextLink>
+            .
+          </>
+        }
       />
 
       <FormError id={ERROR_ID}>{error}</FormError>

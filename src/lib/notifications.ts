@@ -144,3 +144,11 @@ export async function createInteresse(
   await writeNotifications([...notifications, notification]);
   return notification;
 }
+
+/** Apaga as notificações em que o usuário é a ONG ou o adotante (exclusão de conta). */
+export async function deleteNotificationsOfUser(userId: string): Promise<void> {
+  const notifications = await readNotifications();
+  await writeNotifications(
+    notifications.filter((n) => n.ongId !== userId && n.adopterId !== userId),
+  );
+}

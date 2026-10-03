@@ -110,6 +110,7 @@ Campos, checkbox e links aceitam `tone="primary" | "light"`:
 | `Checkbox`                             | Caixa com rótulo (o rótulo pode conter links).                                                                                                                                              |
 | `FileInput`                            | Escolha de um arquivo; guarda só metadados (`UploadedFile`).                                                                                                                                |
 | `PhotoInput`                           | Escolha de várias fotos (`UploadedFile[]`), com miniatura em lista e remoção individual. Mesma ideia do `FileInput`, para quando há mais de um arquivo (fotos do pet, do perfil público).   |
+| `MediaInput`                         | Escolha de várias fotos e vídeos com prévia em grade e remoção individual; guarda o `File` (para envio multipart). Usado no post da ONG. |
 | `FormError`                            | Alerta de erro do formulário; use o `id` dele como `errorId` dos campos.                                                                                                                    |
 | `Card`, `CardTitle`, `CardDescription` | Cartão branco padrão.                                                                                                                                                                       |
 | `Badge`                                | Selo: neutral, info, success, warning, danger.                                                                                                                                              |
@@ -192,3 +193,13 @@ import { ChevronLeft } from "lucide-react";
 Ficam em `src/components/` (fora de `ui/`) e são compostos com o UI System:
 `auth-layout`, `role-select`, `verification-badge`, `splash-*`, `ong-tab-bar`
 (navegação fixa do painel da ONG — início/grade de pets, cadastrar, notificações).
+
+## Carregamento
+
+Animação de carregamento = a lupa da marca (`PetfinderMark` com a classe
+`lupa-loading`, em `globals.css`): balança "procurando" e a pegada pulsa.
+Dois usos prontos, sem configurar nada:
+
+- `Button` com `loading` mostra a lupa antes do `loadingLabel`.
+- `NavigationProgress` (no layout) mostra "Carregando..." com a lupa ao tocar
+  num link interno, até a próxima tela abrir.

@@ -7,11 +7,12 @@ import type { UploadedFile } from "./ong";
  * Este arquivo não importa nada do Node: pode ser usado no client.
  */
 
-export type PetSpecies = "cachorro" | "gato" | "outro";
+export type PetSpecies = "cachorro" | "gato" | "passaro" | "outro";
 
 export const PET_SPECIES_LABEL: Record<PetSpecies, string> = {
   cachorro: "Cachorro",
   gato: "Gato",
+  passaro: "Pássaro",
   outro: "Outro",
 };
 
@@ -40,12 +41,14 @@ export const PET_AGE_GROUP_LABEL: Record<PetAgeGroup, string> = {
   idoso: "Idoso",
 };
 
-export type PetStatus = "disponivel" | "em_processo" | "adotado";
+export type PetStatus =
+  "disponivel" | "em_processo" | "adotado" | "indisponivel";
 
 export const PET_STATUS_LABEL: Record<PetStatus, string> = {
   disponivel: "Disponível",
   em_processo: "Em processo de adoção",
   adotado: "Adotado",
+  indisponivel: "Indisponível",
 };
 
 export type PetHealth = {
@@ -66,6 +69,8 @@ export type Pet = {
   breed: string;
   sex: PetSex;
   size: PetSize;
+  /** Tamanho aproximado em centímetros — opcional. */
+  sizeCm?: number | null;
   ageGroup: PetAgeGroup;
   temperament: string[];
   health: PetHealth;
@@ -88,6 +93,7 @@ export type PetInput = {
   breed: string;
   sex: PetSex;
   size: PetSize;
+  sizeCm?: number | null;
   ageGroup: PetAgeGroup;
   temperament: string[];
   health: PetHealth;
@@ -102,6 +108,7 @@ export function createEmptyPetInput(): PetInput {
     breed: "",
     sex: "macho",
     size: "medio",
+    sizeCm: null,
     ageGroup: "adulto",
     temperament: [],
     health: {
@@ -120,6 +127,11 @@ export function validatePetInput(input: PetInput): string | null {
   if (!input.name.trim()) return "Dê um nome para o pet.";
   if (input.photos.length === 0) return "Adicione ao menos uma foto.";
   if (!input.description.trim()) return "Escreva uma descrição do pet.";
+  if (
+    input.sizeCm != null &&
+    (!Number.isFinite(input.sizeCm) || input.sizeCm <= 0 || input.sizeCm > 300)
+  )
+    return "Informe um tamanho em centímetros entre 1 e 300.";
   return null;
 }
 

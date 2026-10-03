@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { OngProfileForm } from "./ong-profile-form";
 
 export const metadata: Metadata = {
-  title: "Editar perfil da ONG – Petfinder",
+  title: "Configurações – Petfinder",
 };
 
 export default async function EditOngProfilePage() {

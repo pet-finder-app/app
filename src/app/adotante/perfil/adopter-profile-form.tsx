@@ -1,5 +1,6 @@
 "use client";
 
+import { DeleteAccountButton } from "@/components/delete-account-button";
 import { LogoutButton } from "@/components/logout-button";
 import {
   ActionBar,
@@ -34,7 +35,13 @@ import {
   type HousingOwnership,
   type HousingType,
 } from "@/lib/adopter";
-import { maskCep, maskCpf, maskPhone, onlyDigits } from "@/lib/br-documents";
+import {
+  isValidCpf,
+  maskCep,
+  maskCpf,
+  maskPhone,
+  onlyDigits,
+} from "@/lib/br-documents";
 import { TERMS_VERSION } from "@/lib/ong";
 import {
   PET_AGE_GROUP_LABEL,
@@ -96,6 +103,7 @@ export function AdopterProfileForm({
   const router = useRouter();
   const [profile, setProfile] = useState<AdopterProfile>(initialProfile);
   const [error, setError] = useState<string | null>(null);
+  const [errorField, setErrorField] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -114,8 +122,58 @@ export function AdopterProfileForm({
     }));
   }
 
+  /** Mostra o erro, destaca o campo e leva a pessoa até ele. */
+  function failOnField(fieldId: string, message: string) {
+    setError(message);
+    setErrorField(fieldId);
+    const el = document.getElementById(fieldId);
+    el?.scrollIntoView({ block: "center", behavior: "smooth" });
+    el?.focus({ preventScroll: true });
+  }
+
+  /** Preenche rua, bairro, cidade e estado pelo CEP (ViaCEP). */
+  async function lookupCep(cep: string) {
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = (await response.json()) as {
+        erro?: boolean;
+        logradouro?: string;
+        bairro?: string;
+        localidade?: string;
+        uf?: string;
+      };
+      if (data.erro) return;
+      setProfile((prev) => {
+        if (prev.personal.address.cep !== cep) return prev;
+        const a = prev.personal.address;
+        return {
+          ...prev,
+          personal: {
+            ...prev.personal,
+            address: {
+              ...a,
+              street: a.street || data.logradouro || "",
+              neighborhood: a.neighborhood || data.bairro || "",
+              city: a.city || data.localidade || "",
+              state: a.state || data.uf || "",
+            },
+          },
+        };
+      });
+    } catch {
+      // Sem internet ou CEP fora do ar: a pessoa digita o endereço à mão.
+    }
+  }
+
   async function save(submitForReview: boolean) {
     setError(null);
+    setErrorField(null);
+    setSavedAt(null);
+    const cpf = onlyDigits(profile.personal.cpf);
+    if (cpf && !isValidCpf(cpf)) {
+      failOnField("cpf", "CPF inválido. Confira os números.");
+      return;
+    }
     setIsSaving(true);
     try {
       const response = await fetch("/api/adopter/profile", {
@@ -125,7 +183,11 @@ export function AdopterProfileForm({
       });
       const data = await response.json();
       if (!response.ok) {
-        setError(data.message ?? "Não foi possível salvar.");
+        if (data.field === "personal.cpf") {
+          failOnField("cpf", data.message ?? "CPF inválido.");
+        } else {
+          setError(data.message ?? "Não foi possível salvar.");
+        }
         return;
       }
       setProfile(data.profile);
@@ -176,6 +238,13 @@ export function AdopterProfileForm({
               {profile.verification.statusNote}
             </p>
           ) : null}
+
+          <p className="text-sm text-neutral-900">
+            Só os itens da lista &ldquo;Para as ONGs confiarem&rdquo; (no fim da
+            página) são necessários para pedir a verificação. Campos marcados
+            com &ldquo;opcional&rdquo; você pode pular. Você já pode pedir para
+            adotar mesmo sem completar o perfil.
+          </p>
 
           <nav
             aria-label="Seções do perfil"
@@ -234,9 +303,13 @@ export function AdopterProfileForm({
               inputMode="numeric"
               placeholder="000.000.000-00"
               value={maskCpf(profile.personal.cpf)}
-              onChange={(e) =>
-                patch("personal", { cpf: onlyDigits(e.target.value) })
-              }
+              invalid={errorField === "cpf"}
+              errorId={ERROR_ID}
+              onChange={(e) => {
+                setErrorField(null);
+                setError(null);
+                patch("personal", { cpf: onlyDigits(e.target.value) });
+              }}
             />
             <Input
               id="birthDate"
@@ -264,20 +337,20 @@ export function AdopterProfileForm({
           />
           <Input
             id="occupation"
-            label="Ocupação"
+            label="Ocupação (opcional)"
             value={profile.personal.occupation}
             onChange={(e) => patch("personal", { occupation: e.target.value })}
           />
           <Input
             id="instagram"
-            label="Instagram"
+            label="Instagram (opcional)"
             placeholder="@usuario"
             value={profile.personal.instagram}
             onChange={(e) => patch("personal", { instagram: e.target.value })}
           />
           <Textarea
             id="bio"
-            label="Fale sobre você"
+            label="Fale sobre você (opcional)"
             placeholder="Rotina, experiência com animais, o que te motiva a adotar..."
             value={profile.personal.bio}
             onChange={(e) => patch("personal", { bio: e.target.value })}
@@ -308,19 +381,19 @@ export function AdopterProfileForm({
               inputMode="numeric"
               placeholder="00000-000"
               value={maskCep(profile.personal.address.cep)}
-              onChange={(e) =>
+              hint="Preenchemos o endereço para você."
+              onChange={(e) => {
+                const cep = onlyDigits(e.target.value).slice(0, 8);
                 patch("personal", {
-                  address: {
-                    ...profile.personal.address,
-                    cep: onlyDigits(e.target.value),
-                  },
-                })
-              }
+                  address: { ...profile.personal.address, cep },
+                });
+                if (cep.length === 8) void lookupCep(cep);
+              }}
             />
             <Select
               id="state"
-              label="UF"
-              placeholder="UF"
+              label="Estado"
+              placeholder="Estado"
               value={profile.personal.address.state}
               onChange={(e) =>
                 patch("personal", {
@@ -386,7 +459,7 @@ export function AdopterProfileForm({
           </div>
           <Input
             id="complement"
-            label="Complemento"
+            label="Complemento (opcional)"
             value={profile.personal.address.complement}
             onChange={(e) =>
               patch("personal", {
@@ -646,7 +719,7 @@ export function AdopterProfileForm({
         <Section
           id="legalConsent"
           title={ADOPTER_SECTION_LABEL.legalConsent}
-          description="Aceite registrado com data, hora e IP."
+          description="Para guardar seus dados com segurança (a LGPD, lei brasileira de proteção de dados, exige a sua autorização)."
         >
           <Checkbox
             id="acceptedTerms"
@@ -684,9 +757,18 @@ export function AdopterProfileForm({
           ) : null}
         </Section>
 
+        <Card className="gap-2">
+          <CardTitle>Excluir conta</CardTitle>
+          <DeleteAccountButton />
+        </Card>
+
         {/* Checklist ------------------------------------------------------- */}
-        <Card className="gap-3">
+        <Card id="checklist" className="scroll-mt-4 gap-3">
           <CardTitle>Para as ONGs confiarem no seu perfil</CardTitle>
+          <p className="text-sm text-neutral-600">
+            A verificação é uma conferência dos seus dados. Quem passa ganha o
+            selo &ldquo;Adotante verificado&rdquo;.
+          </p>
           <ul className="flex flex-col gap-1.5">
             {checklist.map((item) => (
               <li key={item.id} className="flex items-start gap-2 text-sm">
@@ -712,6 +794,11 @@ export function AdopterProfileForm({
                   }
                 >
                   {item.label}
+                  {!item.done && item.missing ? (
+                    <span className="block text-xs font-semibold text-red-700">
+                      Falta: {item.missing}
+                    </span>
+                  ) : null}
                   <span className="sr-only">
                     {item.done ? " (concluído)" : " (pendente)"}
                   </span>
@@ -724,11 +811,29 @@ export function AdopterProfileForm({
         {/* Barra fixa de ações ---------------------------------------------- */}
         <ActionBar>
           <FormError id={ERROR_ID} className="min-h-4 text-xs">
-            {error ??
-              (savedAt ? (
-                <span className="text-neutral-600">Salvo às {savedAt}.</span>
-              ) : null)}
+            {error}
           </FormError>
+          {savedAt && !error ? (
+            <p
+              role="status"
+              className={cn(
+                "flex items-center gap-1.5 rounded-2xl bg-primary-faint px-3 py-2 text-sm font-bold text-lime-800",
+                shadowSoft.sm,
+              )}
+            >
+              <Check className={iconSize.sm} aria-hidden="true" />
+              Perfil salvo com sucesso às {savedAt}.
+            </p>
+          ) : null}
+          {status === "pendente" && !ready ? (
+            <p className="text-xs text-neutral-900">
+              Faltam {checklist.filter((item) => !item.done).length} passos para
+              enviar à verificação.{" "}
+              <a href="#checklist" className="font-bold underline">
+                Ver quais
+              </a>
+            </p>
+          ) : null}
           <div className="flex gap-2">
             <Button
               type="submit"

@@ -1,6 +1,8 @@
 "use client";
 
-import { Button, FormError, Input } from "@/components/ui";
+import { Button, FormError, Input, TextLink } from "@/components/ui";
+import { iconSize } from "@/components/ui/icon";
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -10,6 +12,7 @@ export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,9 +50,10 @@ export function LoginForm() {
         id="email"
         label="E-mail"
         type="email"
+        leading={<Mail className={iconSize.lg} />}
         autoComplete="email"
         required
-        placeholder="E-mail"
+        placeholder="voce@email.com"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         invalid={Boolean(error)}
@@ -60,27 +64,55 @@ export function LoginForm() {
         tone="primary"
         id="password"
         label="Senha"
-        type="password"
+        type={showPassword ? "text" : "password"}
+        leading={<Lock className={iconSize.lg} />}
+        trailing={
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+            aria-pressed={showPassword}
+            className="grid size-9 place-items-center rounded-xl text-neutral-600 transition-colors hover:bg-primary-faint hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-neutral-900"
+          >
+            {showPassword ? (
+              <EyeOff className={iconSize.lg} aria-hidden="true" />
+            ) : (
+              <Eye className={iconSize.lg} aria-hidden="true" />
+            )}
+          </button>
+        }
         autoComplete="current-password"
         required
-        placeholder="Senha"
+        placeholder="Sua senha"
         value={password}
         onChange={(event) => setPassword(event.target.value)}
         invalid={Boolean(error)}
         errorId={ERROR_ID}
       />
 
-      <FormError id={ERROR_ID}>{error}</FormError>
+      <TextLink
+        href="/esqueci-senha"
+        tone="primary-pastel"
+        subtle
+        className="-mt-1 self-end text-xs"
+      >
+        Esqueceu a senha?
+      </TextLink>
+
+      <FormError id={ERROR_ID} collapsible>
+        {error}
+      </FormError>
 
       <Button
         type="submit"
         variant="dark"
         size="lg"
-        className="mt-3"
+        className="mt-2 shadow-lime-900/40"
         loading={isSubmitting}
         loadingLabel="ENTRANDO..."
       >
         ENTRAR
+        <ArrowRight className={iconSize.lg} aria-hidden="true" />
       </Button>
     </form>
   );

@@ -1,36 +1,11 @@
 import { BrutalCard } from "@/components/brutal-card";
-import { CardTitle, cn } from "@/components/ui";
+import { OngPetsOverview } from "@/components/ong-pets-overview";
+import { cn, LinkButton } from "@/components/ui";
 import type { ReceivedDonation } from "@/lib/donation";
 import type { Notification } from "@/lib/notification";
-import {
-  PET_SPECIES_LABEL,
-  PET_STATUS_LABEL,
-  type Pet,
-  type PetSpecies,
-  type PetStatus,
-} from "@/lib/pet";
+import { countNotificationsByPet } from "@/lib/notifications";
+import type { Pet } from "@/lib/pet";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
-
-/**
- * Cores de gráfico — validadas para contraste e distinção sob daltonismo
- * (ver skill de dataviz). Só usadas aqui, não são tokens de UI: cor de
- * gráfico tem um trabalho diferente de cor de interface.
- */
-const STATUS_COLOR: Record<PetStatus, string> = {
-  disponivel: "#65a30d",
-  em_processo: "#fbbf24",
-  adotado: "#9ca3af",
-};
-
-/** Ordem fixa por espécie — nunca reatribuída conforme os valores mudam. */
-const SPECIES_COLOR: Record<PetSpecies, string> = {
-  cachorro: "#2563eb",
-  gato: "#f43f5e",
-  outro: "#7c3aed",
-};
-
-/** Série única (mesma métrica comparada entre itens): sempre um hue só. */
-const BRAND = "#65a30d";
 
 const currency = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -39,83 +14,7 @@ const currency = new Intl.NumberFormat("pt-BR", {
 
 const monthFormat = new Intl.DateTimeFormat("pt-BR", { month: "long" });
 
-type ChartDatum = { label: string; value: number; color: string };
-
-/** Parte-todo: uma barra só, segmentada — para poucas categorias fixas. */
-function StackedBar({ data }: { data: ChartDatum[] }) {
-  const total = data.reduce((sum, d) => sum + d.value, 0);
-
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex h-3 w-full overflow-hidden rounded-full border border-neutral-900 bg-white">
-        {total > 0
-          ? data.map((d) =>
-              d.value > 0 ? (
-                <div
-                  key={d.label}
-                  style={{
-                    width: `${(d.value / total) * 100}%`,
-                    backgroundColor: d.color,
-                  }}
-                  className="h-full border border-neutral-900"
-                />
-              ) : null,
-            )
-          : null}
-      </div>
-      <ul className="flex flex-wrap gap-x-4 gap-y-1.5">
-        {data.map((d) => (
-          <li key={d.label} className="flex items-center gap-1.5 text-sm">
-            <span
-              aria-hidden="true"
-              className="size-2.5 shrink-0 rounded-full border border-neutral-900"
-              style={{ backgroundColor: d.color }}
-            />
-            <span className="text-neutral-900">{d.label}</span>
-            <span className="font-bold text-neutral-900">{d.value}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-/** Comparação de magnitude entre categorias — uma barra por item. */
-function BarList({
-  data,
-  formatValue = (value: number) => String(value),
-}: {
-  data: ChartDatum[];
-  formatValue?: (value: number) => string;
-}) {
-  const max = Math.max(1, ...data.map((d) => d.value));
-
-  return (
-    <ul className="flex flex-col gap-2.5">
-      {data.map((d) => (
-        <li key={d.label} className="flex flex-col gap-1">
-          <div className="flex items-center justify-between gap-2 text-xs">
-            <span className="min-w-0 truncate font-semibold text-neutral-900">
-              {d.label}
-            </span>
-            <span className="shrink-0 font-bold text-neutral-900">
-              {formatValue(d.value)}
-            </span>
-          </div>
-          <div className="h-2.5 overflow-hidden rounded-full border border-neutral-900 bg-white">
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${(d.value / max) * 100}%`,
-                backgroundColor: d.color,
-              }}
-            />
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
-}
+const ACTIVITY_DAYS = 14;
 
 type Trend = { direction: "up" | "down"; label: string };
 
@@ -196,7 +95,27 @@ type OngDashboardProps = {
   donations: ReceivedDonation[];
 };
 
-/** Dashboard da ONG: KPIs, ganhos, status dos pets, espécies e engajamento. */
+/** Curtidas e interesses por dia nos últimos dias, do mais antigo ao mais recente. */
+function buildActivity(notifications: Notification[]) {
+  return Array.from({ length: ACTIVITY_DAYS }, (_, i) => {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - (ACTIVITY_DAYS - 1 - i));
+    const onDay = notifications.filter(
+      (n) => new Date(n.createdAt).toDateString() === day.toDateString(),
+    );
+    return {
+      label: day.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+      }),
+      likes: onDay.filter((n) => n.type === "curtida").length,
+      interests: onDay.filter((n) => n.type === "interesse").length,
+    };
+  });
+}
+
+/** Dashboard da ONG: KPIs, ganhos e gráficos de status, espécie, atividade e engajamento. */
 export function OngDashboard({
   pets,
   notifications,
@@ -213,37 +132,6 @@ export function OngDashboard({
     totalPets > 0 ? Math.round((availableCount / totalPets) * 100) : 0;
   const interestRate =
     totalPets > 0 ? Math.round((petsWithInterest / totalPets) * 100) : 0;
-
-  const statusData: ChartDatum[] = (
-    Object.keys(PET_STATUS_LABEL) as PetStatus[]
-  ).map((status) => ({
-    label: PET_STATUS_LABEL[status],
-    value: pets.filter((p) => p.status === status).length,
-    color: STATUS_COLOR[status],
-  }));
-
-  const speciesData: ChartDatum[] = (
-    Object.keys(PET_SPECIES_LABEL) as PetSpecies[]
-  )
-    .map((species) => ({
-      label: PET_SPECIES_LABEL[species],
-      value: pets.filter((p) => p.species === species).length,
-      color: SPECIES_COLOR[species],
-    }))
-    .filter((d) => d.value > 0);
-
-  const likesByPet = notifications.reduce<Record<string, number>>((acc, n) => {
-    acc[n.petId] = (acc[n.petId] ?? 0) + 1;
-    return acc;
-  }, {});
-  const engagementData: ChartDatum[] = pets
-    .map((pet) => ({
-      label: pet.name,
-      value: likesByPet[pet.id] ?? 0,
-      color: BRAND,
-    }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 5);
 
   const donationsByDate = [...donations].sort((a, b) =>
     a.createdAt.localeCompare(b.createdAt),
@@ -282,7 +170,7 @@ export function OngDashboard({
       </div>
 
       <BrutalCard className="gap-3">
-        <p className="text-xs text-neutral-600">Total em doações</p>
+        <p className="text-xs text-neutral-600">Total em doações confirmadas</p>
         <p className="text-2xl font-bold text-neutral-900">
           {currency.format(donationsTotal)}
         </p>
@@ -304,43 +192,34 @@ export function OngDashboard({
           </div>
         ) : (
           <p className="text-sm text-neutral-600">
-            Nenhuma doação registrada ainda.
+            Nenhuma doação confirmada ainda.
           </p>
         )}
+        <LinkButton
+          href="/ong/doacoes"
+          variant="pill"
+          size="sm"
+          className="self-start"
+        >
+          Ver e confirmar doações
+        </LinkButton>
       </BrutalCard>
 
-      <BrutalCard>
-        <CardTitle>Pets por status</CardTitle>
-        {pets.length > 0 ? (
-          <StackedBar data={statusData} />
-        ) : (
+      {pets.length > 0 ? (
+        <OngPetsOverview
+          showTotals={false}
+          pets={pets}
+          likesByPet={countNotificationsByPet(notifications, "curtida")}
+          interestedByPet={countNotificationsByPet(notifications, "interesse")}
+          activity={buildActivity(notifications)}
+        />
+      ) : (
+        <BrutalCard>
           <p className="text-sm text-neutral-600">
-            Cadastre pets para ver o gráfico.
+            Cadastre pets para ver os gráficos.
           </p>
-        )}
-      </BrutalCard>
-
-      <BrutalCard>
-        <CardTitle>Pets por espécie</CardTitle>
-        {speciesData.length > 0 ? (
-          <BarList data={speciesData} />
-        ) : (
-          <p className="text-sm text-neutral-600">
-            Cadastre pets para ver o gráfico.
-          </p>
-        )}
-      </BrutalCard>
-
-      <BrutalCard>
-        <CardTitle>Mais curtidos e procurados</CardTitle>
-        {engagementData.some((d) => d.value > 0) ? (
-          <BarList data={engagementData} />
-        ) : (
-          <p className="text-sm text-neutral-600">
-            Ainda sem curtidas ou interesses registrados.
-          </p>
-        )}
-      </BrutalCard>
+        </BrutalCard>
+      )}
     </div>
   );
 }

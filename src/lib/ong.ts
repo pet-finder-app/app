@@ -5,7 +5,7 @@ import type { DocumentType } from "./br-documents";
  * `StoredUser.ong` no users.json — o backend pode quebrar em tabelas depois.
  *
  * Só o que está em `OngSignupInput` é pedido na tela de cadastro. O resto é
- * preenchido em /ong/perfil/editar e exigido apenas na hora de publicar o
+ * preenchido em /ong/configuracoes e exigido apenas na hora de publicar o
  * primeiro pet (ver `getOngChecklist`).
  *
  * Este arquivo não importa nada do Node: pode ser usado no client.
@@ -414,7 +414,7 @@ export type ChecklistItem = {
   id: string;
   label: string;
   done: boolean;
-  /** Seção de /ong/perfil/editar onde o item é preenchido. */
+  /** Seção de /ong/configuracoes onde o item é preenchido. */
   section: OngProfileSection;
 };
 
@@ -440,7 +440,7 @@ export function getOngChecklist(profile: OngProfile): ChecklistItem[] {
       id: "legal-name",
       label: isCompany
         ? "Razão social e data de fundação"
-        : "Nome completo, RG e data de início",
+        : "Seu nome completo, RG e desde quando atua",
       done: Boolean(
         legal.legalName && legal.foundedAt && (isCompany || legal.rg),
       ),
@@ -454,7 +454,7 @@ export function getOngChecklist(profile: OngProfile): ChecklistItem[] {
     },
     {
       id: "representative",
-      label: "Nome, CPF, cargo e telefone do responsável",
+      label: "Nome, CPF, cargo/função e telefone do responsável",
       done: Boolean(
         representative.fullName &&
         representative.cpf &&

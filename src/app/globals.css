@@ -93,42 +93,200 @@ body {
  * centro da tela (deslocamento 0,0 — onde o SplashScreen fica centralizado
  * por padrão). Os deslocamentos abaixo precisam apontar para a mesma
  * posição de cada pegada em splash-screen.tsx (a diferença entre a posição
- * da pegada e o centro da tela, em vw/dvh).
+ * da pegada e o centro da tela, em vw/dvh). Dentro do <svg> (h-28 = 112px
+ * para um viewBox de 100) 1px de tela = 1/1.12 unidade — por isso o "/ 1.12"
+ * em cada deslocamento: sem isso a lupa errava o centro da pegada. Os
+ * quadros intermediários (suavização manual, com um leve "pulinho") deixam
+ * o trajeto fluido; o easing do animation fica linear.
  */
 @keyframes splash-glass-chase {
   0% {
     opacity: 0;
-    transform: translate(-38vw, 32dvh) scale(0.5) rotate(-14deg);
+    transform: translate(calc(-38vw / 1.12), calc(32dvh / 1.12)) scale(0.5)
+      rotate(-14deg);
   }
   8% {
     opacity: 1;
-    transform: translate(-38vw, 32dvh) scale(1.05) rotate(-14deg);
+    transform: translate(calc(-38vw / 1.12), calc(32dvh / 1.12)) scale(1.05)
+      rotate(-14deg);
   }
   14% {
-    transform: translate(-38vw, 32dvh) scale(1) rotate(-14deg);
+    transform: translate(calc(-38vw / 1.12), calc(32dvh / 1.12)) scale(1)
+      rotate(-14deg);
   }
   24% {
-    transform: translate(-38vw, 32dvh) scale(1) rotate(-14deg);
+    transform: translate(calc(-38vw / 1.12), calc(32dvh / 1.12)) scale(1)
+      rotate(-14deg);
+  }
+  25% {
+    transform: translate(calc(-37.72vw / 1.12), calc(31.776dvh / 1.12))
+      scale(1.015) rotate(-13.33deg);
+  }
+  26% {
+    transform: translate(calc(-36.96vw / 1.12), calc(31.168dvh / 1.12))
+      scale(1.029) rotate(-11.5deg);
+  }
+  27% {
+    transform: translate(calc(-35.84vw / 1.12), calc(30.272dvh / 1.12))
+      scale(1.04) rotate(-8.82deg);
+  }
+  28% {
+    transform: translate(calc(-34.48vw / 1.12), calc(29.184dvh / 1.12))
+      scale(1.048) rotate(-5.55deg);
+  }
+  29% {
+    transform: translate(calc(-33vw / 1.12), calc(28dvh / 1.12)) scale(1.05)
+      rotate(-2deg);
+  }
+  30% {
+    transform: translate(calc(-31.52vw / 1.12), calc(26.816dvh / 1.12))
+      scale(1.048) rotate(1.55deg);
+  }
+  31% {
+    transform: translate(calc(-30.16vw / 1.12), calc(25.728dvh / 1.12))
+      scale(1.04) rotate(4.82deg);
+  }
+  32% {
+    transform: translate(calc(-29.04vw / 1.12), calc(24.832dvh / 1.12))
+      scale(1.029) rotate(7.5deg);
+  }
+  33% {
+    transform: translate(calc(-28.28vw / 1.12), calc(24.224dvh / 1.12))
+      scale(1.015) rotate(9.33deg);
   }
   34% {
-    transform: translate(-28vw, 24dvh) scale(1) rotate(10deg);
+    transform: translate(calc(-28vw / 1.12), calc(24dvh / 1.12)) scale(1)
+      rotate(10deg);
   }
   44% {
-    transform: translate(-28vw, 24dvh) scale(1) rotate(10deg);
+    transform: translate(calc(-28vw / 1.12), calc(24dvh / 1.12)) scale(1)
+      rotate(10deg);
+  }
+  45% {
+    transform: translate(calc(-27.776vw / 1.12), calc(23.72dvh / 1.12))
+      scale(1.015) rotate(9.5deg);
+  }
+  46% {
+    transform: translate(calc(-27.168vw / 1.12), calc(22.96dvh / 1.12))
+      scale(1.029) rotate(8.13deg);
+  }
+  47% {
+    transform: translate(calc(-26.272vw / 1.12), calc(21.84dvh / 1.12))
+      scale(1.04) rotate(6.11deg);
+  }
+  48% {
+    transform: translate(calc(-25.184vw / 1.12), calc(20.48dvh / 1.12))
+      scale(1.048) rotate(3.66deg);
+  }
+  49% {
+    transform: translate(calc(-24vw / 1.12), calc(19dvh / 1.12)) scale(1.05)
+      rotate(1deg);
+  }
+  50% {
+    transform: translate(calc(-22.816vw / 1.12), calc(17.52dvh / 1.12))
+      scale(1.048) rotate(-1.66deg);
+  }
+  51% {
+    transform: translate(calc(-21.728vw / 1.12), calc(16.16dvh / 1.12))
+      scale(1.04) rotate(-4.11deg);
+  }
+  52% {
+    transform: translate(calc(-20.832vw / 1.12), calc(15.04dvh / 1.12))
+      scale(1.029) rotate(-6.13deg);
+  }
+  53% {
+    transform: translate(calc(-20.224vw / 1.12), calc(14.28dvh / 1.12))
+      scale(1.015) rotate(-7.5deg);
   }
   54% {
-    transform: translate(-20vw, 14dvh) scale(1) rotate(-8deg);
+    transform: translate(calc(-20vw / 1.12), calc(14dvh / 1.12)) scale(1)
+      rotate(-8deg);
   }
   64% {
-    transform: translate(-20vw, 14dvh) scale(1) rotate(-8deg);
+    transform: translate(calc(-20vw / 1.12), calc(14dvh / 1.12)) scale(1)
+      rotate(-8deg);
+  }
+  65% {
+    transform: translate(calc(-19.72vw / 1.12), calc(13.776dvh / 1.12))
+      scale(1.015) rotate(-7.61deg);
+  }
+  66% {
+    transform: translate(calc(-18.96vw / 1.12), calc(13.168dvh / 1.12))
+      scale(1.029) rotate(-6.54deg);
+  }
+  67% {
+    transform: translate(calc(-17.84vw / 1.12), calc(12.272dvh / 1.12))
+      scale(1.04) rotate(-4.98deg);
+  }
+  68% {
+    transform: translate(calc(-16.48vw / 1.12), calc(11.184dvh / 1.12))
+      scale(1.048) rotate(-3.07deg);
+  }
+  69% {
+    transform: translate(calc(-15vw / 1.12), calc(10dvh / 1.12)) scale(1.05)
+      rotate(-1deg);
+  }
+  70% {
+    transform: translate(calc(-13.52vw / 1.12), calc(8.816dvh / 1.12))
+      scale(1.048) rotate(1.07deg);
+  }
+  71% {
+    transform: translate(calc(-12.16vw / 1.12), calc(7.728dvh / 1.12))
+      scale(1.04) rotate(2.98deg);
+  }
+  72% {
+    transform: translate(calc(-11.04vw / 1.12), calc(6.832dvh / 1.12))
+      scale(1.029) rotate(4.54deg);
+  }
+  73% {
+    transform: translate(calc(-10.28vw / 1.12), calc(6.224dvh / 1.12))
+      scale(1.015) rotate(5.61deg);
   }
   74% {
-    transform: translate(-10vw, 6dvh) scale(1) rotate(6deg);
+    transform: translate(calc(-10vw / 1.12), calc(6dvh / 1.12)) scale(1)
+      rotate(6deg);
   }
   84% {
-    transform: translate(-10vw, 6dvh) scale(1) rotate(6deg);
+    transform: translate(calc(-10vw / 1.12), calc(6dvh / 1.12)) scale(1)
+      rotate(6deg);
+  }
+  85% {
+    transform: translate(calc(-9.72vw / 1.12), calc(5.832dvh / 1.12))
+      scale(1.015) rotate(5.83deg);
+  }
+  86% {
+    transform: translate(calc(-8.96vw / 1.12), calc(5.376dvh / 1.12))
+      scale(1.029) rotate(5.38deg);
+  }
+  87% {
+    transform: translate(calc(-7.84vw / 1.12), calc(4.704dvh / 1.12))
+      scale(1.04) rotate(4.7deg);
+  }
+  88% {
+    transform: translate(calc(-6.48vw / 1.12), calc(3.888dvh / 1.12))
+      scale(1.048) rotate(3.89deg);
+  }
+  89% {
+    transform: translate(calc(-5vw / 1.12), calc(3dvh / 1.12)) scale(1.05)
+      rotate(3deg);
+  }
+  90% {
+    transform: translate(calc(-3.52vw / 1.12), calc(2.112dvh / 1.12))
+      scale(1.048) rotate(2.11deg);
+  }
+  91% {
+    transform: translate(calc(-2.16vw / 1.12), calc(1.296dvh / 1.12))
+      scale(1.04) rotate(1.3deg);
   }
   92% {
+    transform: translate(calc(-1.04vw / 1.12), calc(0.624dvh / 1.12))
+      scale(1.029) rotate(0.62deg);
+  }
+  93% {
+    transform: translate(calc(-0.28vw / 1.12), calc(0.168dvh / 1.12))
+      scale(1.015) rotate(0.17deg);
+  }
+  94% {
     transform: translate(0, 0) scale(1.08) rotate(0deg);
   }
   100% {
@@ -176,7 +334,7 @@ body {
   transform-origin: 50px 50px;
 }
 .splash-glass-chase {
-  animation: splash-glass-chase 4200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: splash-glass-chase 4200ms linear forwards;
   animation-delay: 0ms;
 }
 .splash-mark-content {
@@ -207,4 +365,235 @@ body {
     animation: splash-fade-out 200ms ease-in forwards;
     animation-delay: 300ms;
   }
+}
+
+/* Animações de entrada das telas de gestão (cards, barras e rosca). */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes ring-draw {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}
+
+.rise-in {
+  animation: rise-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.grow-x {
+  transform-origin: left center;
+  animation: grow-x 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ring-draw {
+  animation: ring-draw 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in,
+  .grow-x,
+  .ring-draw {
+    animation: none;
+  }
+}
+
+/* Tela de login: flutuar suave da ilustração e aura pulsando atrás dela. */
+@keyframes auth-float {
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+}
+
+@keyframes auth-halo {
+  50% {
+    transform: scale(1.06);
+    opacity: 0.7;
+  }
+}
+
+/* Carregamento: a lupa do login "procura" balançando, e a pegada pulsa na lente. */
+@keyframes lupa-search {
+  0%,
+  100% {
+    transform: rotate(-12deg) translate(-2px, 1px);
+  }
+  50% {
+    transform: rotate(12deg) translate(2px, -1px);
+  }
+}
+
+@keyframes lupa-paw {
+  50% {
+    transform: scale(1.18);
+  }
+}
+
+.lupa-loading {
+  overflow: visible;
+}
+
+.lupa-loading > :first-child {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  animation: lupa-search 1.1s ease-in-out infinite;
+}
+
+.lupa-loading > :last-child {
+  transform-box: view-box;
+  transform-origin: 50px 55px;
+  animation: lupa-paw 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lupa-loading > * {
+    animation: none;
+  }
+}
+
+.auth-float {
+  animation: auth-float 5s ease-in-out infinite;
+}
+
+.auth-halo {
+  animation: auth-halo 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-float,
+  .auth-halo,
+  .auth-hop,
+  .auth-paw-pulse,
+  .auth-stamp,
+  .rise-in {
+    animation: none;
+  }
+}
+
+@keyframes wave-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+.wave-reveal {
+  animation: wave-reveal 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes pie-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(-40deg);
+  }
+}
+
+.pie-pop {
+  animation: pie-pop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave-reveal,
+  .pie-pop {
+    animation: none;
+  }
+}
+
+/*
+ * Versão curta da tela de carregamento (recarregar a página, ~2s): o mesmo
+ * percurso — pegadas carimbando e a lupa seguindo uma a uma —, só que
+ * acelerado (~40% do tempo original). Os tempos abaixo são os de
+ * .splash-paw-N / .splash-glass-chase multiplicados por 0,4. O total
+ * precisa bater com QUICK_DURATION_MS em splash-gate.tsx.
+ */
+.splash-quick .splash-paw-1,
+.splash-quick .splash-paw-2,
+.splash-quick .splash-paw-3,
+.splash-quick .splash-paw-4,
+.splash-quick .splash-paw-5 {
+  animation-duration: 210ms, 150ms;
+}
+.splash-quick .splash-paw-1 {
+  animation-delay: 0ms, 404ms;
+}
+.splash-quick .splash-paw-2 {
+  animation-delay: 152ms, 740ms;
+}
+.splash-quick .splash-paw-3 {
+  animation-delay: 304ms, 1076ms;
+}
+.splash-quick .splash-paw-4 {
+  animation-delay: 456ms, 1412ms;
+}
+.splash-quick .splash-paw-5 {
+  animation-delay: 608ms, 1680ms;
+}
+.splash-quick .splash-glass-chase {
+  animation-duration: 1680ms;
+}
+.splash-quick .splash-mark-content {
+  animation-duration: 200ms;
+  animation-delay: 1680ms;
+}
+.splash-overlay.splash-quick {
+  animation-duration: 240ms;
+  animation-delay: 1760ms;
+}
+
+/* Pegadinhas decorativas ao redor da lupa do login: pulinho suave. */
+@keyframes auth-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.auth-hop {
+  animation: auth-hop 2.6s ease-in-out infinite;
+}
+
+/* Pegada dentro da lente do login: batida suave, como um coração. */
+@keyframes auth-paw-pulse {
+  0%,
+  60%,
+  100% {
+    transform: scale(1);
+  }
+  72% {
+    transform: scale(1.12);
+  }
+  84% {
+    transform: scale(1);
+  }
+}
+
+.auth-paw-pulse {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  animation: auth-paw-pulse 3.2s ease-in-out infinite;
+}
+
+/* Entrada da ilustração do login: a lupa "carimba" na tela. */
+@keyframes auth-stamp {
+  from {
+    opacity: 0;
+    transform: scale(1.25);
+    filter: blur(3px);
+  }
+}
+
+.auth-stamp {
+  animation: auth-stamp 520ms cubic-bezier(0.3, 1.1, 0.5, 1) both;
 }

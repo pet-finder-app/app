@@ -10,7 +10,7 @@ export type NotificationType = "curtida" | "interesse";
 
 export const NOTIFICATION_TYPE_LABEL: Record<NotificationType, string> = {
   // Curtiu o pet, mas ainda não deu o próximo passo.
-  curtida: "curtiu",
+  curtida: "favoritou",
   // Demonstrou interesse real em adotar (mensagem, formulário etc.).
   interesse: "tem interesse em adotar",
 };

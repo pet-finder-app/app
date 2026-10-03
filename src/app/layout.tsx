@@ -1,6 +1,8 @@
+import { NavigationProgress } from "@/components/navigation-progress";
 import { SplashGate } from "@/components/splash-gate";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Modak } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +33,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} ${modak.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <SplashGate>{children}</SplashGate>
+        <SplashGate>
+          <Suspense fallback={null}>
+            <NavigationProgress />
+          </Suspense>
+          {children}
+        </SplashGate>
       </body>
     </html>
   );

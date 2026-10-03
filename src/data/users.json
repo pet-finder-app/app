@@ -363,6 +363,385 @@
           "adoptersDataConsent": null
         }
       }
+    },
+    {
+      "id": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "email": "marlene.teste+48213@example.com",
+      "password": "Teste1234!",
+      "avatarUrl": null,
+      "createdAt": "2026-10-02T22:54:05.239Z",
+      "role": "ong",
+      "name": "Patinhas Felizes de Marlene",
+      "ong": {
+        "legal": {
+          "organizationType": "protetor_independente",
+          "documentType": "cpf",
+          "document": "11144477735",
+          "receitaStatus": "nao_consultado",
+          "legalName": "Marlene da Silva",
+          "tradeName": "Patinhas Felizes de Marlene",
+          "nickname": "PatinhasFelizes",
+          "rg": "123456789",
+          "foundedAt": "2020-01-10",
+          "address": {
+            "cep": "01310100",
+            "street": "Avenida Paulista",
+            "number": "1000",
+            "complement": "",
+            "neighborhood": "Bela Vista",
+            "city": "São Paulo",
+            "state": "SP"
+          }
+        },
+        "representative": {
+          "fullName": "Marlene da Silva",
+          "cpf": "11144477735",
+          "position": "Fundadora",
+          "email": "marlene.teste+48213@example.com",
+          "phone": "11912345678",
+          "emailVerifiedAt": null,
+          "phoneVerifiedAt": null,
+          "idDocument": {
+            "name": "repIdDocument.png",
+            "size": 4,
+            "mimeType": "image/png",
+            "uploadedAt": "2026-10-02T22:54:45.495Z",
+            "url": null
+          }
+        },
+        "verification": {
+          "status": "verificada",
+          "statusUpdatedAt": "2026-10-02T22:55:51.704Z",
+          "statusNote": "",
+          "bylaws": null,
+          "addressProof": {
+            "name": "addressProof.png",
+            "size": 4,
+            "mimeType": "image/png",
+            "uploadedAt": "2026-10-02T22:54:45.508Z",
+            "url": null
+          },
+          "animalProtectionRegistry": "",
+          "veterinarianCrmv": "",
+          "references": ["Amigos de Quatro Patas", "Abrigo Esperança"]
+        },
+        "operations": {
+          "shelterCapacity": null,
+          "currentAnimals": null,
+          "species": ["caes", "gatos"],
+          "serviceAreas": ["São Paulo", "Osasco"],
+          "homeVisit": false,
+          "requiresContract": false,
+          "chargesAdoptionFee": false,
+          "adoptionFee": null,
+          "contactHours": "",
+          "preferredContact": "whatsapp",
+          "team": []
+        },
+        "publicProfile": {
+          "logo": null,
+          "photos": [],
+          "description": "Somos protetoras independentes e cuidamos de cães e gatos resgatados em São Paulo.",
+          "website": "",
+          "instagram": "",
+          "facebook": "",
+          "donation": {
+            "pixKey": "",
+            "bankAccount": "",
+            "neededItems": []
+          },
+          "followersCount": 0
+        },
+        "legalConsent": {
+          "terms": {
+            "version": "2026-09-26-rascunho",
+            "acceptedAt": "2026-10-02T22:54:05.239Z",
+            "ip": "::1",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Claude/2.16120.0 Chrome/152.0.7977.130 Safari/537.36"
+          },
+          "adoptionTermTemplate": null,
+          "adoptersDataConsent": {
+            "version": "2026-09-26-rascunho",
+            "acceptedAt": "2026-10-02T22:54:56.377Z",
+            "ip": "::1",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Claude/2.16120.0 Chrome/152.0.7977.130 Safari/537.36"
+          }
+        }
+      }
+    },
+    {
+      "id": "79f9f573-a4d7-4cfc-b142-0c50e576dd2d",
+      "email": "lu.teste+73105@example.com",
+      "password": "Teste1234!",
+      "avatarUrl": null,
+      "createdAt": "2026-10-02T23:02:20.508Z",
+      "role": "ong",
+      "name": "Cantinho dos Bichos da Lu",
+      "ong": {
+        "legal": {
+          "organizationType": "abrigo_particular",
+          "documentType": "cpf",
+          "document": "52998224725",
+          "receitaStatus": "nao_consultado",
+          "legalName": "",
+          "tradeName": "Cantinho dos Bichos da Lu",
+          "nickname": "Cantinhodo_Bicho_daLu",
+          "rg": "",
+          "foundedAt": "",
+          "address": {
+            "cep": "",
+            "street": "",
+            "number": "",
+            "complement": "",
+            "neighborhood": "",
+            "city": "",
+            "state": ""
+          }
+        },
+        "representative": {
+          "fullName": "",
+          "cpf": "",
+          "position": "",
+          "email": "lu.teste+73105@example.com",
+          "phone": "",
+          "emailVerifiedAt": null,
+          "phoneVerifiedAt": null,
+          "idDocument": null
+        },
+        "verification": {
+          "status": "pendente",
+          "statusUpdatedAt": "2026-10-02T23:02:20.508Z",
+          "statusNote": "",
+          "bylaws": null,
+          "addressProof": null,
+          "animalProtectionRegistry": "",
+          "veterinarianCrmv": "",
+          "references": []
+        },
+        "operations": {
+          "shelterCapacity": null,
+          "currentAnimals": null,
+          "species": [],
+          "serviceAreas": [],
+          "homeVisit": false,
+          "requiresContract": false,
+          "chargesAdoptionFee": false,
+          "adoptionFee": null,
+          "contactHours": "",
+          "preferredContact": "whatsapp",
+          "team": []
+        },
+        "publicProfile": {
+          "logo": null,
+          "photos": [],
+          "description": "",
+          "website": "",
+          "instagram": "",
+          "facebook": "",
+          "donation": {
+            "pixKey": "",
+            "bankAccount": "",
+            "neededItems": []
+          },
+          "followersCount": 0
+        },
+        "legalConsent": {
+          "terms": {
+            "version": "2026-09-26-rascunho",
+            "acceptedAt": "2026-10-02T23:02:20.507Z",
+            "ip": "::1",
+            "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Mobile Safari/537.36"
+          },
+          "adoptionTermTemplate": null,
+          "adoptersDataConsent": null
+        }
+      }
+    },
+    {
+      "id": "271533fd-4574-4903-8e2e-24645855d6da",
+      "email": "marlene.teste1@example.com",
+      "password": "gatinho123",
+      "avatarUrl": null,
+      "createdAt": "2026-10-02T23:40:14.328Z",
+      "role": "adopter",
+      "name": "Marlene Souza",
+      "adopter": {
+        "personal": {
+          "avatar": null,
+          "fullName": "Marlene Souza",
+          "cpf": "52998224725",
+          "birthDate": "",
+          "phone": "11912345678",
+          "phoneVerifiedAt": null,
+          "bio": "",
+          "occupation": "",
+          "instagram": "",
+          "idDocument": null,
+          "addressProof": null,
+          "address": {
+            "cep": "01310100",
+            "street": "",
+            "number": "",
+            "complement": "",
+            "neighborhood": "",
+            "city": "São Paulo",
+            "state": "SP"
+          }
+        },
+        "housing": {
+          "type": "",
+          "ownership": "",
+          "landlordAllowsPets": false,
+          "hasYard": false,
+          "hasScreens": false,
+          "residentsCount": null,
+          "hasChildren": false,
+          "hasOtherPets": false,
+          "otherPetsDescription": "",
+          "hoursAloneOnWeekdays": null,
+          "hasPetExperience": false,
+          "acceptsHomeVisit": false
+        },
+        "preferences": {
+          "species": [],
+          "sizes": [],
+          "ageGroups": [],
+          "acceptsSpecialNeeds": false,
+          "aboutIdealPet": ""
+        },
+        "verification": {
+          "status": "pendente",
+          "statusUpdatedAt": "2026-10-02T23:40:14.328Z",
+          "statusNote": ""
+        },
+        "legalConsent": {
+          "terms": null
+        }
+      }
+    },
+    {
+      "id": "c027ff8f-3a71-41a6-bfc7-8a1e53fd3624",
+      "email": "marlene.teste2@example.com",
+      "password": "gatinho123",
+      "avatarUrl": null,
+      "createdAt": "2026-10-02T23:57:01.782Z",
+      "role": "adopter",
+      "name": "Marlene Souza",
+      "adopter": {
+        "personal": {
+          "avatar": null,
+          "fullName": "Marlene Souza",
+          "cpf": "52998224725",
+          "birthDate": "",
+          "phone": "11912345678",
+          "phoneVerifiedAt": null,
+          "bio": "",
+          "occupation": "",
+          "instagram": "",
+          "idDocument": null,
+          "addressProof": null,
+          "address": {
+            "cep": "01310100",
+            "street": "Avenida Paulista",
+            "number": "",
+            "complement": "",
+            "neighborhood": "Bela Vista",
+            "city": "São Paulo",
+            "state": "SP"
+          }
+        },
+        "housing": {
+          "type": "",
+          "ownership": "",
+          "landlordAllowsPets": false,
+          "hasYard": false,
+          "hasScreens": false,
+          "residentsCount": null,
+          "hasChildren": false,
+          "hasOtherPets": false,
+          "otherPetsDescription": "",
+          "hoursAloneOnWeekdays": null,
+          "hasPetExperience": false,
+          "acceptsHomeVisit": false
+        },
+        "preferences": {
+          "species": [],
+          "sizes": [],
+          "ageGroups": [],
+          "acceptsSpecialNeeds": false,
+          "aboutIdealPet": ""
+        },
+        "verification": {
+          "status": "pendente",
+          "statusUpdatedAt": "2026-10-02T23:57:01.782Z",
+          "statusNote": ""
+        },
+        "legalConsent": {
+          "terms": null
+        }
+      }
+    },
+    {
+      "id": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
+      "email": "marlene.teste3@example.com",
+      "password": "gatinho123",
+      "avatarUrl": null,
+      "createdAt": "2026-10-03T00:04:39.188Z",
+      "role": "adopter",
+      "name": "Marlene Souza",
+      "adopter": {
+        "personal": {
+          "avatar": null,
+          "fullName": "Marlene Souza",
+          "cpf": "52998224725",
+          "birthDate": "",
+          "phone": "11912345678",
+          "phoneVerifiedAt": null,
+          "bio": "",
+          "occupation": "",
+          "instagram": "",
+          "idDocument": null,
+          "addressProof": null,
+          "address": {
+            "cep": "01310100",
+            "street": "Avenida Paulista",
+            "number": "",
+            "complement": "",
+            "neighborhood": "Bela Vista",
+            "city": "São Paulo",
+            "state": "SP"
+          }
+        },
+        "housing": {
+          "type": "",
+          "ownership": "",
+          "landlordAllowsPets": false,
+          "hasYard": false,
+          "hasScreens": false,
+          "residentsCount": null,
+          "hasChildren": false,
+          "hasOtherPets": false,
+          "otherPetsDescription": "",
+          "hoursAloneOnWeekdays": null,
+          "hasPetExperience": false,
+          "acceptsHomeVisit": false
+        },
+        "preferences": {
+          "species": [],
+          "sizes": [],
+          "ageGroups": [],
+          "acceptsSpecialNeeds": false,
+          "aboutIdealPet": ""
+        },
+        "verification": {
+          "status": "pendente",
+          "statusUpdatedAt": "2026-10-03T00:04:39.188Z",
+          "statusNote": ""
+        },
+        "legalConsent": {
+          "terms": null
+        }
+      }
     }
   ]
 }

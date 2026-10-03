@@ -35,6 +35,11 @@ export { FileInput, formatSize, type FileInputProps } from "./file-input";
 export { FormError, type FormErrorProps } from "./form-error";
 export { iconSize } from "./icon";
 export { Input, type InputProps } from "./input";
+export {
+  MediaInput,
+  type MediaInputProps,
+  type MediaItem,
+} from "./media-input";
 export { ActionBar, PageShell, type PageShellProps } from "./page-shell";
 export { PhotoInput, type PhotoInputProps } from "./photo-input";
 export { Progress, type ProgressProps } from "./progress";

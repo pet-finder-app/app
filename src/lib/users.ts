@@ -5,6 +5,7 @@ import {
   createEmptyOngProfile,
   type OngProfile,
   type OngSignupInput,
+  type TermsAcceptance,
 } from "./ong";
 
 /**
@@ -99,13 +100,26 @@ export async function findOngByNickname(
 }
 
 export type CreateUserInput =
-  | { role: "adopter"; name: string; email: string; password: string }
+  | {
+      role: "adopter";
+      name: string;
+      email: string;
+      password: string;
+      terms?: TermsAcceptance;
+    }
   | {
       role: "ong";
       email: string;
       password: string;
       ong: Omit<OngSignupInput, "email">;
     };
+
+function withTerms(
+  profile: AdopterProfile,
+  terms: TermsAcceptance | undefined,
+): AdopterProfile {
+  return terms ? { ...profile, legalConsent: { terms } } : profile;
+}
 
 export async function createUser(input: CreateUserInput): Promise<StoredUser> {
   const users = await readUsers();
@@ -125,7 +139,10 @@ export async function createUser(input: CreateUserInput): Promise<StoredUser> {
           ...base,
           role: "adopter",
           name: input.name.trim(),
-          adopter: createEmptyAdopterProfile(input.name.trim()),
+          adopter: withTerms(
+            createEmptyAdopterProfile(input.name.trim()),
+            input.terms,
+          ),
         }
       : {
           ...base,
@@ -177,4 +194,26 @@ export async function updateAdopterProfile(
   users[index] = updated;
   await writeUsers(users);
   return updated;
+}
+
+/** Troca a senha do usuário. Retorna false se ele não existir. */
+export async function setUserPassword(
+  userId: string,
+  password: string,
+): Promise<boolean> {
+  const users = await readUsers();
+  const index = users.findIndex((user) => user.id === userId);
+  if (index === -1) return false;
+  users[index] = { ...users[index], password };
+  await writeUsers(users);
+  return true;
+}
+
+/** Apaga o usuário. Retorna false se ele não existir. */
+export async function deleteUser(userId: string): Promise<boolean> {
+  const users = await readUsers();
+  const remaining = users.filter((user) => user.id !== userId);
+  if (remaining.length === users.length) return false;
+  await writeUsers(remaining);
+  return true;
 }

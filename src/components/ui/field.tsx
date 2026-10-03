@@ -37,8 +37,17 @@ const fieldControlBase =
 const fieldControlBrutal =
   "w-full rounded-xl border border-neutral-900 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-600 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-400 disabled:opacity-60";
 
+/** Telas de autenticação (fundo verde): mesma base, mas com a borda escura
+ *  `neutral-900` do restante do app, para o campo se destacar do fundo. */
+const fieldControlPrimary = fieldControlBase
+  .replace("border-stone-300", "border-neutral-900")
+  .replace(
+    "focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30",
+    "focus-visible:border-neutral-900 focus-visible:ring-4 focus-visible:ring-lime-800/40",
+  );
+
 export const fieldControlClass: Record<FieldTone, string> = {
-  primary: fieldControlBase,
+  primary: fieldControlPrimary,
   light: fieldControlBase,
   brutal: fieldControlBrutal,
 };

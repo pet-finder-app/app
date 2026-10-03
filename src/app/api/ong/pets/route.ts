@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         message:
-          "Sua ONG precisa estar verificada para publicar pets. Complete o cadastro em /ong/perfil/editar.",
+          "Sua ONG precisa estar verificada para publicar pets. Complete o cadastro em /ong/configuracoes.",
       },
       { status: 403 },
     );
@@ -60,6 +60,19 @@ export async function POST(request: Request) {
   const validationError = validatePetInput(input);
   if (validationError) {
     return NextResponse.json({ message: validationError }, { status: 400 });
+  }
+
+  const name = input.name.trim().toLowerCase();
+  const existing = (await listPetsByOng(user.id)).find(
+    (pet) => !pet.archived && pet.name.trim().toLowerCase() === name,
+  );
+  if (existing) {
+    return NextResponse.json(
+      {
+        message: `Você já tem um pet chamado ${existing.name}. Se for outro animal, use um nome diferente (ex.: ${existing.name} 2).`,
+      },
+      { status: 409 },
+    );
   }
 
   const pet = await createPet(user.id, input);

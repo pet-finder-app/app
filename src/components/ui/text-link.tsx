@@ -11,6 +11,8 @@ export type TextLinkProps = Omit<
 > & {
   href: string;
   tone?: TextLinkTone;
+  /** Link secundário: peso normal e sublinhado fino. */
+  subtle?: boolean;
 };
 
 const toneClass: Record<TextLinkTone, string> = {
@@ -26,6 +28,7 @@ const toneClass: Record<TextLinkTone, string> = {
 export function TextLink({
   href,
   tone = "light",
+  subtle,
   className,
   ...props
 }: TextLinkProps) {
@@ -33,7 +36,10 @@ export function TextLink({
     <Link
       href={href}
       className={cn(
-        "font-bold underline decoration-2 underline-offset-2 focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2",
+        subtle
+          ? "font-medium underline decoration-1 underline-offset-2"
+          : "font-bold underline decoration-2 underline-offset-2",
+        "focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2",
         toneClass[tone],
         className,
       )}
