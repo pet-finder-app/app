@@ -1,8 +1,9 @@
+import { ConversationList } from "@/components/conversation-list";
 import { OngTabBar } from "@/components/ong-tab-bar";
-import { PawIcon } from "@/components/paw-icon";
-import { Card, CardTitle, PageShell } from "@/components/ui";
-import { countUnreadByOng, listNotificationsByOng } from "@/lib/notifications";
-import { getPetById } from "@/lib/pets";
+import { Card, CardTitle, LinkButton, PageShell } from "@/components/ui";
+import { countUnreadFor } from "@/lib/conversation";
+import { listConversationsByOng } from "@/lib/conversations";
+import { countUnreadByOng } from "@/lib/notifications";
 import { findUserById, SESSION_COOKIE } from "@/lib/users";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
@@ -12,13 +13,7 @@ export const metadata: Metadata = {
   title: "Mensagens – Petfinder",
 };
 
-/**
- * Reserva a aba de mensagens no menu antes do chat existir de verdade.
- * Quando implementarmos, essa página vira a lista de conversas por
- * adotante — ver as sugestões de fluxo combinadas com o time. Com
- * `?pet=<id>` (vindo do botão de interessados no card do pet), já mostra
- * quem demonstrou interesse real de adotar aquele pet.
- */
+/** Conversas da ONG com os adotantes. `?pet=<id>` filtra pelas de um pet. */
 export default async function MessagesPage({
   searchParams,
 }: {
@@ -31,63 +26,59 @@ export default async function MessagesPage({
   if (user.role !== "ong" || !user.ong) redirect("/");
 
   const { pet: petId } = await searchParams;
-  const [unreadCount, notifications, pet] = await Promise.all([
+  const [unreadCount, all] = await Promise.all([
     countUnreadByOng(user.id),
-    listNotificationsByOng(user.id),
-    petId ? getPetById(petId) : Promise.resolve(undefined),
+    listConversationsByOng(user.id),
   ]);
-
-  const interested = pet
-    ? notifications.filter((n) => n.petId === pet.id && n.type === "interesse")
-    : [];
+  const unreadMessages = all.reduce(
+    (sum, c) => sum + countUnreadFor(c, "ong"),
+    0,
+  );
+  const conversations = petId ? all.filter((c) => c.petId === petId) : all;
 
   return (
     <PageShell hasActionBar>
-      {pet ? (
-        <Card as="header" className="gap-3">
-          <CardTitle>Interessados em adotar {pet.name}</CardTitle>
-          {interested.length > 0 ? (
-            <ul className="flex flex-col gap-2">
-              {interested.map((n) => (
-                <li
-                  key={n.id}
-                  className="rounded-2xl border border-stone-300 p-3"
-                >
-                  <p className="font-bold text-neutral-900">{n.adopterName}</p>
-                  {n.message ? (
-                    <p className="mt-1 text-sm text-neutral-600">{n.message}</p>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-neutral-600">
-              Ninguém demonstrou interesse em adotar {pet.name} ainda.
-            </p>
-          )}
-          <p className="text-xs text-neutral-600">
-            O chat ainda não existe — por enquanto, use o contato do seu perfil
-            (WhatsApp, telefone ou e-mail) para responder.
-          </p>
-        </Card>
-      ) : (
-        <Card as="header" className="items-center gap-3 text-center">
-          <span
-            aria-hidden="true"
-            className="flex size-14 items-center justify-center rounded-full bg-primary-soft"
+      <Card as="header" className="gap-2">
+        <CardTitle>
+          {petId && conversations[0]
+            ? `Conversas sobre ${conversations[0].petName}`
+            : "Mensagens"}
+        </CardTitle>
+        <p className="text-sm text-neutral-600">
+          Conversas com quem quer adotar seus pets.
+        </p>
+        <LinkButton
+          href="/ong/adocoes"
+          variant="outline"
+          size="sm"
+          className="self-start"
+        >
+          Ver adoções em andamento
+        </LinkButton>
+        {petId ? (
+          <LinkButton
+            href="/ong/mensagens"
+            variant="pill"
+            size="sm"
+            className="self-start"
           >
-            <PawIcon className="size-7 text-lime-800" />
-          </span>
-          <CardTitle>Mensagens chegando em breve</CardTitle>
-          <p className="text-sm text-neutral-600">
-            Em breve você vai poder conversar por aqui com quem se interessou
-            pelos seus pets. Por enquanto, use o contato combinado no seu perfil
-            (WhatsApp, telefone ou e-mail).
-          </p>
-        </Card>
-      )}
+            Ver todas
+          </LinkButton>
+        ) : null}
+      </Card>
 
-      <OngTabBar unreadCount={unreadCount} />
+      <ConversationList
+        conversations={conversations}
+        role="ong"
+        basePath="/ong/conversas"
+        otherName={(c) => c.adopterName}
+        emptyText="Nenhuma conversa ainda. Quando alguém tocar em “Quero adotar” num dos seus pets, a conversa aparece aqui."
+      />
+
+      <OngTabBar
+        unreadCount={unreadCount}
+        unreadMessageCount={unreadMessages}
+      />
     </PageShell>
   );
 }
