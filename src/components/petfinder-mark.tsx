@@ -8,10 +8,10 @@ type PetfinderMarkProps = SVGProps<SVGSVGElement> & {
 };
 
 /**
- * Lupa com pegada — a marca do Petfinder, em estilo retrô: aro duplo (como
- * a armação de latão de uma lupa antiga) e cabo curto com ponteira
- * arredondada, no lugar de um cabo comprido e reto. A pegada fica
- * centralizada exatamente no meio da lente.
+ * Lupa com pegada — a marca do Petfinder: aro grosso, lente de vidro translúcida,
+ * pegada cheia e cabo curto de ponta arredondada (formas chapadas, que
+ * continuam legíveis em tamanho grande). Mesmo desenho da ilustração do
+ * login.
  *
  * A lente fica no centro do próprio viewBox (50,50) — de propósito: o
  * elemento é centralizado na tela pelo seu centro geométrico, então se a
@@ -32,52 +32,74 @@ export function PetfinderMark({
 }: PetfinderMarkProps) {
   return (
     <svg viewBox="0 0 100 100" aria-hidden="true" {...props}>
+      <g className={glassClassName} stroke="currentColor" strokeLinecap="round">
+        {/* Cabo curto com ponta arredondada */}
+        <line x1="70" y1="70" x2="86" y2="86" strokeWidth="9" fill="none" />
+        {/* Aro grosso e lente de vidro translúcida (deixa ver o que está atrás) */}
+        <circle
+          cx="50"
+          cy="50"
+          r="24"
+          strokeWidth="8"
+          fill="white"
+          fillOpacity="0.28"
+        />
+        {/* Reflexo do vidro: arco grande e um pontinho */}
+        <circle
+          cx="57"
+          cy="37"
+          r="1.6"
+          fill="white"
+          stroke="none"
+          opacity="0.9"
+        />
+        <path
+          d="M35 46a16 16 0 0 1 11-12"
+          fill="none"
+          stroke="white"
+          strokeWidth="3"
+          opacity="0.95"
+        />
+        {/* Reflexo fraco no lado oposto, como luz batendo no vidro */}
+        <path
+          d="M65 56a16 16 0 0 1-8 9"
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          opacity="0.6"
+        />
+      </g>
       <g className={contentClassName} fill="currentColor" stroke="none">
-        {/* Almofada central — menor que o aro interno, com folga ao redor */}
-        <ellipse cx="50" cy="57" rx="6.5" ry="5.5" />
-        {/* Dedos, em leque, centralizados no mesmo eixo da almofada */}
+        {/* Pegada grossa, centralizada na lente */}
+        <ellipse cx="50" cy="57" rx="7" ry="5.75" />
         <ellipse
-          cx="39"
-          cy="48"
-          rx="3.5"
-          ry="4.5"
-          transform="rotate(-20 39 48)"
+          cx="40"
+          cy="49"
+          rx="3.25"
+          ry="4.25"
+          transform="rotate(-22 40 49)"
         />
         <ellipse
           cx="46"
-          cy="42"
-          rx="3.5"
+          cy="42.5"
+          rx="3.25"
           ry="4.5"
-          transform="rotate(-8 46 42)"
+          transform="rotate(-8 46 42.5)"
         />
         <ellipse
           cx="54"
-          cy="42"
-          rx="3.5"
+          cy="42.5"
+          rx="3.25"
           ry="4.5"
-          transform="rotate(8 54 42)"
+          transform="rotate(8 54 42.5)"
         />
         <ellipse
-          cx="61"
-          cy="48"
-          rx="3.5"
-          ry="4.5"
-          transform="rotate(20 61 48)"
+          cx="60"
+          cy="49"
+          rx="3.25"
+          ry="4.25"
+          transform="rotate(22 60 49)"
         />
-      </g>
-      <g
-        className={glassClassName}
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-      >
-        {/* Aro externo, grosso — a armação da lupa */}
-        <circle cx="50" cy="50" r="25" strokeWidth="7" />
-        {/* Aro interno, fino — o friso retrô do vidro encaixado na armação */}
-        <circle cx="50" cy="50" r="20" strokeWidth="2" />
-        {/* Cabo curto e a ponteira arredondada, como o de uma lupa antiga */}
-        <line x1="68" y1="68" x2="82" y2="82" strokeWidth="7" />
-        <circle cx="86" cy="86" r="5" fill="currentColor" stroke="none" />
       </g>
     </svg>
   );

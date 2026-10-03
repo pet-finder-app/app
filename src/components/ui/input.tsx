@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 import { cn } from "./cn";
 import {
   Field,
@@ -8,7 +8,12 @@ import {
 } from "./field";
 
 export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "id"> &
-  FieldBaseProps;
+  FieldBaseProps & {
+    /** Elemento à direita, dentro do campo (ex.: mostrar/ocultar senha). */
+    trailing?: ReactNode;
+    /** Ícone decorativo à esquerda, dentro do campo. */
+    leading?: ReactNode;
+  };
 
 /** Campo de texto (text, email, password, number, date, tel...). */
 export function Input({
@@ -18,6 +23,8 @@ export function Input({
   invalid,
   errorId,
   tone = "light",
+  trailing,
+  leading,
   className,
   ...props
 }: InputProps) {
@@ -25,13 +32,33 @@ export function Input({
 
   return (
     <Field id={id} label={label} hint={hint} hintId={hintId} tone={tone}>
-      <input
-        id={id}
-        name={id}
-        className={cn(fieldControlClass[tone], className)}
-        {...a11y}
-        {...props}
-      />
+      <div className="relative">
+        <input
+          id={id}
+          name={id}
+          className={cn(
+            fieldControlClass[tone],
+            trailing ? "pr-12" : undefined,
+            leading ? "pl-11" : undefined,
+            className,
+          )}
+          {...a11y}
+          {...props}
+        />
+        {leading ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-neutral-600"
+          >
+            {leading}
+          </div>
+        ) : null}
+        {trailing ? (
+          <div className="absolute inset-y-0 right-1.5 flex items-center">
+            {trailing}
+          </div>
+        ) : null}
+      </div>
     </Field>
   );
 }

@@ -51,11 +51,11 @@ const TRAIL = [
  * `prefers-reduced-motion` automaticamente (o percurso some e a marca
  * aparece direto, já montada, sem o movimento).
  */
-export function SplashScreen() {
+export function SplashScreen({ quick = false }: { quick?: boolean }) {
   return (
     <div
       role="status"
-      className="splash-overlay fixed inset-0 z-50 flex items-center justify-center bg-primary"
+      className={`splash-overlay ${quick ? "splash-quick" : ""} fixed inset-0 z-50 flex items-center justify-center bg-primary`}
     >
       <span className="sr-only">Carregando Petfinder…</span>
 

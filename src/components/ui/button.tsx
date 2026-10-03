@@ -1,5 +1,7 @@
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from "react";
+import { PetfinderMark } from "../petfinder-mark";
 import { cn } from "./cn";
 import { pressSoft, shadowSoft } from "./elevation";
 
@@ -77,6 +79,12 @@ export function Button({
       className={buttonClasses({ variant, size, className })}
       {...props}
     >
+      {loading ? (
+        <PetfinderMark className="lupa-loading size-5 shrink-0" />
+      ) : null}
+      {loading ? (
+        <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+      ) : null}
       {loading && loadingLabel ? loadingLabel : children}
     </button>
   );
