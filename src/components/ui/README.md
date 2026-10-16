@@ -1,33 +1,27 @@
-# UI System
+# UI system
 
-Componentes base do Petfinder. **Antes de criar um componente novo, procure aqui.**
-Se precisar de uma variação, adicione uma `variant`/`tone` ao componente existente
-em vez de copiar classes para a tela.
+Shared Petfinder components. Check here before creating a component. Add a
+`variant` or `tone` to an existing component when a new presentation is needed.
 
 ```tsx
 import { Button, Input, Card } from "@/components/ui";
 ```
 
-## Estilo: soft UI
+Code and comments use English; visible product text stays in Brazilian Portuguese.
 
-Linguagem visual do UI System inteiro: cantos bem arredondados, sombra
-suave e difusa em vez de borda grossa (a superfície "flutua", não é
-contornada), cores pastel, e um leve encolhimento no clique — nunca
-deslocamento.
+## Visual style
 
-- `shadowSoft.sm | md | lg | xl` e `pressSoft.sm | md | lg | xl`
-  (`components/ui/elevation.ts`) — use sempre a mesma chave nos dois.
-- Escala de sombra por hierarquia: badge/chip = sem sombra (só cor pastel),
-  botão = por `size`, cartão = `lg`.
-- Cantos: `rounded-full` em pílulas/selos/avatares, `rounded-2xl` em
-  botões/campos/itens de lista, `rounded-3xl` em cartões. Nunca sem raspa
-  (`rounded-none`).
-- Borda: a maioria das superfícies não tem borda (a sombra já contorna).
-  Quando precisar de uma (campo, item de lista sobre fundo branco), é
-  sempre fina — `border border-stone-300` — nunca `border-2`.
-- Nunca use `backdrop-blur`.
-- Novo componente? Reaproveite `shadowSoft`/`pressSoft` em vez de
-  escrever uma sombra solta.
+Use soft, diffuse elevation, rounded corners, white surfaces, and pastel fills.
+Most surfaces do not need a border; fields and list items may use a thin border.
+Avoid thick borders and `backdrop-blur`.
+
+- Reuse `shadowSoft.sm | md | lg | xl` and the matching `pressSoft` size from
+  `elevation.ts` rather than choosing new shadows or press effects.
+- Badges and chips do not need shadows. Button elevation follows size; cards use
+  the large elevation by default.
+- Use round pills, badges, and avatars; rounded fields, buttons, and cards.
+- Authentication uses the user's photo-based design, including its smaller field
+  corner radius and green registration panel.
 
 ```tsx
 import { Button, shadowSoft } from "@/components/ui";
@@ -36,88 +30,64 @@ import { cn } from "@/components/ui";
 <div className={cn("rounded-3xl bg-white p-4", shadowSoft.lg)}>...</div>;
 ```
 
-## Paleta de cores (obrigatória)
+## Brand tokens
 
-**Só estas cores podem ser usadas no projeto.** Primária = cor viva, para
-ação, destaque e estado importante. Secundária (e terciária) = versão sem
-muito destaque: fundos, detalhes, informação de apoio.
+Tokens are defined in `src/app/globals.css`. Use semantic tokens rather than
+repeating hex values in page components.
 
-| Cor | Primária | Secundária | Terciária | Escura (só texto) |
-| --- | --- | --- | --- | --- |
-| Verde | `lime-600` | `lime-300` | — | `lime-800` |
-| Amarelo | `amber-400` | `amber-200` | — | — |
-| Vermelho | `red-500` | `red-400` | — | `red-700` |
-| Rosa | `rose-500` | `rose-400` | — | — |
-| Azul | `blue-600` | `blue-400` | — | — |
-| Roxo | `violet-600` | `violet-500` | — | — |
-| Cinza | `zinc-600` | `gray-400` | `stone-300` | — |
-| Preto | `neutral-900` | `neutral-600` | — | — |
+| Token | Value | Purpose |
+| --- | --- | --- |
+| `text`, `bg-black` | `#151316` | Dark text and backgrounds |
+| `text-light`, `bg-white` | `#ffffff` | Light text and white surfaces |
+| `primary`, `accent` | `#45fd66` | Primary actions, active states, checkmarks |
+| `secondary`, `primary-soft` | `#effae7` | Soft green surfaces |
+| `border-light`, `line` | `#c3c3c3` | Borders and separators |
+| `primary-hover` | Darkened primary | Primary hover state |
+| `primary-faint` | `#f0fdf4` | Subtle surface hover |
+| `accent-yellow` | `#fdecc8` | Supporting pastel emphasis |
+| `accent-peach` | `#fde1d3` | Supporting notices and errors |
 
-Verde e vermelho têm também uma cor **escura**, criada para acessibilidade:
-use em **texto pequeno** sobre fundo claro/pastel e em fundo com texto
-branco (as outras tonalidades não dão 4.5:1 de contraste nesses casos).
-Texto verde = `text-lime-800`; texto vermelho e botão de perigo (fundo com
-texto branco) = `red-700`.
+Other existing status colors remain available for charts and semantic feedback:
+red, yellow, pink, blue, purple, gray, and neutral. Use dark green or red text where
+bright variants would not provide sufficient contrast on light surfaces.
 
-Qualquer outra classe de cor do Tailwind (ex.: `green-500`, `neutral-200`,
-`sky-400`) está fora da paleta. Os tokens de `globals.css` devem apontar
-para cores desta tabela.
+## Typography
 
-**Exceção — fundos:** cores de fundo (`bg-*`: `bg-white`, `bg-neutral-50`,
-`bg-neutral-100`, os pastéis `primary-soft`, `primary-faint`,
-`accent-yellow`, `accent-peach`, `bg-green-300` do login etc.) continuam
-as mesmas de antes. A paleta vale para texto, ícone, borda, anel/foco,
-gráfico e para o verde da marca (`primary`).
+Use Nunito Sans throughout the application. Reserve Montserrat for the PETFINDER
+wordmark: PET uses Black (900), while FINDER. uses Light Italic (300). Do not restore
+NATS-specific line-height overrides.
 
-## Tokens (globals.css)
+## Field tones
 
-| Token                | Valor                   | Uso                                                 |
-| -------------------- | ----------------------- | --------------------------------------------------- |
-| `primary`            | lime-600 (`#65a30d`)    | Botão principal, foco, progresso, destaques         |
-| `primary-hover`      | lime-600 escurecido     | Hover do primário e ícone ativo da navegação        |
-| `primary-foreground` | neutral-900             | Texto sobre o primário                              |
-| `primary-soft`       | green-100               | Fundo suave de itens ativos/selecionados            |
-| `primary-faint`      | green-50                | Hover de superfícies brancas, selos informativos    |
-| `accent-yellow`      | `#fdecc8`               | Pastel: botão secundário, caixas de informação      |
-| `accent-peach`       | `#fde1d3`               | Pastel: avisos e selos de perigo                    |
-| `line`               | `#d6d3d1` (stone-300)   | Divisor sutil (`border-y`, `border-t` entre seções) |
+Fields, checkboxes, and links support these tones:
 
-## Estilo
+- `primary`: green authentication surfaces with dark labels.
+- `light`: white and neutral application surfaces; the default.
+- `brutal`: thin dark borders without soft elevation.
+- `photo`: dark photographic surfaces, with white labels and white controls.
 
-Visual "soft UI": superfícies brancas **sem contorno**, elevadas por sombra
-suave (`shadowSoft`), cantos bem arredondados, e preenchimentos pastel para
-dar cor. O verde primário entra só onde há ação ou estado ativo.
+Checkboxes retain their native checked state, keyboard behavior, and label
+association. The custom visual is a white box with a primary-green checkmark.
 
-Use as classes `bg-primary`, `text-primary`, `ring-primary`, `hover:bg-primary-hover`.
-Não use cores hexadecimais nem `neutral-400` direto para significar "primário":
-se a cor mudar, muda só em `globals.css`.
+## Components
 
-## Tone
+| Component | Purpose |
+| --- | --- |
+| `Button` | Primary, secondary, outline, pill, danger, dark, photo, and photo-back variants; sm/md/lg sizes and loading states. |
+| `LinkButton` | The same visual treatment for navigation. |
+| `TextLink` | Inline link with a visible focus indicator. |
+| `Input`, `Select`, `Textarea` | Controls with accessible labels, hints, and errors. Always supply id and label. |
+| `Checkbox` | White checkbox with a primary-green tick and an associated label that may contain links. |
+| `FileInput` | File selection and metadata. |
+| `PhotoInput` | Multiple photo selection with previews and individual removal. |
+| `MediaInput` | Multiple photos/videos with previews; retain actual Files for multipart uploads. |
+| `FormError` | Always-mounted form alert; fields reference its id through errorId. |
+| `Card`, `CardTitle`, `CardDescription` | Shared content surfaces. Card tone controls the background. |
+| `Badge` | Neutral, informational, success, warning, and danger status labels. |
+| `Progress` | Progress indicator without built-in text. |
+| `Field`, `useFieldA11y`, `cn` | Shared field structure, accessibility, and class composition. |
 
-Campos, checkbox e links aceitam `tone="primary" | "light"`:
-
-- `primary`: telas de autenticação (fundo no verde primário). Rótulos escuros; o botão de envio usa `variant="secondary"` para se destacar do fundo.
-- `light` (padrão): resto do app, fundo `neutral-100` com cartões brancos.
-
-## Componentes
-
-| Componente                             | Para quê                                                                                                                                                                                    |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| `Button`                               | `variant`: primary, secondary (amarelo pastel), outline, pill (voltar/trocar etapa, igual ao selo), danger. `size`: sm, md, lg (lg = largura total). `loading` + `loadingLabel` para envio. |
-| `LinkButton`                           | Mesmo visual do `Button`, mas é um `<Link>`.                                                                                                                                                |
-| `TextLink`                             | Link inline sublinhado.                                                                                                                                                                     |
-| `Input`, `Select`, `Textarea`          | Campos com rótulo, dica e erro acessíveis. Sempre passe `id` e `label`.                                                                                                                     |
-| `Checkbox`                             | Caixa com rótulo (o rótulo pode conter links).                                                                                                                                              |
-| `FileInput`                            | Escolha de um arquivo; guarda só metadados (`UploadedFile`).                                                                                                                                |
-| `PhotoInput`                           | Escolha de várias fotos (`UploadedFile[]`), com miniatura em lista e remoção individual. Mesma ideia do `FileInput`, para quando há mais de um arquivo (fotos do pet, do perfil público).   |
-| `MediaInput`                         | Escolha de várias fotos e vídeos com prévia em grade e remoção individual; guarda o `File` (para envio multipart). Usado no post da ONG. |
-| `FormError`                            | Alerta de erro do formulário; use o `id` dele como `errorId` dos campos.                                                                                                                    |
-| `Card`, `CardTitle`, `CardDescription` | Cartão branco padrão.                                                                                                                                                                       |
-| `Badge`                                | Selo: neutral, info, success, warning, danger.                                                                                                                                              |
-| `Progress`                             | Barra de progresso.                                                                                                                                                                         |
-| `Field`, `useFieldA11y`, `cn`          | Blocos para montar campos novos com a mesma base.                                                                                                                                           |
-
-## Padrão de formulário
+## Form example
 
 ```tsx
 const ERROR_ID = "login-error";
@@ -136,7 +106,7 @@ const ERROR_ID = "login-error";
     type="submit"
     size="lg"
     loading={isSubmitting}
-    variant="secondary"
+    variant="dark"
     loadingLabel="ENTRANDO..."
   >
     ENTRAR
@@ -144,62 +114,42 @@ const ERROR_ID = "login-error";
 </form>;
 ```
 
-## Moldura de página
+## Page shells and authentication
 
-Toda tela usa `PageShell` (fundo, gutter de 16px, conteúdo centralizado em
-`max-w-lg`). Cabeçalhos também ficam dentro de um `Card` — nada fica solto
-fora do quadro. Formulários com ações fixas usam `ActionBar`, que alinha com
-a mesma largura e respeita a área segura do celular.
+Application pages use `PageShell` for centered content and mobile gutters.
+Headers belong inside the same content bounds. Forms with fixed actions use
+`ActionBar`, aligned with the page width and device safe area.
 
-## Ícones
+Login and registration share `PhotoAuthLayout`: the pet slideshow, dark gradient,
+wordmark, and initial logo position. The logo moves upward when registration opens.
+The rounded green panel slides over disabled role cards; only the panel scrolls.
+Back navigation or clicking outside closes it with a prompt-starting ease-out
+animation. Reduced-motion preferences disable movement. Legacy password-recovery
+pages use `AuthLayout`.
 
-Todos os ícones vêm de `lucide-react` — nunca emoji, nunca glifo Unicode
-solto (✓, ‹, +...). Importe direto onde for usar:
+## Icons and accessibility
 
-```tsx
-import { iconSize } from "@/components/ui";
-import { ChevronLeft } from "lucide-react";
+Use `lucide-react` icons, imported where needed, with `iconSize.sm | md | lg` from
+`icon.ts`. Avoid emoji or Unicode glyphs as interface icons.
 
-<Button variant="pill" size="sm">
-  <ChevronLeft className={iconSize.sm} aria-hidden="true" />
-  Voltar
-</Button>;
-```
+- Hide decorative icons with `aria-hidden`.
+- Icon-only controls need a specific accessible name.
+- Never communicate status using color or an icon alone; include text or sr-only
+  content.
+- Associate labels and hints with every control. Connect validation errors using
+  aria-invalid and aria-describedby.
+- Keep FormError mounted so assistive technology announces updates reliably.
+- Provide visible focus and comfortable touch targets of at least 24 px.
+- Maintain readable contrast, including dark text on the primary-green panel.
+- Check mobile layouts at 375 px: no horizontal scrolling, cropped text, or overlap.
 
-- Tamanho vem de `iconSize.sm | md | lg` (ver `components/ui/icon.ts`), nunca
-  um número escolhido na hora.
-- Ícone ao lado de texto que já diz a mesma coisa: `aria-hidden="true"`.
-- Ícone como único conteúdo de um controle: o controle precisa de
-  `aria-label`.
-- Estado (concluído, verificado...) nunca é só o ícone: sempre acompanhado
-  de texto visível ou `sr-only`.
+## Domain components and loading
 
-## Acessibilidade (WCAG 2.2 AA)
+Reusable domain components compose the shared controls and live in feature
+folders outside `ui/`, such as `auth/photo-auth-layout`,
+`verification/verification-badge`, and `ngo/ngo-tab-bar`. Page-specific components,
+including the registration role selector, live in their page's `_components`
+folder. See [component organization](../README.md).
 
-- Todo campo tem `<label>` associado, dica via `aria-describedby` e erro via
-  `aria-invalid` + `FormError` (`role="alert"`, sempre montado).
-- Alvos de toque com no mínimo 24px (`Button` sm = 28px, md = 44px, checkbox = 24px).
-- Foco visível em tudo que é interativo (`focus-visible:ring-2`).
-- Contraste mínimo 4.5:1: texto `neutral-900` sobre branco, pastel ou verde (verde e vermelho em texto pequeno: use `lime-800`/`red-700`);
-  `neutral-600` para texto de apoio. as cores primárias/secundárias de verde e vermelho não têm 4.5:1
-  em texto pequeno: use `lime-800`/`red-700` (ver paleta). Nunca texto branco sobre o verde primário.
-- Ícones decorativos com `aria-hidden`; estado transmitido também em texto
-  (ex.: "(concluída)" em `sr-only`), nunca só por cor.
-- Botões de ícone ou repetidos ("Remover") recebem `aria-label` específico.
-- Sem rolagem horizontal em 375px; layouts em `grid`/`flex-wrap` que quebram.
-
-## Componentes de domínio
-
-Ficam em `src/components/` (fora de `ui/`) e são compostos com o UI System:
-`auth-layout`, `role-select`, `verification-badge`, `splash-*`, `ong-tab-bar`
-(navegação fixa do painel da ONG — início/grade de pets, cadastrar, notificações).
-
-## Carregamento
-
-Animação de carregamento = a lupa da marca (`PetfinderMark` com a classe
-`lupa-loading`, em `globals.css`): balança "procurando" e a pegada pulsa.
-Dois usos prontos, sem configurar nada:
-
-- `Button` com `loading` mostra a lupa antes do `loadingLabel`.
-- `NavigationProgress` (no layout) mostra "Carregando..." com a lupa ao tocar
-  num link interno, até a próxima tela abrir.
+Loading buttons use `PetfinderMark` with `magnifier-loading` from globals.css.
+There is no startup splash screen or global route-change loading indicator.
