@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { createEmptyPetInput, type PetInput } from "./pet";
-import { createPet, getPetByIdAndOng } from "./pets";
+import { createPet, getPetByIdAndNgo } from "./pets";
 import {
   clampTagPos,
   MAX_IMAGE_BYTES,
@@ -15,16 +15,12 @@ import {
   type TagPos,
 } from "./post";
 
-/**
- * Camada de acesso aos posts — hoje um arquivo JSON + arquivos em
- * `public/uploads/posts`, amanhã o backend e um storage de verdade. Só este
- * arquivo precisa mudar quando a API real entrar (ver `lib/pets.ts`).
- */
+/** Post persistence adapter using JSON and local uploaded files until production storage is available. */
 
 const POSTS_FILE = path.join(process.cwd(), "src", "data", "posts.json");
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "posts");
 
-/** Erro com mensagem pronta para mostrar ao usuário (vira 400 na API). */
+/** User-facing error mapped to HTTP 400 by the API. */
 export class PostError extends Error {}
 
 export async function readPosts(): Promise<Post[]> {
@@ -40,21 +36,21 @@ async function writePosts(posts: Post[]): Promise<void> {
   );
 }
 
-/** Mais recentes primeiro. */
-export async function listPostsByOng(ongId: string): Promise<Post[]> {
+/** Newest first. */
+export async function listPostsByNgo(ngoId: string): Promise<Post[]> {
   const posts = await readPosts();
   return posts
-    .filter((post) => post.ongId === ongId)
+    .filter((post) => post.ngoId === ngoId)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-/** Só retorna o post se ele pertencer a essa ONG. */
-export async function getPostByIdAndOng(
+/** Return a post only when it belongs to the requested NGO. */
+export async function getPostByIdAndNgo(
   id: string,
-  ongId: string,
+  ngoId: string,
 ): Promise<Post | undefined> {
   const posts = await readPosts();
-  return posts.find((post) => post.id === id && post.ongId === ongId);
+  return posts.find((post) => post.id === id && post.ngoId === ngoId);
 }
 
 async function saveFiles(files: File[]): Promise<PostMedia[]> {
@@ -87,7 +83,7 @@ async function saveFiles(files: File[]): Promise<PostMedia[]> {
   );
 }
 
-/** Lê o multipart do formulário: `data` (JSON de `PostInput`) + `files`. */
+/** Parse multipart PostInput JSON and uploaded files. */
 function parseForm(form: FormData): { input: PostInput; files: File[] } {
   const raw = form.get("data");
   if (typeof raw !== "string") throw new PostError("Dados inválidos.");
@@ -107,9 +103,9 @@ function parseForm(form: FormData): { input: PostInput; files: File[] } {
   return { input, files };
 }
 
-/** Resolve a marcação: pet existente da ONG, pet recém-cadastrado ou nenhum. */
+/** Resolve the pet tag to an existing owned pet, a newly created pet, or no pet. */
 async function resolvePetId(
-  ongId: string,
+  ngoId: string,
   input: PostInput,
   media: PostMedia[],
 ): Promise<string | null> {
@@ -129,18 +125,18 @@ async function resolvePetId(
           url: item.url,
         })),
     };
-    return (await createPet(ongId, petInput)).id;
+    return (await createPet(ngoId, petInput)).id;
   }
 
   if (input.petId) {
-    const pet = await getPetByIdAndOng(input.petId, ongId);
+    const pet = await getPetByIdAndNgo(input.petId, ngoId);
     if (!pet) throw new PostError("Pet não encontrado.");
     return pet.id;
   }
   return null;
 }
 
-/** Valida, salva os arquivos e junta com as mídias mantidas. */
+/** Validate, save new files, and combine them with retained media. */
 async function buildMedia(
   input: PostInput,
   files: File[],
@@ -166,12 +162,12 @@ async function buildMedia(
       : kept.find((m) => m.url === token);
     return item ? [item] : [];
   });
-  // Qualquer mídia que ficou fora da ordem enviada vai para o fim.
+  // Append media not included in the requested ordering.
   const rest = [...kept, ...saved].filter((m) => !ordered.includes(m));
   return [...ordered, ...rest];
 }
 
-/** Só guarda a posição se houver pet marcado e os números forem válidos. */
+/** Persist tag coordinates only when a pet is tagged and both values are valid. */
 function cleanTagPos(input: PostInput, petId: string | null): TagPos | null {
   const pos = input.tagPos;
   if (!petId || !pos || !Number.isFinite(pos.x) || !Number.isFinite(pos.y))
@@ -179,15 +175,15 @@ function cleanTagPos(input: PostInput, petId: string | null): TagPos | null {
   return clampTagPos(pos);
 }
 
-export async function createPost(ongId: string, form: FormData): Promise<Post> {
+export async function createPost(ngoId: string, form: FormData): Promise<Post> {
   const { input, files } = parseForm(form);
   const media = await buildMedia(input, files, []);
-  const petId = await resolvePetId(ongId, input, media);
+  const petId = await resolvePetId(ngoId, input, media);
 
   const now = new Date().toISOString();
   const post: Post = {
     id: crypto.randomUUID(),
-    ongId,
+    ngoId,
     petId,
     tagPos: cleanTagPos(input, petId),
     caption: input.caption.trim(),
@@ -199,19 +195,19 @@ export async function createPost(ongId: string, form: FormData): Promise<Post> {
   return post;
 }
 
-/** Retorna undefined se o post não existir ou não pertencer a essa ONG. */
+/** Return undefined if the post is missing or belongs to another NGO. */
 export async function updatePost(
   id: string,
-  ongId: string,
+  ngoId: string,
   form: FormData,
 ): Promise<Post | undefined> {
   const posts = await readPosts();
-  const index = posts.findIndex((p) => p.id === id && p.ongId === ongId);
+  const index = posts.findIndex((p) => p.id === id && p.ngoId === ngoId);
   if (index === -1) return undefined;
 
   const { input, files } = parseForm(form);
   const media = await buildMedia(input, files, posts[index].media);
-  const petId = await resolvePetId(ongId, input, media);
+  const petId = await resolvePetId(ngoId, input, media);
 
   const updated: Post = {
     ...posts[index],
@@ -226,10 +222,10 @@ export async function updatePost(
   return updated;
 }
 
-/** Apaga o post (os arquivos ficam: um pet cadastrado por ele pode usá-los). */
-export async function deletePost(id: string, ongId: string): Promise<boolean> {
+/** Delete the post but retain its media files, which a linked pet may still reference. */
+export async function deletePost(id: string, ngoId: string): Promise<boolean> {
   const posts = await readPosts();
-  const index = posts.findIndex((p) => p.id === id && p.ongId === ongId);
+  const index = posts.findIndex((p) => p.id === id && p.ngoId === ngoId);
   if (index === -1) return false;
 
   posts.splice(index, 1);
@@ -237,8 +233,8 @@ export async function deletePost(id: string, ongId: string): Promise<boolean> {
   return true;
 }
 
-/** Apaga todos os posts de uma ONG (exclusão de conta). */
-export async function deletePostsByOng(ongId: string): Promise<void> {
+/** Delete all NGO posts during account deletion. */
+export async function deletePostsByNgo(ngoId: string): Promise<void> {
   const posts = await readPosts();
-  await writePosts(posts.filter((p) => p.ongId !== ongId));
+  await writePosts(posts.filter((p) => p.ngoId !== ngoId));
 }

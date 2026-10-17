@@ -4,15 +4,14 @@ import { shadowSoft } from "./elevation";
 
 export type FormErrorProps = {
   id: string;
-  /** Sempre montado: leitores de tela detectam a mudança de texto de forma
-   *  mais confiável do que a inserção tardia de um novo nó. */
+  /** Keep the alert mounted so screen readers reliably announce text updates. */
   children?: ReactNode;
   className?: string;
-  /** Sem texto, não ocupa espaço (continua montado para leitores de tela). */
+  /** Collapse empty visual space while keeping the alert mounted. */
   collapsible?: boolean;
 };
 
-/** Alerta de erro do formulário. Passe o `id` como `errorId` dos campos. */
+/** Form error alert; reference its id from associated fields. */
 export function FormError({
   id,
   children,

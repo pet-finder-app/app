@@ -1,8 +1,4 @@
-/**
- * Vocabulário compartilhado do estilo "soft UI": sombra suave e difusa (sem
- * borda grossa) para dar profundidade, e um leve encolhimento no clique em
- * vez de deslocamento — o elemento "afunda" só um pouco, sem mudar de lugar.
- */
+/** Shared soft-UI elevation: diffuse shadows and subtle press scaling without changing layout position. */
 
 export type ElevationSize = "sm" | "md" | "lg" | "xl";
 
@@ -13,7 +9,7 @@ export const shadowSoft: Record<ElevationSize, string> = {
   xl: "shadow-[0_18px_36px_-10px_rgba(15,23,42,0.14)]",
 };
 
-/** Aplique em elementos clicáveis (button, a, label de arquivo). */
+/** Apply to interactive elements such as buttons, links, and file-input labels. */
 export const pressSoft: Record<ElevationSize, string> = {
   sm: "transition-transform active:scale-[0.97]",
   md: "transition-transform active:scale-[0.97]",

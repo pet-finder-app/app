@@ -14,11 +14,12 @@ export type SelectOption = { value: string; label: string };
 export type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, "id"> &
   FieldBaseProps & {
     options: SelectOption[];
-    /** Primeira opção, desabilitada (ex.: "Selecione..."). */
+    /** Disabled placeholder option at the start of the select. */
     placeholder?: string;
   };
 
 const chevronClass: Record<FieldTone, string> = {
+  photo: "text-text/65",
   primary: "text-neutral-600",
   light: "text-neutral-600",
   brutal: "text-neutral-900",
@@ -27,6 +28,7 @@ const chevronClass: Record<FieldTone, string> = {
 export function Select({
   id,
   label,
+  labelIcon,
   hint,
   invalid,
   errorId,
@@ -39,7 +41,14 @@ export function Select({
   const { hintId, ...a11y } = useFieldA11y({ id, hint, invalid, errorId });
 
   return (
-    <Field id={id} label={label} hint={hint} hintId={hintId} tone={tone}>
+    <Field
+      id={id}
+      label={label}
+      labelIcon={labelIcon}
+      hint={hint}
+      hintId={hintId}
+      tone={tone}
+    >
       <div className="relative">
         <select
           id={id}

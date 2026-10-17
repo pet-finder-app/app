@@ -9,18 +9,18 @@ Petfinder is a full-stack Next.js App Router application using React, TypeScript
 Tailwind CSS v4, and pnpm. The Next.js application serves both the interface and
 the HTTP API; there is no separate backend service. React Compiler is enabled.
 
-| Location                   | Responsibility                                                                     |
-| -------------------------- | ---------------------------------------------------------------------------------- |
-| `src/app`                  | Routes, page composition, layouts, global styles, and application metadata         |
-| `src/app/api/**/route.ts`  | HTTP handlers for authentication, authorization, validation, and domain operations |
-| `src/app/**/_components`   | Components and styles owned by a specific page                                     |
-| `src/components/<feature>` | Reusable components grouped by domain or capability                                |
-| `src/components/ui`        | Shared controls, surfaces, layout primitives, and styling helpers                  |
-| `src/lib`                  | Domain types, validation, services, persistence, and supporting utilities          |
-| `src/data/*.json`          | Local prototype data persisted by server-side services                             |
-| `public`                   | Public branding, pet photographs, and uploaded media                               |
-| `tests`                    | Node test-runner tests, including English route and data migration coverage        |
-| `docs`                     | Supporting project and workflow documentation                                      |
+| Location                     | Responsibility                                                                     |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| `src/app`                    | Routes, page composition, layouts, global styles, and application metadata         |
+| `src/app/api/**/route.ts`    | HTTP handlers for authentication, authorization, validation, and domain operations |
+| `src/app/**/_components`     | Components and styles owned by a specific page                                     |
+| `src/components/<feature>`   | Reusable components grouped by domain or capability                                |
+| `src/components/ui`          | Shared controls, surfaces, layout primitives, and styling helpers                  |
+| `src/lib`                    | Domain types, validation, services, persistence, and supporting utilities          |
+| `src/data/*.json`, `*.jsonl` | Local prototype data persisted by server-side services                             |
+| `public`                     | Public branding, pet photographs, and uploaded media                               |
+| `tests`                      | Node test-runner tests, including English route and data migration coverage        |
+| `docs`                       | Supporting project and workflow documentation                                      |
 
 ### Rendering and data flow
 
@@ -43,10 +43,31 @@ the HTTP API; there is no separate backend service. React Compiler is enabled.
 
 - Authentication pages include `/login`, `/register`, `/forgot-password`, and
   `/reset-password`.
+- Login, registration, and forgot-password pages live in the `(auth)` route group.
+  Its shared layout keeps the pet slideshow mounted during navigation. Preserve
+  that layout boundary so changing auth routes does not reset the slide or timer.
+  Route groups do not add segments to public URLs.
 - `/adopter/*` serves personal accounts; `/ngo/*` serves organization accounts.
   They are separate account roles with different profiles and permissions.
-- `/pets/[id]` displays a pet. Adoption and surrender agreements have dedicated
-  printable pages under `/adoptions/[id]/agreement` and
+- Personal profile categories open their forms in the shared `BottomSheet`, also
+  used by home post options. Keep drafts in the parent profile state and save
+  actions inside the sheet; checklist links open the corresponding category.
+  Verification progress appears beneath the profile header, outside the settings
+  list. It counts required checklist items and links the next missing item to its
+  settings category. Completing the checklist enables review
+  submission; it does not change verification status automatically. Logout and
+  account deletion are direct actions in the personal profile list, each opening
+  a confirmation modal before making a request. Terms and privacy are linked in
+  the profile footer. Terms acceptance is collected at signup and preserved in
+  stored records; the verification checklist covers profile data without asking
+  for acceptance again.
+- `/me` is the signed-in account's profile and renders either the personal form
+  or the NGO profile according to the server-side session. It is implemented in
+  `src/app/me`. Do not add compatibility redirects for the removed profile URLs.
+- `/pets/[id]` displays a pet. Its shared media carousel enables an opt-in
+  full-screen photo viewer with pinch zoom, panning, and keyboard controls.
+  Keep this opt-in separate from Home photo double-tap likes. Adoption and
+  surrender agreements have dedicated printable pages under `/adoptions/[id]/agreement` and
   `/surrenders/[id]/agreement`.
 - Adoption and surrender services own workflow transitions, participant checks,
   event histories, signing, handover, and related conversation updates. Invoke
@@ -57,9 +78,40 @@ the HTTP API; there is no separate backend service. React Compiler is enabled.
   pending signing codes, or another participant's private data.
 - Donations track direct Pix payments to an NGO and subsequent NGO confirmation;
   the application does not process payments itself.
+- Home feed filters, navigation, and progressive batches live in
+  `src/app/_components`. Home and Favorites share post presentation and options
+  in `components/posts`. Favorites includes nonarchived liked pets even when
+  unavailable or hidden from Home. Shared NGO identity and media carousels live
+  in `components/ngo` and `components/posts`. Sticky tag filters choose the default scroll feed or a
+  photo-only grid, toggle GPS, and optionally reveal hidden pets. Hiding a pet
+  also hides posts tagged with that pet unless the visibility filter is enabled.
+- Selecting a grid animal opens its post in a temporary scroll view. Browser
+  Back and the temporary back arrow restore the grid snapshot, including its
+  loaded batch and scroll position, while keeping the latest hidden-pet and
+  location choices. `feed-query.ts` parses and serializes the `view`, `hidden`,
+  `location`, and optional `post` URL parameters. A preview retains `view=grid`
+  and adds `post`; shared preview URLs also create a grid return entry.
+  Validate custom history state and preserve Next.js fields when writing history.
+  URL-changing writes must use Next's native History integration so subsequent
+  server refreshes read the current filter URL.
+- Browser location starts enabled, requests permission, and turns off when
+  permission is denied. `/api/location` stores approximate coordinates and an
+  explicit enabled/disabled cookie; honor a saved disabled preference. Turning
+  GPS off falls back to the profile postal code for distance ordering.
+- Content reports are appended to `src/data/reports.jsonl` through `/api/reports`.
+  This stores reports for later review; there is no moderation dashboard or
+  automatic delivery. Standalone post likes use `post-likes.json`; tagged posts
+  keep the existing pet-like workflow and NGO notifications.
+- Pet and standalone-post like endpoints accept `POST` to toggle and `PUT` to
+  ensure a like exists. Photo double-taps use `PUT` so repeating the gesture
+  cannot remove a like or duplicate a notification.
 
 ## Component ownership
 
+- Before creating a component, check the existing page components and
+  `src/components` for a suitable implementation. Reuse existing components
+  first; extend their props or variants when appropriate. Create a new component
+  only when the existing ones cannot reasonably meet the requirement.
 - Put page-specific components in the owning page's `_components` directory and
   colocate their CSS modules there.
 - Put generic or potentially reusable components in `src/components`, grouped
@@ -129,9 +181,14 @@ the HTTP API; there is no separate backend service. React Compiler is enabled.
 - Use semantic theme tokens from `src/app/globals.css`. The base palette is
   text/dark `#151316`, white `#ffffff`, primary/accent `#45fd66`, secondary
   `#effae7`, and light border `#c3c3c3`.
+- Use `accent-tertiary` (`#249c42`) for selected navigation text, filled icons,
+  and profile-photo outlines. Keep labels medium-weight without badge backgrounds.
 - Use Nunito Sans for application text. The PETFINDER wordmark uses Montserrat:
   `PET` in Black weight and `FINDER` in light italic. Do not restore the former
   NATS-specific line-height overrides.
+- Application content uses white backgrounds. Home feed posts have no card
+  elevation or outer rounding; carousel dots are white at 50% opacity, with the
+  active dot fully opaque. Adoption requests stay on the pet details page.
 - Preserve the shared login/register photographic background, gradient, and
   wordmark behavior through shared auth components.
 - Respect `prefers-reduced-motion` for slideshow scaling and interface animation.

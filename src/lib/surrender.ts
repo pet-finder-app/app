@@ -1,16 +1,7 @@
-/**
- * Entrega de um pet à ONG ("acolhimento"): o processo inverso da adoção. Quem
- * não pode mais ficar com o animal (ou o adotou pelo app e precisa devolver)
- * pede para deixá-lo com uma ONG: pedido → análise da ONG → termo de entrega
- * assinado eletronicamente → entrega → pet recebido. Mesmo esqueleto de
- * `lib/adoption.ts`, com a ONG no papel de quem recebe. Fica em
- * `surrenders.json`.
- *
- * Este arquivo não importa nada do Node: pode ser usado no client.
- */
+/** Client-safe surrender/return process model, from request through NGO review, signed agreement, and confirmed intake. Mirrors adoption with the NGO as recipient; persisted in surrenders.json. */
 
 import type { AdoptionEvent, AdoptionTerm, SignerRole } from "./adoption";
-import type { UploadedFile } from "./ong";
+import type { UploadedFile } from "./ngo";
 import type {
   PetAgeGroup,
   PetHealth,
@@ -20,77 +11,77 @@ import type {
 } from "./pet";
 
 export type SurrenderStatus =
-  | "ficha"
-  | "analise"
-  | "termo"
-  | "entrega"
-  | "concluida"
-  | "recusada"
-  | "cancelada";
+  | "application"
+  | "review"
+  | "agreement"
+  | "handover"
+  | "completed"
+  | "rejected"
+  | "cancelled";
 
 export const SURRENDER_STATUS_LABEL: Record<SurrenderStatus, string> = {
-  ficha: "Ajustando o pedido",
-  analise: "Em análise pela ONG",
-  termo: "Assinatura do termo",
-  entrega: "Combinando a entrega",
-  concluida: "Pet recebido pela ONG",
-  recusada: "Não aprovado",
-  cancelada: "Cancelado",
+  application: "Ajustando o pedido",
+  review: "Em análise pela ONG",
+  agreement: "Assinatura do termo",
+  handover: "Combinando a entrega",
+  completed: "Pet recebido pela ONG",
+  rejected: "Não aprovado",
+  cancelled: "Cancelado",
 };
 
-/** Etapas do caminho feliz, na ordem, para a linha do tempo. */
+/** Ordered successful-process stages for the timeline. */
 export const SURRENDER_STEPS: { status: SurrenderStatus; label: string }[] = [
-  { status: "ficha", label: "Pedido" },
-  { status: "analise", label: "Análise" },
-  { status: "termo", label: "Termo" },
-  { status: "entrega", label: "Entrega" },
-  { status: "concluida", label: "Concluído" },
+  { status: "application", label: "Pedido" },
+  { status: "review", label: "Análise" },
+  { status: "agreement", label: "Termo" },
+  { status: "handover", label: "Entrega" },
+  { status: "completed", label: "Concluído" },
 ];
 
 export function isSurrenderActive(status: SurrenderStatus): boolean {
   return (
-    status !== "concluida" && status !== "recusada" && status !== "cancelada"
+    status !== "completed" && status !== "rejected" && status !== "cancelled"
   );
 }
 
 export type SurrenderReason =
-  | "mudanca"
-  | "alergia"
-  | "saude"
-  | "financeiro"
-  | "comportamento"
-  | "espaco"
-  | "resgatado"
-  | "outro";
+  | "moving"
+  | "allergy"
+  | "health"
+  | "financial"
+  | "behavior"
+  | "space"
+  | "rescued"
+  | "other";
 
 export const SURRENDER_REASON_LABEL: Record<SurrenderReason, string> = {
-  mudanca: "Mudança de casa ou de cidade",
-  alergia: "Alergia na família",
-  saude: "Problema de saúde meu ou de alguém da casa",
-  financeiro: "Dificuldade financeira",
-  comportamento: "Dificuldade com o comportamento do pet",
-  espaco: "Falta de espaço ou de tempo",
-  resgatado: "Encontrei o animal na rua e não posso ficar com ele",
-  outro: "Outro motivo",
+  moving: "Mudança de casa ou de cidade",
+  allergy: "Alergia na família",
+  health: "Problema de saúde meu ou de alguém da casa",
+  financial: "Dificuldade financeira",
+  behavior: "Dificuldade com o comportamento do pet",
+  space: "Falta de espaço ou de tempo",
+  rescued: "Encontrei o animal na rua e não posso ficar com ele",
+  other: "Outro motivo",
 };
 
 export const SURRENDER_REASON_KEYS = Object.keys(
   SURRENDER_REASON_LABEL,
 ) as SurrenderReason[];
 
-export type SurrenderUrgency = "sem_pressa" | "algumas_semanas" | "urgente";
+export type SurrenderUrgency = "no_rush" | "few_weeks" | "urgent";
 
 export const SURRENDER_URGENCY_LABEL: Record<SurrenderUrgency, string> = {
-  sem_pressa: "Sem pressa",
-  algumas_semanas: "Nas próximas semanas",
-  urgente: "Urgente: preciso resolver em poucos dias",
+  no_rush: "Sem pressa",
+  few_weeks: "Nas próximas semanas",
+  urgent: "Urgente: preciso resolver em poucos dias",
 };
 
 export const SURRENDER_URGENCY_KEYS = Object.keys(
   SURRENDER_URGENCY_LABEL,
 ) as SurrenderUrgency[];
 
-/** O animal que o adotante quer deixar com a ONG. */
+/** The pet the guardian wishes to surrender to an NGO. */
 export type SurrenderPet = {
   name: string;
   species: PetSpecies;
@@ -99,52 +90,52 @@ export type SurrenderPet = {
   size: PetSize;
   ageGroup: PetAgeGroup;
   health: PetHealth;
-  /** Jeito do animal, rotina e história: vira a descrição do pet na ONG. */
+  /** Pet behavior, routine, and history used as its organization profile description. */
   description: string;
   photos: UploadedFile[];
 };
 
 export type SurrenderForm = {
   reason: SurrenderReason;
-  /** Conte com calma o que aconteceu. */
+  /** Detailed explanation of the surrender circumstances. */
   reasonDetails: string;
   urgency: SurrenderUrgency;
-  /** Convivência com crianças e outros animais; qualquer episódio de agressividade. */
+  /** Behavior around children and other animals, including any aggression history. */
   behavior: string;
   declaresOwnership: boolean;
-  /** ISO datetime do envio. */
+  /** ISO submission timestamp. */
   submittedAt: string;
 };
 
-/** Encontro marcado pela ONG para receber o animal. */
+/** NGO-scheduled intake meeting. */
 export type SurrenderHandover = {
   place: string;
-  /** ISO datetime. */
+  /** ISO timestamp. */
   at: string;
 };
 
 export type Surrender = {
   id: string;
-  ongId: string;
-  ongName: string;
+  ngoId: string;
+  ngoName: string;
   adopterId: string;
   adopterName: string;
   conversationId: string | null;
   status: SurrenderStatus;
-  /** Pet que já é da ONG (devolução de um pet adotado pelo app). */
+  /** Existing NGO pet being returned after an adoption. */
   petId: string | null;
-  /** Adoção de origem, quando é uma devolução. */
+  /** Original adoption identifier when this request is a return. */
   adoptionId: string | null;
   pet: SurrenderPet;
   form: SurrenderForm;
-  /** Onde e quando o pet será levado à ONG. */
+  /** Location and time for bringing the pet to the NGO. */
   handover: SurrenderHandover | null;
-  /** Motivo da recusa/cancelamento ou pedido de ajustes. */
+  /** Explanation for rejection, cancellation, or requested changes. */
   decisionNote: string;
   term: AdoptionTerm | null;
-  /** ISO datetime em que a ONG confirmou o recebimento. */
+  /** ISO timestamp when the NGO confirmed receipt. */
   receivedAt: string | null;
-  /** Pet criado (ou reaberto) na ONG quando ela recebe o animal. */
+  /** Pet record created or reopened when the NGO receives the animal. */
   receivedPetId: string | null;
   events: AdoptionEvent[];
   createdAt: string;
@@ -156,11 +147,11 @@ export type SurrenderFormInput = Omit<SurrenderForm, "submittedAt">;
 export function createEmptySurrenderPet(): SurrenderPet {
   return {
     name: "",
-    species: "cachorro",
+    species: "dog",
     breed: "",
-    sex: "macho",
-    size: "medio",
-    ageGroup: "adulto",
+    sex: "male",
+    size: "medium",
+    ageGroup: "adult",
     health: {
       vaccinated: false,
       neutered: false,
@@ -174,15 +165,15 @@ export function createEmptySurrenderPet(): SurrenderPet {
 
 export function createEmptySurrenderForm(): SurrenderFormInput {
   return {
-    reason: "mudanca",
+    reason: "moving",
     reasonDetails: "",
-    urgency: "algumas_semanas",
+    urgency: "few_weeks",
     behavior: "",
     declaresOwnership: false,
   };
 }
 
-/** Mensagem do primeiro campo que falta no pedido, ou null se tudo certo. */
+/** First missing surrender-request-field error, or null when valid. */
 export function validateSurrenderRequest(
   pet: SurrenderPet,
   form: SurrenderFormInput,
@@ -203,17 +194,17 @@ export function validateSurrenderRequest(
   return null;
 }
 
-/** Quem precisa agir agora (para destacar nas listas). */
+/** Participant who must act next, for list highlighting. */
 export function whoActsNow(surrender: Surrender): SignerRole | null {
   switch (surrender.status) {
-    case "ficha":
+    case "application":
       return "adopter";
-    case "analise":
-    case "entrega":
-      return "ong";
-    case "termo": {
+    case "review":
+    case "handover":
+      return "ngo";
+    case "agreement": {
       const signed = surrender.term?.signatures.map((s) => s.role) ?? [];
-      if (!signed.includes("ong")) return "ong";
+      if (!signed.includes("ngo")) return "ngo";
       if (!signed.includes("adopter")) return "adopter";
       return null;
     }
@@ -222,13 +213,13 @@ export function whoActsNow(surrender: Surrender): SignerRole | null {
   }
 }
 
-/** Texto do lembrete quando o encontro é hoje ou amanhã; senão null. */
+/** Handover reminder for today or tomorrow; otherwise null. */
 export function surrenderHandoverReminder(
   surrender: Surrender,
   now: Date = new Date(),
 ): string | null {
   const { handover } = surrender;
-  if (!handover || surrender.status !== "entrega") return null;
+  if (!handover || surrender.status !== "handover") return null;
   const at = new Date(handover.at);
   const diffH = (at.getTime() - now.getTime()) / 3_600_000;
   if (diffH < -3 || diffH > 24) return null;
@@ -242,33 +233,27 @@ export function surrenderHandoverReminder(
   return `Lembrete: encontro ${sameDay ? "hoje" : "amanhã"} às ${hour}, em ${handover.place}.`;
 }
 
-/** Versão segura para o navegador: nunca expõe códigos de confirmação pendentes. */
+/** Browser-safe projection that never exposes pending signing codes. */
 export function toClientSurrender(surrender: Surrender): Surrender {
   return surrender.term
     ? { ...surrender, term: { ...surrender.term, pendingCodes: {} } }
     : surrender;
 }
 
-/**
- * Modelo do termo de entrega. Variáveis entre chaves duplas são preenchidas
- * na hora de gerar o termo de cada pedido.
- *
- * ATENÇÃO: é um ponto de partida, não um parecer jurídico. Revise com um
- * advogado antes de usar (ver `docs/plano-processo-de-adocao.md`).
- */
+/** Default surrender-agreement template. Double-braced variables are populated per request. This starting template requires legal review before production use. */
 export const SURRENDER_TERM_TEMPLATE = `TERMO DE ENTREGA VOLUNTÁRIA DE ANIMAL
 
-Pelo presente termo, {{tutor.nome}}, CPF {{tutor.cpf}}, residente em {{tutor.endereco}}, doravante chamado TUTOR, entrega voluntariamente o animal abaixo a {{ong.nome}} ({{ong.documento}}), representada por {{ong.responsavel}}, doravante chamada ONG.
+Pelo presente termo, {{guardian.name}}, CPF {{guardian.personalTaxId}}, residente em {{guardian.address}}, doravante chamado TUTOR, entrega voluntariamente o animal abaixo a {{ngo.name}} ({{ngo.document}}), representada por {{ngo.representative}}, doravante chamada ONG.
 
 ANIMAL
-Nome: {{pet.nome}}
-Espécie: {{pet.especie}}
-Raça: {{pet.raca}}
-Sexo: {{pet.sexo}}
-Porte: {{pet.porte}}
-Idade: {{pet.idade}}
-Saúde informada: {{pet.saude}}
-Motivo da entrega: {{motivo}}
+Nome: {{pet.name}}
+Espécie: {{pet.species}}
+Raça: {{pet.breed}}
+Sexo: {{pet.sex}}
+Porte: {{pet.size}}
+Idade: {{pet.age}}
+Saúde informada: {{pet.health}}
+Motivo da entrega: {{reason}}
 
 O TUTOR declara que leu e concorda com as cláusulas abaixo.
 
@@ -288,6 +273,6 @@ O TUTOR declara que leu e concorda com as cláusulas abaixo.
 
 8. Os dados pessoais do TUTOR serão usados apenas para este processo, conforme a Lei Geral de Proteção de Dados.
 
-{{cidade}}, {{data}}.
+{{city}}, {{date}}.
 
 Este termo é assinado eletronicamente pelas duas partes, dentro do aplicativo Petfinder.`;

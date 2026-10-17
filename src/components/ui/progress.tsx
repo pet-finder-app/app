@@ -3,12 +3,12 @@ import { cn } from "./cn";
 export type ProgressProps = {
   value: number;
   max: number;
-  /** Nome lido por leitores de tela. */
+  /** Accessible name announced by screen readers. */
   label: string;
   className?: string;
 };
 
-/** Barra de progresso simples, sem texto — combine com um contador ao lado. */
+/** Text-free progress bar; pair with a visible counter. */
 export function Progress({ value, max, label, className }: ProgressProps) {
   const percent = max > 0 ? (value / max) * 100 : 0;
   return (
@@ -24,7 +24,7 @@ export function Progress({ value, max, label, className }: ProgressProps) {
       )}
     >
       <div
-        className="h-full rounded-full bg-primary transition-[width]"
+        className="h-full rounded-full bg-primary transition-[width] motion-reduce:transition-none"
         style={{ width: `${percent}%` }}
       />
     </div>

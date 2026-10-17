@@ -1,0 +1,64 @@
+.dialog[open] {
+  animation: dialogEnter 180ms ease-out;
+}
+
+.dialog::backdrop {
+  background: rgb(21 19 22 / 40%);
+}
+
+.wiggle {
+  transform-origin: center;
+  animation: pinWiggle 650ms ease-in-out both;
+}
+
+.drawSlash {
+  stroke-dasharray: 1;
+  animation: drawSlash 350ms 120ms ease-out both;
+}
+
+@keyframes pinWiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-10deg);
+  }
+  40% {
+    transform: rotate(8deg);
+  }
+  60% {
+    transform: rotate(-5deg);
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+}
+
+@keyframes drawSlash {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes dialogEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open],
+  .wiggle,
+  .drawSlash {
+    animation: none;
+  }
+}

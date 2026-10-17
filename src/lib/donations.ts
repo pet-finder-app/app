@@ -8,10 +8,7 @@ import {
 } from "./donation";
 import { readUsers, type StoredUser } from "./users";
 
-/**
- * Camada de acesso às doações recebidas — hoje um arquivo JSON, amanhã o
- * backend (que vai confirmar os pagamentos via Pix de verdade).
- */
+/** Donation persistence adapter. A production backend can integrate actual Pix confirmation. */
 
 const DONATIONS_FILE = path.join(
   process.cwd(),
@@ -36,25 +33,25 @@ async function writeDonations(donations: ReceivedDonation[]): Promise<void> {
 const byRecent = (a: ReceivedDonation, b: ReceivedDonation) =>
   b.createdAt.localeCompare(a.createdAt);
 
-/** Todas as doações da ONG, de qualquer status, mais recentes primeiro. */
-export async function listDonationsByOng(
-  ongId: string,
+/** All NGO donations, newest first, regardless of status. */
+export async function listDonationsByNgo(
+  ngoId: string,
 ): Promise<ReceivedDonation[]> {
   const donations = await readDonations();
-  return donations.filter((d) => d.ongId === ongId).sort(byRecent);
+  return donations.filter((d) => d.ngoId === ngoId).sort(byRecent);
 }
 
-/** Só as que a ONG já confirmou: são as que entram nos totais. */
-export async function listConfirmedDonationsByOng(
-  ongId: string,
+/** Only confirmed receipts contribute to totals. */
+export async function listConfirmedDonationsByNgo(
+  ngoId: string,
 ): Promise<ReceivedDonation[]> {
-  return (await listDonationsByOng(ongId)).filter(
-    (d) => donationStatusOf(d) === "confirmada",
+  return (await listDonationsByNgo(ngoId)).filter(
+    (d) => donationStatusOf(d) === "confirmed",
   );
 }
 
-export async function sumDonationsByOng(ongId: string): Promise<number> {
-  const donations = await listConfirmedDonationsByOng(ongId);
+export async function sumDonationsByNgo(ngoId: string): Promise<number> {
+  const donations = await listConfirmedDonationsByNgo(ngoId);
   return donations.reduce((sum, d) => sum + d.amount, 0);
 }
 
@@ -65,9 +62,9 @@ export async function listDonationsByDonor(
   return donations.filter((d) => d.donorId === donorId).sort(byRecent);
 }
 
-/** O adotante avisa que fez o Pix: fica "informada" até a ONG conferir. */
+/** Record the adopter's reported transfer until the NGO confirms it. */
 export async function createDonation(input: {
-  ongId: string;
+  ngoId: string;
   donorId: string;
   donorName: string;
   amount: number;
@@ -76,11 +73,11 @@ export async function createDonation(input: {
   const donations = await readDonations();
   const donation: ReceivedDonation = {
     id: crypto.randomUUID(),
-    ongId: input.ongId,
+    ngoId: input.ngoId,
     donorId: input.donorId,
     donorName: input.donorName,
     amount: input.amount,
-    status: "informada",
+    status: "reported",
     ...(input.note ? { note: input.note } : {}),
     createdAt: new Date().toISOString(),
   };
@@ -88,24 +85,21 @@ export async function createDonation(input: {
   return donation;
 }
 
-/**
- * A ONG responde sobre uma doação informada. Só a ONG dona pode, e só uma vez
- * (depois de confirmada ou recusada, o registro não muda).
- */
+/** Only the owning NGO may resolve a reported donation, and only once. Resolved records are immutable. */
 export async function resolveDonation(
   id: string,
-  ongId: string,
-  status: Exclude<DonationStatus, "informada">,
+  ngoId: string,
+  status: Exclude<DonationStatus, "reported">,
 ): Promise<
   | { ok: true; donation: ReceivedDonation }
   | { ok: false; status: number; message: string }
 > {
   const donations = await readDonations();
-  const index = donations.findIndex((d) => d.id === id && d.ongId === ongId);
+  const index = donations.findIndex((d) => d.id === id && d.ngoId === ngoId);
   if (index === -1) {
     return { ok: false, status: 404, message: "Doação não encontrada." };
   }
-  if (donationStatusOf(donations[index]) !== "informada") {
+  if (donationStatusOf(donations[index]) !== "reported") {
     return {
       ok: false,
       status: 409,
@@ -123,12 +117,12 @@ export async function resolveDonation(
 }
 
 function toTarget(user: StoredUser): DonationTarget {
-  const ong = user.ong!;
-  const { donation } = ong.publicProfile;
-  const { address } = ong.legal;
+  const ngo = user.ngo!;
+  const { donation } = ngo.publicProfile;
+  const { address } = ngo.legal;
   return {
-    ongId: user.id,
-    name: ong.legal.tradeName || user.name,
+    ngoId: user.id,
+    name: ngo.legal.tradeName || user.name,
     city: [address.city, address.state].filter(Boolean).join("/"),
     pixKey: donation.pixKey.trim(),
     bankAccount: donation.bankAccount.trim(),
@@ -136,30 +130,26 @@ function toTarget(user: StoredUser): DonationTarget {
   };
 }
 
-/**
- * ONGs verificadas que aparecem na tela de doar. Quem ainda não cadastrou Pix
- * nem conta fica de fora da lista (mas `getDonationTarget` ainda a encontra,
- * para explicar o motivo a quem chegou por um link).
- */
+/** List verified NGOs with payment details. Direct lookups may still return an NGO without payment details so the UI can explain why donating is unavailable. */
 export async function listDonationTargets(): Promise<DonationTarget[]> {
   const users = await readUsers();
   return users
     .filter(
-      (u) => u.role === "ong" && u.ong?.verification.status === "verificada",
+      (u) => u.role === "ngo" && u.ngo?.verification.status === "verified",
     )
     .map(toTarget)
     .filter((t) => t.pixKey || t.bankAccount);
 }
 
 export async function getDonationTarget(
-  ongId: string,
+  ngoId: string,
 ): Promise<DonationTarget | undefined> {
   const users = await readUsers();
-  const ong = users.find(
+  const ngo = users.find(
     (u) =>
-      u.id === ongId &&
-      u.role === "ong" &&
-      u.ong?.verification.status === "verificada",
+      u.id === ngoId &&
+      u.role === "ngo" &&
+      u.ngo?.verification.status === "verified",
   );
-  return ong ? toTarget(ong) : undefined;
+  return ngo ? toTarget(ngo) : undefined;
 }

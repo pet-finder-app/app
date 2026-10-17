@@ -3,9 +3,9 @@ import { cn } from "./cn";
 import { shadowSoft } from "./elevation";
 
 type CardProps = HTMLAttributes<HTMLElement> & {
-  /** Elemento semântico do cartão: section (padrão), header, article... */
+  /** Semantic card element, such as section, header, or article. */
   as?: "section" | "header" | "article" | "div";
-  /** Cor de fundo: branco (padrão), amarelo de destaque ou verde de sucesso. */
+  /** Card background: white, highlighted yellow, or success green. */
   tone?: "default" | "highlight" | "success";
 };
 
@@ -15,7 +15,7 @@ const CARD_TONE = {
   success: "bg-primary-faint",
 } as const;
 
-/** Cartão branco padrão para conteúdo em fundo neutro. */
+/** Standard white content card on a neutral page. */
 export function Card({
   as: Tag = "section",
   tone = "default",

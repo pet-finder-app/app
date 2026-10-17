@@ -2,13 +2,13 @@
   "pets": [
     {
       "id": "p1",
-      "ongId": "3",
+      "ngoId": "3",
       "name": "Tirulipa",
-      "species": "cachorro",
+      "species": "dog",
       "breed": "SRD",
-      "sex": "macho",
-      "size": "medio",
-      "ageGroup": "adulto",
+      "sex": "male",
+      "size": "medium",
+      "ageGroup": "adult",
       "temperament": ["Brincalhão", "Dócil", "Bom com crianças"],
       "health": {
         "vaccinated": true,
@@ -26,7 +26,7 @@
           "url": "/pets/caramelo.jpg"
         }
       ],
-      "status": "disponivel",
+      "status": "available",
       "createdAt": "2026-09-02T10:00:00.000Z",
       "updatedAt": "2026-09-26T22:58:26.190Z",
       "archived": false,
@@ -34,13 +34,13 @@
     },
     {
       "id": "p2",
-      "ongId": "3",
+      "ngoId": "3",
       "name": "Mimi",
-      "species": "cachorro",
+      "species": "dog",
       "breed": "SRD",
-      "sex": "femea",
-      "size": "pequeno",
-      "ageGroup": "filhote",
+      "sex": "female",
+      "size": "small",
+      "ageGroup": "young",
       "temperament": ["Independente", "Curiosa"],
       "health": {
         "vaccinated": true,
@@ -58,7 +58,7 @@
           "url": "/pets/mimi.jpg"
         }
       ],
-      "status": "adotado",
+      "status": "adopted",
       "createdAt": "2026-09-10T15:30:00.000Z",
       "updatedAt": "2026-09-26T22:58:46.721Z",
       "archived": false,
@@ -66,13 +66,13 @@
     },
     {
       "id": "p3",
-      "ongId": "3",
+      "ngoId": "3",
       "name": "Thor",
-      "species": "cachorro",
+      "species": "dog",
       "breed": "SRD",
-      "sex": "macho",
-      "size": "medio",
-      "ageGroup": "adulto",
+      "sex": "male",
+      "size": "medium",
+      "ageGroup": "adult",
       "temperament": ["Carinhoso", "Dócil", "Adora colo"],
       "health": {
         "vaccinated": true,
@@ -90,7 +90,7 @@
           "url": "/pets/thor.jpg"
         }
       ],
-      "status": "disponivel",
+      "status": "available",
       "createdAt": "2026-09-25T11:00:00.000Z",
       "updatedAt": "2026-09-25T11:00:00.000Z",
       "archived": false,
@@ -98,13 +98,13 @@
     },
     {
       "id": "p4",
-      "ongId": "3",
+      "ngoId": "3",
       "name": "Nuvem",
-      "species": "gato",
+      "species": "cat",
       "breed": "SRD (azul-russo)",
-      "sex": "femea",
-      "size": "pequeno",
-      "ageGroup": "filhote",
+      "sex": "female",
+      "size": "small",
+      "ageGroup": "young",
       "temperament": ["Elegante", "Observadora", "Tranquila"],
       "health": {
         "vaccinated": true,
@@ -122,7 +122,7 @@
           "url": "/pets/nuvem.jpg"
         }
       ],
-      "status": "disponivel",
+      "status": "available",
       "createdAt": "2026-09-25T11:10:00.000Z",
       "updatedAt": "2026-09-25T11:10:00.000Z",
       "archived": false,
@@ -130,13 +130,13 @@
     },
     {
       "id": "p5",
-      "ongId": "3",
+      "ngoId": "3",
       "name": "Tigresa",
-      "species": "gato",
+      "species": "cat",
       "breed": "SRD (malhado)",
-      "sex": "femea",
-      "size": "medio",
-      "ageGroup": "adulto",
+      "sex": "female",
+      "size": "medium",
+      "ageGroup": "adult",
       "temperament": ["Independente", "Calma", "Bem quieta"],
       "health": {
         "vaccinated": true,
@@ -154,7 +154,7 @@
           "url": "/pets/tigresa.jpg"
         }
       ],
-      "status": "em_processo",
+      "status": "in_progress",
       "createdAt": "2026-09-25T11:20:00.000Z",
       "updatedAt": "2026-09-26T09:00:00.000Z",
       "archived": false,
@@ -162,13 +162,13 @@
     },
     {
       "id": "p6",
-      "ongId": "3",
+      "ngoId": "3",
       "name": "Amendoim",
-      "species": "gato",
+      "species": "cat",
       "breed": "SRD (malhado)",
-      "sex": "macho",
-      "size": "pequeno",
-      "ageGroup": "adulto",
+      "sex": "male",
+      "size": "small",
+      "ageGroup": "adult",
       "temperament": ["Brincalhão", "Falante", "Bom com crianças"],
       "health": {
         "vaccinated": true,
@@ -186,7 +186,7 @@
           "url": "/pets/amendoim.jpg"
         }
       ],
-      "status": "disponivel",
+      "status": "available",
       "createdAt": "2026-09-25T11:30:00.000Z",
       "updatedAt": "2026-09-25T11:30:00.000Z",
       "archived": false,
@@ -194,11 +194,11 @@
     },
     {
       "name": "Vivi",
-      "species": "gato",
+      "species": "cat",
       "breed": "SRD",
-      "sex": "femea",
-      "size": "pequeno",
-      "ageGroup": "adulto",
+      "sex": "female",
+      "size": "small",
+      "ageGroup": "adult",
       "temperament": ["Dócil", "brincalhona"],
       "health": {
         "vaccinated": true,
@@ -217,8 +217,8 @@
         }
       ],
       "id": "213adee4-2800-45d6-b4f3-bb6df962f852",
-      "ongId": "3",
-      "status": "disponivel",
+      "ngoId": "3",
+      "status": "available",
       "createdAt": "2026-09-26T22:15:02.537Z",
       "updatedAt": "2026-09-26T23:27:45.061Z",
       "archived": true,
@@ -226,11 +226,11 @@
     },
     {
       "name": "Mel",
-      "species": "cachorro",
+      "species": "dog",
       "breed": "SRD",
-      "sex": "femea",
-      "size": "medio",
-      "ageGroup": "adulto",
+      "sex": "female",
+      "size": "medium",
+      "ageGroup": "adult",
       "temperament": [],
       "health": {
         "vaccinated": false,
@@ -249,8 +249,8 @@
         }
       ],
       "id": "e4e1098d-5da3-43c7-ad4c-fd1daae4e4b5",
-      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
-      "status": "disponivel",
+      "ngoId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "status": "available",
       "archived": false,
       "views": 0,
       "createdAt": "2026-10-02T23:04:45.122Z",
@@ -258,11 +258,11 @@
     },
     {
       "name": "Tom",
-      "species": "gato",
+      "species": "cat",
       "breed": "",
-      "sex": "macho",
-      "size": "pequeno",
-      "ageGroup": "filhote",
+      "sex": "male",
+      "size": "small",
+      "ageGroup": "young",
       "temperament": [],
       "health": {
         "vaccinated": false,
@@ -281,8 +281,8 @@
         }
       ],
       "id": "fd52a828-2804-4e97-9f61-155a4a0e9981",
-      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
-      "status": "adotado",
+      "ngoId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "status": "adopted",
       "archived": false,
       "views": 0,
       "createdAt": "2026-10-02T23:05:37.821Z",
@@ -290,11 +290,11 @@
     },
     {
       "name": "Bolinha",
-      "species": "cachorro",
+      "species": "dog",
       "breed": "",
-      "sex": "macho",
-      "size": "medio",
-      "ageGroup": "filhote",
+      "sex": "male",
+      "size": "medium",
+      "ageGroup": "young",
       "temperament": [],
       "health": {
         "vaccinated": false,
@@ -313,8 +313,8 @@
         }
       ],
       "id": "52c112af-2198-48cc-8305-e2ee1eb361de",
-      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
-      "status": "disponivel",
+      "ngoId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "status": "available",
       "archived": false,
       "views": 0,
       "createdAt": "2026-10-02T23:08:06.862Z",
@@ -322,11 +322,11 @@
     },
     {
       "name": "Pipoca",
-      "species": "outro",
+      "species": "other",
       "breed": "",
-      "sex": "femea",
-      "size": "medio",
-      "ageGroup": "adulto",
+      "sex": "female",
+      "size": "medium",
+      "ageGroup": "adult",
       "temperament": [],
       "health": {
         "vaccinated": false,
@@ -345,8 +345,8 @@
         }
       ],
       "id": "29720702-2d68-40a9-b29c-a404ca865359",
-      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
-      "status": "disponivel",
+      "ngoId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "status": "available",
       "archived": false,
       "views": 0,
       "createdAt": "2026-10-02T23:14:36.645Z",
@@ -354,11 +354,11 @@
     },
     {
       "name": "Pipoca",
-      "species": "outro",
+      "species": "other",
       "breed": "",
-      "sex": "femea",
-      "size": "medio",
-      "ageGroup": "adulto",
+      "sex": "female",
+      "size": "medium",
+      "ageGroup": "adult",
       "temperament": [],
       "health": {
         "vaccinated": false,
@@ -377,8 +377,8 @@
         }
       ],
       "id": "324bbbab-545d-4bef-a77b-d4ff964810e6",
-      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
-      "status": "disponivel",
+      "ngoId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "status": "available",
       "archived": false,
       "views": 0,
       "createdAt": "2026-10-02T23:27:03.771Z",
@@ -386,11 +386,11 @@
     },
     {
       "name": "Biscoito",
-      "species": "cachorro",
+      "species": "dog",
       "breed": "",
-      "sex": "macho",
-      "size": "medio",
-      "ageGroup": "adulto",
+      "sex": "male",
+      "size": "medium",
+      "ageGroup": "adult",
       "temperament": [],
       "health": {
         "vaccinated": false,
@@ -409,8 +409,8 @@
         }
       ],
       "id": "2fe13785-18ec-4071-a4c7-91812e787c9c",
-      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
-      "status": "disponivel",
+      "ngoId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "status": "available",
       "archived": false,
       "views": 0,
       "createdAt": "2026-10-02T23:30:08.243Z",

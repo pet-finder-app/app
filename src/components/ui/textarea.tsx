@@ -16,6 +16,7 @@ export type TextareaProps = Omit<
 export function Textarea({
   id,
   label,
+  labelIcon,
   hint,
   invalid,
   errorId,
@@ -27,7 +28,14 @@ export function Textarea({
   const { hintId, ...a11y } = useFieldA11y({ id, hint, invalid, errorId });
 
   return (
-    <Field id={id} label={label} hint={hint} hintId={hintId} tone={tone}>
+    <Field
+      id={id}
+      label={label}
+      labelIcon={labelIcon}
+      hint={hint}
+      hintId={hintId}
+      tone={tone}
+    >
       <textarea
         id={id}
         name={id}

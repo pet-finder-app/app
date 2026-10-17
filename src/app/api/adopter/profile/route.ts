@@ -1,6 +1,6 @@
 import { isAdopterReadyForReview, type AdopterProfile } from "@/lib/adopter";
-import { isValidCpf, onlyDigits } from "@/lib/br-documents";
-import { TERMS_VERSION, type TermsAcceptance } from "@/lib/ong";
+import { isValidPersonalTaxId, onlyDigits } from "@/lib/br-documents";
+import { TERMS_VERSION, type TermsAcceptance } from "@/lib/ngo";
 import {
   findUserById,
   SESSION_COOKIE,
@@ -9,21 +9,14 @@ import {
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-/**
- * PUT /api/adopter/profile
- * Body: { profile: AdopterProfile, submitForReview?: boolean }
- *
- * O client manda o perfil inteiro; o servidor preserva o que o usuário não
- * pode mudar (status de verificação, aceite original dos termos) e carimba
- * IP/data em consentimentos novos.
- */
+/** Update the adopter profile. Preserve verification status and original terms acceptance; timestamp new consent records on the server. */
 
 function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   return (
     forwarded?.split(",")[0].trim() ||
     request.headers.get("x-real-ip") ||
-    "desconhecido"
+    "unknown"
   );
 }
 
@@ -49,11 +42,11 @@ export async function PUT(request: Request) {
   }
 
   const stored = user.adopter;
-  const cpf = onlyDigits(incoming.personal?.cpf ?? "");
+  const personalTaxId = onlyDigits(incoming.personal?.personalTaxId ?? "");
 
-  if (cpf && !isValidCpf(cpf)) {
+  if (personalTaxId && !isValidPersonalTaxId(personalTaxId)) {
     return NextResponse.json(
-      { message: "CPF inválido.", field: "personal.cpf" },
+      { message: "CPF inválido.", field: "personal.personalTaxId" },
       { status: 400 },
     );
   }
@@ -69,9 +62,9 @@ export async function PUT(request: Request) {
     ...incoming,
     personal: {
       ...incoming.personal,
-      cpf,
+      personalTaxId,
       phone: onlyDigits(incoming.personal?.phone ?? ""),
-      // Verificação por código fica para o backend.
+      // Code-based verification requires a backend integration.
       phoneVerifiedAt: stored.personal.phoneVerifiedAt,
     },
     verification: {
@@ -94,8 +87,8 @@ export async function PUT(request: Request) {
         { status: 400 },
       );
     }
-    if (merged.verification.status === "pendente") {
-      merged.verification.status = "em_analise";
+    if (merged.verification.status === "pending") {
+      merged.verification.status = "under_review";
       merged.verification.statusUpdatedAt = new Date().toISOString();
     }
   }

@@ -1,75 +1,69 @@
-import type { UploadedFile } from "./ong";
+import type { UploadedFile } from "./ngo";
 
-/**
- * Modelo de dados do pet publicado por uma ONG. Fica em `pets.json` — o
- * backend pode virar uma tabela própria depois, ligada à ONG por `ongId`.
- *
- * Este arquivo não importa nada do Node: pode ser usado no client.
- */
+/** Client-safe pet model persisted in pets.json, linked to its publishing NGO by ngoId. */
 
-export type PetSpecies = "cachorro" | "gato" | "passaro" | "outro";
+export type PetSpecies = "dog" | "cat" | "bird" | "other";
 
 export const PET_SPECIES_LABEL: Record<PetSpecies, string> = {
-  cachorro: "Cachorro",
-  gato: "Gato",
-  passaro: "Pássaro",
-  outro: "Outro",
+  dog: "Cachorro",
+  cat: "Gato",
+  bird: "Pássaro",
+  other: "Outro",
 };
 
 export const PET_SPECIES_KEYS = Object.keys(PET_SPECIES_LABEL) as PetSpecies[];
 
-export type PetSex = "macho" | "femea";
+export type PetSex = "male" | "female";
 
 export const PET_SEX_LABEL: Record<PetSex, string> = {
-  macho: "Macho",
-  femea: "Fêmea",
+  male: "Macho",
+  female: "Fêmea",
 };
 
-export type PetSize = "pequeno" | "medio" | "grande";
+export type PetSize = "small" | "medium" | "large";
 
 export const PET_SIZE_LABEL: Record<PetSize, string> = {
-  pequeno: "Pequeno",
-  medio: "Médio",
-  grande: "Grande",
+  small: "Pequeno",
+  medium: "Médio",
+  large: "Grande",
 };
 
-export type PetAgeGroup = "filhote" | "adulto" | "idoso";
+export type PetAgeGroup = "young" | "adult" | "senior";
 
 export const PET_AGE_GROUP_LABEL: Record<PetAgeGroup, string> = {
-  filhote: "Filhote",
-  adulto: "Adulto",
-  idoso: "Idoso",
+  young: "Filhote",
+  adult: "Adulto",
+  senior: "Idoso",
 };
 
-export type PetStatus =
-  "disponivel" | "em_processo" | "adotado" | "indisponivel";
+export type PetStatus = "available" | "in_progress" | "adopted" | "unavailable";
 
 export const PET_STATUS_LABEL: Record<PetStatus, string> = {
-  disponivel: "Disponível",
-  em_processo: "Em processo de adoção",
-  adotado: "Adotado",
-  indisponivel: "Indisponível",
+  available: "Disponível",
+  in_progress: "Em processo de adoção",
+  adopted: "Adotado",
+  unavailable: "Indisponível",
 };
 
 export type PetHealth = {
   vaccinated: boolean;
   neutered: boolean;
   dewormed: boolean;
-  /** Necessidades especiais ou cuidados contínuos, se houver. */
+  /** Special needs or ongoing care requirements. */
   specialNeeds: string;
 };
 
 export type Pet = {
   id: string;
-  /** `StoredUser.id` da ONG que publicou. */
-  ongId: string;
+  /** Identifier of the NGO that published this pet. */
+  ngoId: string;
   name: string;
   species: PetSpecies;
-  /** Opcional — vira-lata também é uma resposta válida. */
+  /** Optional breed; mixed-breed pets are valid. */
   breed: string;
   sex: PetSex;
   size: PetSize;
-  /** Tamanho aproximado em centímetros — opcional. */
+  /** Optional approximate size in centimeters. */
   sizeCm?: number | null;
   ageGroup: PetAgeGroup;
   temperament: string[];
@@ -77,16 +71,16 @@ export type Pet = {
   description: string;
   photos: UploadedFile[];
   status: PetStatus;
-  /** Some da lista de publicados sem apagar o histórico do pet. */
+  /** Hide from published listings without deleting the pet's history. */
   archived: boolean;
-  /** Só a ONG que publicou vê esse número — os adotantes só veem curtidas. */
+  /** Views are visible only to the publishing NGO; adopters see like counts. */
   views: number;
-  /** ISO datetime. */
+  /** ISO timestamp. */
   createdAt: string;
   updatedAt: string;
 };
 
-/** O que a tela de cadastro coleta. O resto (id, ongId, status, datas) é derivado. */
+/** Pet-creation fields; identifiers, status, ownership, and timestamps are derived. */
 export type PetInput = {
   name: string;
   species: PetSpecies;
@@ -104,12 +98,12 @@ export type PetInput = {
 export function createEmptyPetInput(): PetInput {
   return {
     name: "",
-    species: "cachorro",
+    species: "dog",
     breed: "",
-    sex: "macho",
-    size: "medio",
+    sex: "male",
+    size: "medium",
     sizeCm: null,
-    ageGroup: "adulto",
+    ageGroup: "adult",
     temperament: [],
     health: {
       vaccinated: false,
@@ -122,7 +116,7 @@ export function createEmptyPetInput(): PetInput {
   };
 }
 
-/** Mensagem do primeiro campo obrigatório que falta, ou null se tudo certo. */
+/** First required-field error, or null when valid. */
 export function validatePetInput(input: PetInput): string | null {
   if (!input.name.trim()) return "Dê um nome para o pet.";
   if (input.photos.length === 0) return "Adicione ao menos uma foto.";
@@ -135,5 +129,5 @@ export function validatePetInput(input: PetInput): string | null {
   return null;
 }
 
-/** O que a tela de edição envia — os mesmos campos do cadastro, mais o status. */
+/** Pet-edit fields extend creation fields with adoption status. */
 export type PetUpdateInput = PetInput & { status: PetStatus };

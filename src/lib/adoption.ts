@@ -1,127 +1,120 @@
-/**
- * Processo de adoção dentro do app: da ficha do adotante ao acompanhamento
- * depois da entrega, com o termo assinado eletronicamente. Uma adoção por
- * pet + adotante, ligada à conversa do chat. Fica em `adoptions.json`.
- * Plano completo em `docs/plano-processo-de-adocao.md`.
- *
- * Este arquivo não importa nada do Node: pode ser usado no client.
- */
+/** Client-safe adoption process model, from application through signed agreement and post-adoption follow-up. One record per pet/adopter, linked to a conversation and stored in adoptions.json. */
 
 export type AdoptionStatus =
-  | "ficha"
-  | "analise"
-  | "termo"
-  | "entrega"
-  | "acompanhamento"
-  | "concluida"
-  | "recusada"
-  | "cancelada"
-  /** O adotante devolveu o pet à ONG depois da adoção (ver `lib/surrender.ts`). */
-  | "devolvida";
+  | "application"
+  | "review"
+  | "agreement"
+  | "handover"
+  | "follow_up"
+  | "completed"
+  | "rejected"
+  | "cancelled"
+  /** The adopter returned the pet to the NGO through the surrender workflow. */
+  | "returned";
 
 export const ADOPTION_STATUS_LABEL: Record<AdoptionStatus, string> = {
-  ficha: "Preenchendo a ficha",
-  analise: "Em análise pela ONG",
-  termo: "Assinatura do termo",
-  entrega: "Combinando a entrega",
-  acompanhamento: "Acompanhamento",
-  concluida: "Adoção concluída",
-  recusada: "Não aprovada",
-  cancelada: "Cancelada",
-  devolvida: "Pet devolvido à ONG",
+  application: "Preenchendo a ficha",
+  review: "Em análise pela ONG",
+  agreement: "Assinatura do termo",
+  handover: "Combinando a entrega",
+  follow_up: "Acompanhamento",
+  completed: "Adoção concluída",
+  rejected: "Não aprovada",
+  cancelled: "Cancelada",
+  returned: "Pet devolvido à ONG",
 };
 
-/** Etapas do caminho feliz, na ordem, para a linha do tempo. */
+/** Ordered successful-process stages for the timeline. */
 export const ADOPTION_STEPS: { status: AdoptionStatus; label: string }[] = [
-  { status: "ficha", label: "Ficha" },
-  { status: "analise", label: "Análise" },
-  { status: "termo", label: "Termo" },
-  { status: "entrega", label: "Entrega" },
-  { status: "acompanhamento", label: "Acompanhamento" },
-  { status: "concluida", label: "Concluída" },
+  { status: "application", label: "Ficha" },
+  { status: "review", label: "Análise" },
+  { status: "agreement", label: "Termo" },
+  { status: "handover", label: "Entrega" },
+  { status: "follow_up", label: "Acompanhamento" },
+  { status: "completed", label: "Concluída" },
 ];
 
 export function isAdoptionActive(status: AdoptionStatus): boolean {
   return (
-    status !== "concluida" &&
-    status !== "recusada" &&
-    status !== "cancelada" &&
-    status !== "devolvida"
+    status !== "completed" &&
+    status !== "rejected" &&
+    status !== "cancelled" &&
+    status !== "returned"
   );
 }
 
 export type AdoptionForm = {
-  /** Por que quer adotar este pet. */
+  /** Reason for adopting this pet. */
   reason: string;
-  /** Quem mora na casa (adultos, crianças, idosos). */
+  /** Household composition, including adults, children, and older residents. */
   household: string;
-  /** Outros animais e como se dão com novos pets. */
+  /** Other pets and their behavior around new animals. */
   otherPets: string;
-  /** Onde o pet vai ficar e quem cuida no dia a dia. */
+  /** Pet accommodation and daily care arrangements. */
   routine: string;
-  /** Experiência com animais (opcional). */
+  /** Optional animal-care experience. */
   experience?: string;
-  /** Quantas horas por dia o pet fica sozinho (opcional). */
+  /** Optional number of hours the pet spends alone daily. */
   hoursAlone?: string;
   agreesNeutering: boolean;
   agreesFollowUp: boolean;
   agreesVisit: boolean;
-  /** ISO datetime do envio. */
+  /** ISO submission timestamp. */
   submittedAt: string;
 };
 
 export type AdoptionVisit = {
   required: boolean;
-  /** Texto livre: "sábado, 10h" — a combinação principal acontece no chat. */
+  /** Free-text visit schedule; final arrangements are discussed in chat. */
   scheduledFor: string;
   notes: string;
   done: boolean;
 };
 
-export type SignerRole = "ong" | "adopter";
+export type SignerRole = "ngo" | "adopter";
 
 export type Signature = {
   role: SignerRole;
   userId: string;
   name: string;
-  /** Só dígitos. */
-  cpf: string;
-  /** ISO datetime. */
+  /** Digits only. */
+  personalTaxId: string;
+  /** ISO timestamp. */
   signedAt: string;
   ip: string;
   userAgent: string;
-  /** SHA-256 de (hash do texto + quem + quando). */
+  /** SHA-256 of the agreement hash, signer identity, and signing timestamp. */
   hash: string;
 };
 
 export type AdoptionTerm = {
-  /** Texto final, já com os dados preenchidos. Nunca muda depois de gerado. */
+  /** Final populated agreement text; immutable after generation. */
   text: string;
-  /** SHA-256 do texto. */
+  /** SHA-256 of the agreement text. */
   textHash: string;
   generatedAt: string;
   signatures: Signature[];
-  /** Código de confirmação pendente por quem vai assinar. */
+  /** Pending confirmation code indexed by signer role. */
   pendingCodes: Partial<
     Record<SignerRole, { code: string; expiresAt: string }>
   >;
-  /** Selo final, só depois das duas assinaturas. */
+  /** Final evidence hash, available only after both signatures. */
   finalHash: string | null;
 };
 
-/** Encontro combinado para a entrega do pet e as confirmações das duas partes. */
+/** Pet handover meeting and both parties' confirmations. */
 export type Handover = {
   place: string;
-  /** ISO datetime do encontro. */
+  /** ISO meeting timestamp. */
   at: string;
   scheduledBy: SignerRole;
-  /** A entrega exige o código (OTP) que o adotante informa à ONG. */
+  /** Require the adopter to provide the handover OTP to the NGO. */
   otpEnabled: boolean;
-  /** Só no servidor: `toClientAdoption` zera. O adotante o vê por `reveal_otp`. */
+  /** Server-only OTP. Client projections clear it; the adopter retrieves it through reveal_otp. */
   otp: string | null;
-  /** A ONG confirmou que entregou. */
-  ongDeliveredAt: string | null;
-  /** O adotante confirmou que recebeu. */
+  /** The NGO confirmed delivery. */
+  ngoDeliveredAt: string | null;
+  /** The adopter confirmed receipt. */
   adopterReceivedAt: string | null;
 };
 
@@ -136,10 +129,10 @@ export const FOLLOW_UP_LABEL: Record<FollowUpKind, string> = {
 export type FollowUp = {
   id: string;
   kind: FollowUpKind;
-  /** ISO datetime em que o relato é esperado. */
+  /** ISO timestamp when the follow-up report becomes due. */
   dueAt: string;
   note: string;
-  /** Foto que o adotante mandou junto do relato. */
+  /** Optional photo attached to the adopter's report. */
   photoUrl?: string | null;
   receivedAt: string | null;
 };
@@ -147,7 +140,7 @@ export type FollowUp = {
 export type AdoptionEvent = {
   id: string;
   at: string;
-  by: "adopter" | "ong" | "sistema";
+  by: "adopter" | "ngo" | "system";
   text: string;
 };
 
@@ -155,16 +148,16 @@ export type Adoption = {
   id: string;
   petId: string;
   petName: string;
-  ongId: string;
+  ngoId: string;
   adopterId: string;
   adopterName: string;
   conversationId: string | null;
   status: AdoptionStatus;
   form: AdoptionForm | null;
   visit: AdoptionVisit;
-  /** Encontro de entrega — ausente em adoções antigas. */
+  /** Handover meeting; absent from legacy adoption records. */
   handover?: Handover | null;
-  /** Motivo da recusa/cancelamento ou pedido de ajustes. */
+  /** Explanation for rejection, cancellation, or requested changes. */
   decisionNote: string;
   term: AdoptionTerm | null;
   deliveredAt: string | null;
@@ -188,7 +181,7 @@ export function createEmptyAdoptionForm(): Omit<AdoptionForm, "submittedAt"> {
   };
 }
 
-/** Mensagem do primeiro campo que falta na ficha, ou null se tudo certo. */
+/** First missing application-field error, or null when valid. */
 export function validateAdoptionForm(
   form: Omit<AdoptionForm, "submittedAt">,
 ): string | null {
@@ -201,25 +194,25 @@ export function validateAdoptionForm(
   return null;
 }
 
-/** Quem precisa agir agora (para destacar na lista da ONG e do adotante). */
+/** Participant who must act next, for list highlighting. */
 export function whoActsNow(adoption: Adoption): SignerRole | null {
   switch (adoption.status) {
-    case "ficha":
+    case "application":
       return "adopter";
-    case "analise":
-      return "ong";
-    case "entrega":
-      return adoption.handover?.ongDeliveredAt &&
+    case "review":
+      return "ngo";
+    case "handover":
+      return adoption.handover?.ngoDeliveredAt &&
         !adoption.handover.adopterReceivedAt
         ? "adopter"
-        : "ong";
-    case "termo": {
+        : "ngo";
+    case "agreement": {
       const signed = adoption.term?.signatures.map((s) => s.role) ?? [];
-      if (!signed.includes("ong")) return "ong";
+      if (!signed.includes("ngo")) return "ngo";
       if (!signed.includes("adopter")) return "adopter";
       return null;
     }
-    case "acompanhamento": {
+    case "follow_up": {
       const dueNow = adoption.followUps.some(
         (f) => f.receivedAt === null && f.dueAt <= new Date().toISOString(),
       );
@@ -230,67 +223,67 @@ export function whoActsNow(adoption: Adoption): SignerRole | null {
   }
 }
 
-/** Rótulo curto da etapa, mais fino que o status quando a entrega já começou. */
+/** Short stage label with more detail during handover. */
 export function adoptionStageLabel(adoption: Adoption): string {
-  if (adoption.status === "entrega") {
+  if (adoption.status === "handover") {
     const h = adoption.handover;
     if (!h) return "Combinando a entrega";
-    if (h.ongDeliveredAt && !h.adopterReceivedAt)
+    if (h.ngoDeliveredAt && !h.adopterReceivedAt)
       return "Aguardando o adotante confirmar";
-    if (h.adopterReceivedAt && !h.ongDeliveredAt)
+    if (h.adopterReceivedAt && !h.ngoDeliveredAt)
       return "Aguardando a ONG confirmar";
     return "Encontro marcado";
   }
   return ADOPTION_STATUS_LABEL[adoption.status];
 }
 
-/** Texto do botão que leva o adotante à próxima ação (ex.: no cabeçalho do chat). */
+/** Button text leading the adopter to their next action. */
 export function adopterNextActionLabel(adoption: Adoption): string | null {
   if (whoActsNow(adoption) !== "adopter") return null;
   switch (adoption.status) {
-    case "ficha":
+    case "application":
       return "Preencher a ficha";
-    case "termo":
+    case "agreement":
       return "Ler e assinar o termo";
-    case "entrega":
-      return adoption.handover?.ongDeliveredAt
+    case "handover":
+      return adoption.handover?.ngoDeliveredAt
         ? "Confirmar que recebeu o pet"
         : "Ver encontro e código";
-    case "acompanhamento":
+    case "follow_up":
       return "Mandar notícias do pet";
     default:
       return null;
   }
 }
 
-/** Frase de topo da tela da adoção: de quem é a vez e o que fazer. */
+/** Adoption-page headline explaining whose turn it is and what to do. */
 export function turnHeadline(
   adoption: Adoption,
   role: SignerRole,
 ): { mine: boolean; text: string } | null {
-  const other = role === "ong" ? adoption.adopterName : "a ONG";
+  const other = role === "ngo" ? adoption.adopterName : "a ONG";
   switch (adoption.status) {
-    case "ficha":
+    case "application":
       return role === "adopter"
         ? { mine: true, text: "É a sua vez: preencha a ficha de adoção." }
         : { mine: false, text: `Aguardando ${other} preencher a ficha.` };
-    case "analise":
-      return role === "ong"
+    case "review":
+      return role === "ngo"
         ? { mine: true, text: "É a sua vez: leia a ficha e decida." }
         : { mine: false, text: "A ONG está analisando a sua ficha." };
-    case "termo": {
+    case "agreement": {
       const signed = adoption.term?.signatures.map((s) => s.role) ?? [];
       if (signed.includes(role))
         return { mine: false, text: `Você já assinou. Aguardando ${other}.` };
       return { mine: true, text: "É a sua vez: leia o termo e assine." };
     }
-    case "entrega": {
+    case "handover": {
       const h = adoption.handover;
       if (!h)
-        return role === "ong"
+        return role === "ngo"
           ? { mine: true, text: "É a sua vez: marque o encontro da entrega." }
           : { mine: false, text: "A ONG vai marcar o encontro da entrega." };
-      if (h.ongDeliveredAt && !h.adopterReceivedAt)
+      if (h.ngoDeliveredAt && !h.adopterReceivedAt)
         return role === "adopter"
           ? { mine: true, text: "É a sua vez: confirme que recebeu o pet." }
           : {
@@ -300,12 +293,12 @@ export function turnHeadline(
       return {
         mine: true,
         text:
-          role === "ong"
+          role === "ngo"
             ? "No dia do encontro: peça o código ao adotante e confirme a entrega."
             : "No dia do encontro: mostre o código à ONG e depois confirme o recebimento.",
       };
     }
-    case "acompanhamento":
+    case "follow_up":
       return role === "adopter"
         ? {
             mine: whoActsNow(adoption) === "adopter",
@@ -317,7 +310,7 @@ export function turnHeadline(
   }
 }
 
-/** Versão segura para o navegador: nunca expõe códigos de confirmação pendentes. */
+/** Browser-safe projection that never exposes pending signing codes. */
 export function toClientAdoption(adoption: Adoption): Adoption {
   return {
     ...adoption,
@@ -328,12 +321,12 @@ export function toClientAdoption(adoption: Adoption): Adoption {
   };
 }
 
-/** Texto do lembrete do encontro quando ele é hoje ou amanhã; senão null. */
+/** Meeting reminder when scheduled for today or tomorrow; otherwise null. */
 export function handoverReminder(
   handover: Handover | null | undefined,
   now: Date = new Date(),
 ): string | null {
-  if (!handover || handover.ongDeliveredAt) return null;
+  if (!handover || handover.ngoDeliveredAt) return null;
   const at = new Date(handover.at);
   const diffH = (at.getTime() - now.getTime()) / 3_600_000;
   if (diffH < -3 || diffH > 24) return null;

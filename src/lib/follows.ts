@@ -1,15 +1,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-/**
- * Quem o adotante segue (adotante → ONG). Hoje um arquivo JSON, amanhã o
- * backend — só este arquivo muda (ver `lib/notifications.ts`).
- */
+/** Persist adopter-to-NGO follow relationships using the JSON adapter. */
 
 export type Follow = {
   adopterId: string;
-  ongId: string;
-  /** ISO datetime. */
+  ngoId: string;
+  /** ISO timestamp. */
   createdAt: string;
 };
 
@@ -28,38 +25,38 @@ async function writeFollows(follows: Follow[]): Promise<void> {
   );
 }
 
-/** IDs das ONGs que o adotante segue. */
-export async function listFollowedOngIds(adopterId: string): Promise<string[]> {
+/** Identifiers of the NGOs followed by this adopter. */
+export async function listFollowedNgoIds(adopterId: string): Promise<string[]> {
   const follows = await readFollows();
-  return follows.filter((f) => f.adopterId === adopterId).map((f) => f.ongId);
+  return follows.filter((f) => f.adopterId === adopterId).map((f) => f.ngoId);
 }
 
-/** Alterna seguir/deixar de seguir. Retorna se agora está seguindo. */
+/** Toggle following and return the resulting state. */
 export async function toggleFollow(
   adopterId: string,
-  ongId: string,
+  ngoId: string,
 ): Promise<{ following: boolean }> {
   const follows = await readFollows();
   const exists = follows.some(
-    (f) => f.adopterId === adopterId && f.ongId === ongId,
+    (f) => f.adopterId === adopterId && f.ngoId === ngoId,
   );
   if (exists) {
     await writeFollows(
-      follows.filter((f) => !(f.adopterId === adopterId && f.ongId === ongId)),
+      follows.filter((f) => !(f.adopterId === adopterId && f.ngoId === ngoId)),
     );
     return { following: false };
   }
   await writeFollows([
     ...follows,
-    { adopterId, ongId, createdAt: new Date().toISOString() },
+    { adopterId, ngoId, createdAt: new Date().toISOString() },
   ]);
   return { following: true };
 }
 
-/** Apaga o que o usuário segue e quem o segue (exclusão de conta). */
+/** Remove outgoing and incoming follows during account deletion. */
 export async function deleteFollowsOfUser(userId: string): Promise<void> {
   const follows = await readFollows();
   await writeFollows(
-    follows.filter((f) => f.adopterId !== userId && f.ongId !== userId),
+    follows.filter((f) => f.adopterId !== userId && f.ngoId !== userId),
   );
 }

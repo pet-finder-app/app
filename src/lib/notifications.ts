@@ -2,10 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { Notification } from "./notification";
 
-/**
- * Camada de acesso às notificações — hoje um arquivo JSON, amanhã o
- * backend (que vai empurrar essas notificações em tempo real).
- */
+/** Notification persistence adapter, replaceable with backend delivery. */
 
 const NOTIFICATIONS_FILE = path.join(
   process.cwd(),
@@ -29,21 +26,21 @@ async function writeNotifications(
   );
 }
 
-export async function listNotificationsByOng(
-  ongId: string,
+export async function listNotificationsByNgo(
+  ngoId: string,
 ): Promise<Notification[]> {
   const notifications = await readNotifications();
   return notifications
-    .filter((n) => n.ongId === ongId)
+    .filter((n) => n.ngoId === ngoId)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-export async function countUnreadByOng(ongId: string): Promise<number> {
-  const notifications = await listNotificationsByOng(ongId);
+export async function countUnreadByNgo(ngoId: string): Promise<number> {
+  const notifications = await listNotificationsByNgo(ngoId);
   return notifications.filter((n) => n.readAt === null).length;
 }
 
-/** Quantas notificações de um tipo (curtida/interesse) cada pet recebeu. */
+/** Count each pet's like and interest notifications. */
 export function countNotificationsByPet(
   notifications: Notification[],
   type: Notification["type"],
@@ -54,17 +51,17 @@ export function countNotificationsByPet(
   }, {});
 }
 
-export async function markAllReadByOng(ongId: string): Promise<void> {
+export async function markAllReadByNgo(ngoId: string): Promise<void> {
   const notifications = await readNotifications();
   const now = new Date().toISOString();
   await writeNotifications(
     notifications.map((n) =>
-      n.ongId === ongId && n.readAt === null ? { ...n, readAt: now } : n,
+      n.ngoId === ngoId && n.readAt === null ? { ...n, readAt: now } : n,
     ),
   );
 }
 
-/** Atividade do próprio adotante: o que ele curtiu ou demonstrou interesse. */
+/** The adopter's own like and interest activity. */
 export async function listNotificationsByAdopter(
   adopterId: string,
 ): Promise<Notification[]> {
@@ -74,8 +71,8 @@ export async function listNotificationsByAdopter(
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
-type CurtidaInput = {
-  ongId: string;
+type LikeInput = {
+  ngoId: string;
   petId: string;
   petName: string;
   adopterId: string;
@@ -83,21 +80,22 @@ type CurtidaInput = {
   adopterAvatarUrl: string | null;
 };
 
-/**
- * Curtir é um alternador: curtir de novo o mesmo pet descurtida (remove a
- * notificação). Diferente de "interesse", que é uma mensagem — cada envio
- * fica registrado.
- */
-export async function toggleCurtida(
-  input: CurtidaInput,
+/** Likes toggle: liking an already-liked pet removes its notification. Interest messages are individual submissions and remain recorded. */
+export async function toggleLike(
+  input: LikeInput,
+  desiredLiked?: boolean,
 ): Promise<{ liked: boolean }> {
   const notifications = await readNotifications();
   const index = notifications.findIndex(
     (n) =>
-      n.type === "curtida" &&
+      n.type === "like" &&
       n.petId === input.petId &&
       n.adopterId === input.adopterId,
   );
+
+  if (desiredLiked !== undefined && desiredLiked === (index !== -1)) {
+    return { liked: desiredLiked };
+  }
 
   if (index !== -1) {
     notifications.splice(index, 1);
@@ -107,13 +105,13 @@ export async function toggleCurtida(
 
   const notification: Notification = {
     id: crypto.randomUUID(),
-    ongId: input.ongId,
+    ngoId: input.ngoId,
     petId: input.petId,
     petName: input.petName,
     adopterId: input.adopterId,
     adopterName: input.adopterName,
     adopterAvatarUrl: input.adopterAvatarUrl,
-    type: "curtida",
+    type: "like",
     message: "",
     createdAt: new Date().toISOString(),
     readAt: null,
@@ -122,21 +120,21 @@ export async function toggleCurtida(
   return { liked: true };
 }
 
-type InteresseInput = CurtidaInput & { message: string };
+type InterestInput = LikeInput & { message: string };
 
-export async function createInteresse(
-  input: InteresseInput,
+export async function createInterest(
+  input: InterestInput,
 ): Promise<Notification> {
   const notifications = await readNotifications();
   const notification: Notification = {
     id: crypto.randomUUID(),
-    ongId: input.ongId,
+    ngoId: input.ngoId,
     petId: input.petId,
     petName: input.petName,
     adopterId: input.adopterId,
     adopterName: input.adopterName,
     adopterAvatarUrl: input.adopterAvatarUrl,
-    type: "interesse",
+    type: "interest",
     message: input.message,
     createdAt: new Date().toISOString(),
     readAt: null,
@@ -145,10 +143,10 @@ export async function createInteresse(
   return notification;
 }
 
-/** Apaga as notificações em que o usuário é a ONG ou o adotante (exclusão de conta). */
+/** Remove notifications involving the deleted user as NGO or adopter. */
 export async function deleteNotificationsOfUser(userId: string): Promise<void> {
   const notifications = await readNotifications();
   await writeNotifications(
-    notifications.filter((n) => n.ongId !== userId && n.adopterId !== userId),
+    notifications.filter((n) => n.ngoId !== userId && n.adopterId !== userId),
   );
 }

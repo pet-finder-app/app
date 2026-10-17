@@ -1,7 +1,4 @@
-/**
- * UI System do Petfinder. Importe daqui: `import { Button, Input } from "@/components/ui"`.
- * Regras e exemplos em ./README.md.
- */
+/** Shared Petfinder UI exports. See README.md for usage and styling rules. */
 
 export {
   Badge,
@@ -41,8 +38,11 @@ export {
   type MediaItem,
 } from "./media-input";
 export { ActionBar, PageShell, type PageShellProps } from "./page-shell";
+export { PasswordInput, type PasswordInputProps } from "./password-input";
 export { PhotoInput, type PhotoInputProps } from "./photo-input";
 export { Progress, type ProgressProps } from "./progress";
 export { Select, type SelectOption, type SelectProps } from "./select";
 export { TextLink, type TextLinkProps } from "./text-link";
 export { Textarea, type TextareaProps } from "./textarea";
+
+export { BottomSheet, type BottomSheetHandle } from "./bottom-sheet";

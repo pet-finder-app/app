@@ -2,42 +2,36 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { createEmptyAdopterProfile, type AdopterProfile } from "./adopter";
 import {
-  createEmptyOngProfile,
-  type OngProfile,
-  type OngSignupInput,
+  createEmptyNgoProfile,
+  type NgoProfile,
+  type NgoSignupInput,
   type TermsAcceptance,
-} from "./ong";
+} from "./ngo";
 
-/**
- * Camada de acesso aos usuários — hoje um arquivo JSON, amanhã o backend.
- *
- * Só este arquivo precisa mudar quando a API real entrar: troque o corpo de
- * `readUsers`, `createUser` e `updateOngProfile` por chamadas HTTP e mantenha
- * as assinaturas.
- */
+/** User persistence adapter using JSON. A production API can replace these functions without changing their public signatures. */
 
 export const SESSION_COOKIE = "petfinder_session";
 
-/** Adotante ou ONG — escolhido na primeira etapa do cadastro. */
-export type AccountRole = "adopter" | "ong";
+/** Account type selected during signup: adopter or NGO. */
+export type AccountRole = "adopter" | "ngo";
 
 export type StoredUser = {
   id: string;
   role: AccountRole;
-  /** Adotante: nome. ONG: nome fantasia (espelha `ong.legal.tradeName`). */
+  /** Personal display name or NGO trading name. */
   name: string;
   email: string;
   password: string;
   avatarUrl: string | null;
-  /** ISO datetime. */
+  /** ISO timestamp. */
   createdAt: string;
-  /** Presente só quando `role === "ong"`. Ver `lib/ong.ts`. */
-  ong?: OngProfile;
-  /** Presente só quando `role === "adopter"`. Ver `lib/adopter.ts`. */
+  /** Present only for NGO accounts. */
+  ngo?: NgoProfile;
+  /** Present only for adopter accounts. */
   adopter?: AdopterProfile;
 };
 
-/** O usuário como ele trafega para o front — nunca inclui a senha. */
+/** Public user projection that never includes the password. */
 export type PublicUser = Omit<StoredUser, "password">;
 
 const USERS_FILE = path.join(process.cwd(), "src", "data", "users.json");
@@ -81,21 +75,21 @@ export async function findUserById(
   return users.find((user) => user.id === id);
 }
 
-/** Já existe uma ONG com esse CPF/CNPJ? */
-export async function findOngByDocument(
+/** Whether an NGO already uses this tax document. */
+export async function findNgoByDocument(
   document: string,
 ): Promise<StoredUser | undefined> {
   const users = await readUsers();
-  return users.find((user) => user.ong?.legal.document === document);
+  return users.find((user) => user.ngo?.legal.document === document);
 }
 
-/** Já existe uma ONG com esse nickname? Comparação sem diferenciar maiúsculas. */
-export async function findOngByNickname(
+/** Whether an NGO already uses this nickname, compared without case sensitivity. */
+export async function findNgoByNickname(
   nickname: string,
 ): Promise<StoredUser | undefined> {
   const users = await readUsers();
   return users.find(
-    (user) => user.ong?.legal.nickname.toLowerCase() === nickname.toLowerCase(),
+    (user) => user.ngo?.legal.nickname.toLowerCase() === nickname.toLowerCase(),
   );
 }
 
@@ -108,10 +102,10 @@ export type CreateUserInput =
       terms?: TermsAcceptance;
     }
   | {
-      role: "ong";
+      role: "ngo";
       email: string;
       password: string;
-      ong: Omit<OngSignupInput, "email">;
+      ngo: Omit<NgoSignupInput, "email">;
     };
 
 function withTerms(
@@ -146,11 +140,11 @@ export async function createUser(input: CreateUserInput): Promise<StoredUser> {
         }
       : {
           ...base,
-          role: "ong",
-          name: input.ong.tradeName.trim(),
-          ong: createEmptyOngProfile({
-            ...input.ong,
-            tradeName: input.ong.tradeName.trim(),
+          role: "ngo",
+          name: input.ngo.tradeName.trim(),
+          ngo: createEmptyNgoProfile({
+            ...input.ngo,
+            tradeName: input.ngo.tradeName.trim(),
             email,
           }),
         };
@@ -160,18 +154,18 @@ export async function createUser(input: CreateUserInput): Promise<StoredUser> {
   return user;
 }
 
-export async function updateOngProfile(
+export async function updateNgoProfile(
   userId: string,
-  profile: OngProfile,
+  profile: NgoProfile,
 ): Promise<StoredUser | undefined> {
   const users = await readUsers();
   const index = users.findIndex((user) => user.id === userId);
-  if (index === -1 || users[index].role !== "ong") return undefined;
+  if (index === -1 || users[index].role !== "ngo") return undefined;
 
   const updated: StoredUser = {
     ...users[index],
     name: profile.legal.tradeName.trim() || users[index].name,
-    ong: profile,
+    ngo: profile,
   };
   users[index] = updated;
   await writeUsers(users);
@@ -196,7 +190,7 @@ export async function updateAdopterProfile(
   return updated;
 }
 
-/** Troca a senha do usuário. Retorna false se ele não existir. */
+/** Update a user's password; return false if the account does not exist. */
 export async function setUserPassword(
   userId: string,
   password: string,
@@ -209,7 +203,7 @@ export async function setUserPassword(
   return true;
 }
 
-/** Apaga o usuário. Retorna false se ele não existir. */
+/** Delete a user; return false if the account does not exist. */
 export async function deleteUser(userId: string): Promise<boolean> {
   const users = await readUsers();
   const remaining = users.filter((user) => user.id !== userId);

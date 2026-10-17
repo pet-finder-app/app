@@ -1,0 +1,130 @@
+.sheet {
+  --sheet-offset: 0px;
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  max-width: 32rem;
+  max-height: 80dvh;
+  margin: 0 auto;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: 1.5rem 1.5rem 0 0;
+  padding: 0 1rem max(0px, -1 * var(--sheet-offset));
+  background: var(--color-bg-white);
+  color: var(--color-text);
+  transform: translateY(max(0px, var(--sheet-offset)));
+  transition:
+    transform 340ms cubic-bezier(0.22, 1.35, 0.36, 1),
+    padding-bottom 340ms cubic-bezier(0.22, 1.35, 0.36, 1);
+}
+
+.sheet[open][data-state="entering"] {
+  animation: sheetEnter 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sheet[data-dragging="true"] {
+  animation: none;
+  transition: none;
+}
+
+.sheet[open][data-state="closing"] {
+  animation: sheetExit 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: none;
+  pointer-events: none;
+}
+
+.sheet::backdrop {
+  background: rgb(21 19 22 / 40%);
+}
+
+.sheet[data-state="closing"]::backdrop {
+  animation: backdropExit 220ms ease-out both;
+}
+
+.dragHandle {
+  display: flex;
+  width: 100%;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragHandle:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: -2px;
+}
+
+.dragHandle:disabled {
+  cursor: default;
+}
+
+.dragHandle span {
+  width: 2.5rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: var(--color-border-light);
+}
+
+@keyframes sheetEnter {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sheetExit {
+  from {
+    transform: translateY(max(0px, var(--sheet-offset)));
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes backdropExit {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet[open][data-state],
+  .sheet[data-state="closing"]::backdrop {
+    animation: none;
+    transition: none;
+  }
+}
+
+.sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+.sheet > button,
+.sheet > div:not(.content) {
+  flex-shrink: 0;
+}
+.content {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.25rem 0.25rem 1rem;
+}
+.footer {
+  border-top: 1px solid var(--color-border-light);
+  padding: 0.75rem 0 calc(1rem + env(safe-area-inset-bottom));
+}
+
+.content:last-child {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}

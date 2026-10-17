@@ -1,0 +1,51 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1.5rem;
+  border: 1px solid var(--color-border-light);
+  border-radius: 0.625rem;
+  background: var(--color-bg-white);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    border-color 150ms;
+}
+
+.card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-secondary);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
+.icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  color: var(--color-text);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.title {
+  color: var(--color-text);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.description {
+  color: color-mix(in srgb, var(--color-text) 80%, var(--color-bg-white));
+  font-size: 0.875rem;
+}

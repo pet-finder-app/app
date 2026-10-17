@@ -3,7 +3,7 @@ import type { AnchorHTMLAttributes } from "react";
 import { cn } from "./cn";
 import type { FieldTone } from "./field";
 
-export type TextLinkTone = FieldTone | "primary-pastel";
+export type TextLinkTone = FieldTone | "primary-pastel" | "accent-underline";
 
 export type TextLinkProps = Omit<
   AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -11,20 +11,22 @@ export type TextLinkProps = Omit<
 > & {
   href: string;
   tone?: TextLinkTone;
-  /** Link secundário: peso normal e sublinhado fino. */
+  /** Secondary link with regular weight and a thin underline. */
   subtle?: boolean;
 };
 
 const toneClass: Record<TextLinkTone, string> = {
+  "accent-underline":
+    "text-text decoration-accent focus-visible:outline-accent",
+  photo: "text-primary focus-visible:outline-primary",
   primary: "text-neutral-900 focus-visible:outline-neutral-900",
-  /** Só para o fundo "pastel" do AuthLayout (login): lime-800, o verde
-   *  escuro da paleta, dá 4.5:1 sobre o pastel. */
+  /** Dark-green link tone for sufficient contrast on pastel authentication backgrounds. */
   "primary-pastel": "text-lime-800 focus-visible:outline-lime-800",
   light: "text-lime-800 focus-visible:outline-primary",
   brutal: "text-neutral-900 focus-visible:outline-neutral-900",
 };
 
-/** Link inline, sublinhado, com foco visível. */
+/** Inline underlined link with a visible focus indicator. */
 export function TextLink({
   href,
   tone = "light",

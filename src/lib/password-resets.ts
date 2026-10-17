@@ -2,16 +2,12 @@ import { randomBytes } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-/**
- * Pedidos de redefinição de senha. Hoje um arquivo JSON, amanhã o backend —
- * que envia o link por e-mail. No protótipo o link volta na resposta e a
- * tela o mostra (como o código de assinatura do termo).
- */
+/** Password-reset persistence adapter. The prototype returns reset links for display; production must deliver them by email. */
 
 type Reset = {
   token: string;
   userId: string;
-  /** ISO datetime. */
+  /** ISO timestamp. */
   expiresAt: string;
 };
 
@@ -36,7 +32,7 @@ async function writeResets(resets: Reset[]): Promise<void> {
   );
 }
 
-/** Cria um token de uso único (30 min) e descarta os antigos do mesmo usuário. */
+/** Create a single-use thirty-minute token and discard older tokens for the same user. */
 export async function createPasswordReset(userId: string): Promise<string> {
   const now = new Date().toISOString();
   const resets = (await readResets()).filter(
@@ -54,7 +50,7 @@ export async function createPasswordReset(userId: string): Promise<string> {
   return token;
 }
 
-/** Consome o token: devolve o id do usuário se ele for válido, e já o invalida. */
+/** Consume a valid token and return its user identifier, invalidating the token immediately. */
 export async function consumePasswordReset(
   token: string,
 ): Promise<string | null> {

@@ -1,6 +1,6 @@
 "use client";
 
-import type { UploadedFile } from "@/lib/ong";
+import type { UploadedFile } from "@/lib/ngo";
 import type { ChangeEvent } from "react";
 import { Button } from "./button";
 import { cn } from "./cn";
@@ -19,13 +19,11 @@ export function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-/**
- * Só guarda os metadados do arquivo (nome, tamanho, tipo). O upload real
- * entra quando o backend existir — ver `UploadedFile.url`.
- */
+/** Store file metadata until a real upload backend is available; see UploadedFile.url. */
 export function FileInput({
   id,
   label,
+  labelIcon,
   hint,
   invalid,
   errorId,
@@ -52,6 +50,7 @@ export function FileInput({
     <Field
       id={id}
       label={label}
+      labelIcon={labelIcon}
       hint={hint}
       hintId={hintId}
       tone={tone}

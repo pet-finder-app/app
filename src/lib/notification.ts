@@ -1,34 +1,28 @@
-/**
- * Notificações que a ONG recebe sobre os pets publicados. Vem de ações do
- * adotante — hoje simuladas em `notifications.json`, até o lado do adotante
- * existir de verdade.
- *
- * Este arquivo não importa nada do Node: pode ser usado no client.
- */
+/** Client-safe notifications from adopter interactions with published pets, persisted in notifications.json. */
 
-export type NotificationType = "curtida" | "interesse";
+export type NotificationType = "like" | "interest";
 
 export const NOTIFICATION_TYPE_LABEL: Record<NotificationType, string> = {
-  // Curtiu o pet, mas ainda não deu o próximo passo.
-  curtida: "favoritou",
-  // Demonstrou interesse real em adotar (mensagem, formulário etc.).
-  interesse: "tem interesse em adotar",
+  // Liked the pet without sending an adoption-interest message.
+  like: "favoritou",
+  // Expressed concrete adoption interest through a message or form.
+  interest: "tem interesse em adotar",
 };
 
 export type Notification = {
   id: string;
-  ongId: string;
+  ngoId: string;
   petId: string;
   petName: string;
-  /** `StoredUser.id` do adotante que curtiu ou demonstrou interesse. */
+  /** Identifier of the adopter who liked the pet or expressed interest. */
   adopterId: string;
   adopterName: string;
   adopterAvatarUrl: string | null;
   type: NotificationType;
-  /** Mensagem do adotante, quando houver (só em "interesse"). */
+  /** Optional adopter message for interest notifications. */
   message: string;
-  /** ISO datetime. */
+  /** ISO timestamp. */
   createdAt: string;
-  /** ISO datetime, ou null enquanto não lida. */
+  /** ISO read timestamp, or null until read. */
   readAt: string | null;
 };

@@ -1,20 +1,17 @@
 import { isAdoptionActive, whoActsNow, type Adoption } from "./adoption";
-import { listAdoptionsByAdopter, listAdoptionsByOng } from "./adoptions";
+import { listAdoptionsByAdopter, listAdoptionsByNgo } from "./adoptions";
 import { countUnreadFor, type ChatRole } from "./conversation";
 import {
   listConversationsByAdopter,
-  listConversationsByOng,
+  listConversationsByNgo,
 } from "./conversations";
 
-/**
- * Avisos de "tem algo para você": mensagens não lidas e adoções em que é a
- * vez da pessoa. Alimentam o selo do menu de baixo e o aviso no Início.
- */
+/** Unread-message and pending-adoption-action counts for navigation badges and the home notice. */
 
 export type Alerts = {
-  /** Mensagens não lidas, somando as conversas. */
+  /** Unread messages across all conversations. */
   chats: number;
-  /** Adoções em andamento em que é a vez da pessoa agir. */
+  /** Active adoptions requiring the current participant's action. */
   adoptionsToAct: Adoption[];
 };
 
@@ -25,10 +22,10 @@ export async function getAlerts(
   const [conversations, adoptions] = await Promise.all([
     role === "adopter"
       ? listConversationsByAdopter(userId)
-      : listConversationsByOng(userId),
+      : listConversationsByNgo(userId),
     role === "adopter"
       ? listAdoptionsByAdopter(userId)
-      : listAdoptionsByOng(userId),
+      : listAdoptionsByNgo(userId),
   ]);
   return {
     chats: conversations.reduce((sum, c) => sum + countUnreadFor(c, role), 0),

@@ -1,49 +1,41 @@
-/**
- * Doações em dinheiro que uma ONG recebeu de adotantes/apoiadores pela chave
- * Pix do perfil público. O Pix acontece fora do app (direto na conta da ONG);
- * aqui fica o registro: o adotante avisa que doou ("informada") e a ONG
- * confere no extrato e confirma. Hoje em `donations.json`, até existir um
- * backend que confirme os pagamentos de verdade.
- *
- * Este arquivo não importa nada do Node: pode ser usado no client.
- */
+/** Client-safe direct-Pix donation records. Adopters report transfers and NGOs confirm them against bank statements; funds never pass through the app. */
 
-export type DonationStatus = "informada" | "confirmada" | "nao_localizada";
+export type DonationStatus = "reported" | "confirmed" | "not_found";
 
 export const DONATION_STATUS_LABEL: Record<DonationStatus, string> = {
-  informada: "Aguardando a ONG confirmar",
-  confirmada: "Confirmada pela ONG",
-  nao_localizada: "A ONG não localizou o Pix",
+  reported: "Aguardando a ONG confirmar",
+  confirmed: "Confirmada pela ONG",
+  not_found: "A ONG não localizou o Pix",
 };
 
 export type ReceivedDonation = {
   id: string;
-  ongId: string;
-  /** `StoredUser.id` de quem doou. Ausente nas doações antigas/de teste. */
+  ngoId: string;
+  /** Donor user identifier; absent from legacy or test donations. */
   donorId?: string;
-  /** Nome mostrado à ONG. "Anônimo" quando o adotante escolhe não se identificar. */
+  /** Donor display name, or the anonymous label when identity is hidden. */
   donorName: string;
-  /** Em reais. */
+  /** Amount in Brazilian reais. */
   amount: number;
-  /** Ausente nas doações antigas/de teste: conta como confirmada. */
+  /** Legacy records without status are treated as confirmed. */
   status?: DonationStatus;
-  /** Recado opcional do adotante para a ONG. */
+  /** Optional donor message to the NGO. */
   note?: string;
-  /** ISO datetime. */
+  /** ISO timestamp. */
   createdAt: string;
-  /** ISO datetime em que a ONG respondeu. */
+  /** ISO timestamp of the NGO's response. */
   resolvedAt?: string;
 };
 
-/** Dados públicos da ONG que o adotante precisa para doar. */
+/** Public NGO payment details needed by donors. */
 export type DonationTarget = {
-  ongId: string;
+  ngoId: string;
   name: string;
-  /** "Cidade/UF". */
+  /** City and state abbreviation. */
   city: string;
   pixKey: string;
   bankAccount: string;
-  /** Itens que a ONG aceita receber (ração, cobertor...). */
+  /** Requested supplies such as food or blankets. */
   neededItems: string[];
 };
 
@@ -53,10 +45,10 @@ export const DONATION_MAX_AMOUNT = 50000;
 export const DONATION_MAX_NOTE_LENGTH = 300;
 
 export function donationStatusOf(donation: ReceivedDonation): DonationStatus {
-  return donation.status ?? "confirmada";
+  return donation.status ?? "confirmed";
 }
 
-/** Mensagem do problema no valor, ou null se estiver certo. */
+/** Donation amount validation error, or null when valid. */
 export function validateDonationAmount(amount: number): string | null {
   if (!Number.isFinite(amount) || amount < DONATION_MIN_AMOUNT) {
     return `Informe um valor de pelo menos R$ ${DONATION_MIN_AMOUNT}.`;
@@ -67,7 +59,7 @@ export function validateDonationAmount(amount: number): string | null {
   return null;
 }
 
-/** "25", "25,50" ou "1.250,90" → número. NaN se não der para entender. */
+/** Parse Brazilian currency notation into a number; return NaN for invalid input. */
 export function parseMoney(text: string): number {
   const clean = text.replace(/[^\d,.]/g, "");
   if (!clean) return NaN;

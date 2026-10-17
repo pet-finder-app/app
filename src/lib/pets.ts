@@ -3,10 +3,7 @@ import path from "node:path";
 import type { Pet, PetInput, PetStatus, PetUpdateInput } from "./pet";
 import { readUsers } from "./users";
 
-/**
- * Camada de acesso aos pets — hoje um arquivo JSON, amanhã o backend. Só
- * este arquivo precisa mudar quando a API real entrar (ver `lib/users.ts`).
- */
+/** Pet persistence adapter. Replace this module when integrating a production API. */
 
 const PETS_FILE = path.join(process.cwd(), "src", "data", "pets.json");
 
@@ -23,18 +20,18 @@ async function writePets(pets: Pet[]): Promise<void> {
   );
 }
 
-export async function listPetsByOng(ongId: string): Promise<Pet[]> {
+export async function listPetsByNgo(ngoId: string): Promise<Pet[]> {
   const pets = await readPets();
-  return pets.filter((pet) => pet.ongId === ongId);
+  return pets.filter((pet) => pet.ngoId === ngoId);
 }
 
-/** Só retorna o pet se ele pertencer a essa ONG. */
-export async function getPetByIdAndOng(
+/** Return the pet only when it belongs to the requested NGO. */
+export async function getPetByIdAndNgo(
   id: string,
-  ongId: string,
+  ngoId: string,
 ): Promise<Pet | undefined> {
   const pets = await readPets();
-  return pets.find((pet) => pet.id === id && pet.ongId === ongId);
+  return pets.find((pet) => pet.id === id && pet.ngoId === ngoId);
 }
 
 export async function getPetById(id: string): Promise<Pet | undefined> {
@@ -42,17 +39,14 @@ export async function getPetById(id: string): Promise<Pet | undefined> {
   return pets.find((pet) => pet.id === id);
 }
 
-/**
- * Feed do adotante: pets disponíveis publicados por ONGs verificadas, mais
- * recentes primeiro.
- */
+/** Available pets from verified NGOs, newest first, for the adopter feed. */
 export async function listAvailablePets(): Promise<Pet[]> {
   const [pets, users] = await Promise.all([readPets(), readUsers()]);
-  const verifiedOngIds = new Set(
+  const verifiedNgoIds = new Set(
     users
       .filter(
         (user) =>
-          user.role === "ong" && user.ong?.verification.status === "verificada",
+          user.role === "ngo" && user.ngo?.verification.status === "verified",
       )
       .map((user) => user.id),
   );
@@ -60,17 +54,17 @@ export async function listAvailablePets(): Promise<Pet[]> {
   return pets
     .filter(
       (pet) =>
-        pet.status === "disponivel" &&
+        pet.status === "available" &&
         !pet.archived &&
-        verifiedOngIds.has(pet.ongId),
+        verifiedNgoIds.has(pet.ngoId),
     )
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function createPet(
-  ongId: string,
+  ngoId: string,
   input: PetInput,
-  status: PetStatus = "disponivel",
+  status: PetStatus = "available",
 ): Promise<Pet> {
   const pets = await readPets();
   const now = new Date().toISOString();
@@ -78,7 +72,7 @@ export async function createPet(
   const pet: Pet = {
     ...input,
     id: crypto.randomUUID(),
-    ongId,
+    ngoId,
     status,
     archived: false,
     views: 0,
@@ -90,14 +84,14 @@ export async function createPet(
   return pet;
 }
 
-/** Retorna undefined se o pet não existir ou não pertencer a essa ONG. */
+/** Return undefined if the pet is missing or belongs to another NGO. */
 export async function updatePet(
   id: string,
-  ongId: string,
+  ngoId: string,
   input: PetUpdateInput,
 ): Promise<Pet | undefined> {
   const pets = await readPets();
-  const index = pets.findIndex((p) => p.id === id && p.ongId === ongId);
+  const index = pets.findIndex((p) => p.id === id && p.ngoId === ngoId);
   if (index === -1) return undefined;
 
   const updated: Pet = {
@@ -110,10 +104,10 @@ export async function updatePet(
   return updated;
 }
 
-/** Apaga o pet de vez. Retorna false se ele não existir ou não pertencer a essa ONG. */
-export async function deletePet(id: string, ongId: string): Promise<boolean> {
+/** Permanently delete a pet; return false if it is missing or belongs to another NGO. */
+export async function deletePet(id: string, ngoId: string): Promise<boolean> {
   const pets = await readPets();
-  const index = pets.findIndex((p) => p.id === id && p.ongId === ongId);
+  const index = pets.findIndex((p) => p.id === id && p.ngoId === ngoId);
   if (index === -1) return false;
 
   pets.splice(index, 1);
@@ -121,7 +115,7 @@ export async function deletePet(id: string, ongId: string): Promise<boolean> {
   return true;
 }
 
-/** Muda só o status do pet (usado pelo processo de adoção). */
+/** Update only pet status as part of an adoption workflow. */
 export async function setPetStatus(
   id: string,
   status: PetStatus,
@@ -137,14 +131,14 @@ export async function setPetStatus(
   await writePets(pets);
 }
 
-/** Retorna undefined se o pet não existir ou não pertencer a essa ONG. */
+/** Return undefined if the pet is missing or belongs to another NGO. */
 export async function setPetArchived(
   id: string,
-  ongId: string,
+  ngoId: string,
   archived: boolean,
 ): Promise<Pet | undefined> {
   const pets = await readPets();
-  const index = pets.findIndex((p) => p.id === id && p.ongId === ongId);
+  const index = pets.findIndex((p) => p.id === id && p.ngoId === ngoId);
   if (index === -1) return undefined;
 
   const updated: Pet = {
@@ -157,50 +151,45 @@ export async function setPetArchived(
   return updated;
 }
 
-export type PetOngInfo = {
+export type PetNgoInfo = {
   id: string;
   name: string;
   nickname: string;
   logoUrl: string | null;
   city: string;
-  cep: string;
+  postalCode: string;
 };
 
-/** Nome e cidade da ONG de cada pet, para mostrar nos cards e no detalhe. */
-export async function getOngInfoMap(): Promise<Map<string, PetOngInfo>> {
+/** NGO name and city for pet cards and details. */
+export async function getNgoInfoMap(): Promise<Map<string, PetNgoInfo>> {
   const users = await readUsers();
-  const map = new Map<string, PetOngInfo>();
+  const map = new Map<string, PetNgoInfo>();
   for (const user of users) {
-    if (user.role !== "ong" || !user.ong) continue;
-    const { address } = user.ong.legal;
+    if (user.role !== "ngo" || !user.ngo) continue;
+    const { address } = user.ngo.legal;
     map.set(user.id, {
       id: user.id,
-      nickname: user.ong.legal.nickname,
-      logoUrl: user.ong.publicProfile.logo?.url ?? null,
-      name: user.ong.legal.tradeName || user.name,
-      cep: address.cep,
+      nickname: user.ngo.legal.nickname,
+      logoUrl: user.ngo.publicProfile.logo?.url ?? null,
+      name: user.ngo.legal.tradeName || user.name,
+      postalCode: address.postalCode,
       city: [address.city, address.state].filter(Boolean).join("/"),
     });
   }
   return map;
 }
 
-/**
- * A ONG marca o pet como "Indisponível" (desistiu de oferecê-lo) ou volta a
- * "Disponível". Só vale enquanto o pet está num desses dois estados — "Em
- * processo" e "Adotado" mudam pelo processo de adoção. Retorna `undefined` se
- * o pet não for dessa ONG e `"locked"` se o estado não puder mudar agora.
- */
-export async function setPetStatusByOng(
+/** Toggle pet availability only between available and unavailable. Adoption-controlled states are locked. Return undefined for an ownership mismatch, or locked for a forbidden transition. */
+export async function setPetStatusByNgo(
   id: string,
-  ongId: string,
-  status: "disponivel" | "indisponivel",
+  ngoId: string,
+  status: "available" | "unavailable",
 ): Promise<Pet | "locked" | undefined> {
   const pets = await readPets();
-  const index = pets.findIndex((p) => p.id === id && p.ongId === ongId);
+  const index = pets.findIndex((p) => p.id === id && p.ngoId === ngoId);
   if (index === -1) return undefined;
   const current = pets[index].status;
-  if (current !== "disponivel" && current !== "indisponivel") return "locked";
+  if (current !== "available" && current !== "unavailable") return "locked";
 
   const updated: Pet = {
     ...pets[index],
@@ -212,8 +201,8 @@ export async function setPetStatusByOng(
   return updated;
 }
 
-/** Apaga todos os pets de uma ONG (exclusão de conta). */
-export async function deletePetsByOng(ongId: string): Promise<void> {
+/** Delete all pets belonging to an NGO during account deletion. */
+export async function deletePetsByNgo(ngoId: string): Promise<void> {
   const pets = await readPets();
-  await writePets(pets.filter((p) => p.ongId !== ongId));
+  await writePets(pets.filter((p) => p.ngoId !== ngoId));
 }

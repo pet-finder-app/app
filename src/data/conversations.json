@@ -4,7 +4,7 @@
       "id": "1cdfe3e7-eb85-40db-8b38-524bf525a221",
       "petId": "2fe13785-18ec-4071-a4c7-91812e787c9c",
       "petName": "Biscoito",
-      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "ngoId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
       "adopterId": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
       "adopterName": "Marlene Souza",
       "messages": [
@@ -23,7 +23,7 @@
       ],
       "lastReadAt": {
         "adopter": "2026-10-03T00:34:52.422Z",
-        "ong": "2026-10-03T00:24:08.564Z"
+        "ngo": "2026-10-03T00:24:08.564Z"
       },
       "createdAt": "2026-10-03T00:24:07.425Z",
       "updatedAt": "2026-10-03T00:35:40.487Z"
@@ -32,7 +32,7 @@
       "id": "9e835161-15b4-4219-a7d3-8918b0fcb520",
       "petId": "fd52a828-2804-4e97-9f61-155a4a0e9981",
       "petName": "Tom",
-      "ongId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
+      "ngoId": "6d55b203-bfa8-485f-b381-e1c1f8296994",
       "adopterId": "93cccaf4-c5c9-4ca2-a322-84cf0844e1ab",
       "adopterName": "Marlene Souza",
       "messages": [
@@ -133,7 +133,7 @@
       ],
       "lastReadAt": {
         "adopter": "2026-10-03T01:28:59.128Z",
-        "ong": "2026-10-03T01:32:28.465Z"
+        "ngo": "2026-10-03T01:32:28.465Z"
       },
       "createdAt": "2026-10-03T00:46:51.681Z",
       "updatedAt": "2026-10-03T01:34:10.373Z"

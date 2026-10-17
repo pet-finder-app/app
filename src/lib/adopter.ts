@@ -3,34 +3,27 @@ import type {
   TermsAcceptance,
   UploadedFile,
   VerificationStatus,
-} from "./ong";
+} from "./ngo";
 import type { PetAgeGroup, PetSize, PetSpecies } from "./pet";
 
-/**
- * Modelo de dados do adotante, espelhando `lib/ong.ts` mas focado em quem
- * quer adotar: identificação pessoal, moradia/rotina (o que uma ONG avalia
- * antes de entregar um pet), preferências de adoção e LGPD. Tudo fica dentro
- * de `StoredUser.adopter` no users.json.
- *
- * Este arquivo não importa nada do Node: pode ser usado no client.
- */
+/** Client-safe adopter profile model with personal information, housing, adoption preferences, and privacy consent, stored under StoredUser.adopter. */
 
 // ---------------------------------------------------------------------------
-// 1. Identificação pessoal
+// 1. Personal identification.
 // ---------------------------------------------------------------------------
 
 export type AdopterPersonal = {
   avatar: UploadedFile | null;
   fullName: string;
-  /** Só dígitos. */
-  cpf: string;
+  /** Digits only. */
+  personalTaxId: string;
   /** ISO date (YYYY-MM-DD). */
   birthDate: string;
-  /** Só dígitos, com DDD. */
+  /** Digits only, including area code. */
   phone: string;
-  /** ISO datetime da confirmação por código, ou null. */
+  /** ISO timestamp of code verification, or null. */
   phoneVerifiedAt: string | null;
-  /** Fala sobre você para a ONG conhecer. */
+  /** Personal biography visible to the NGO. */
   bio: string;
   occupation: string;
   instagram: string;
@@ -40,31 +33,31 @@ export type AdopterPersonal = {
 };
 
 // ---------------------------------------------------------------------------
-// 2. Moradia e rotina
+// 2. Housing and daily routine.
 // ---------------------------------------------------------------------------
 
-export type HousingType = "casa" | "apartamento" | "sitio_chacara";
+export type HousingType = "house" | "apartment" | "farm";
 
 export const HOUSING_TYPE_LABEL: Record<HousingType, string> = {
-  casa: "Casa",
-  apartamento: "Apartamento",
-  sitio_chacara: "Sítio ou chácara",
+  house: "Casa",
+  apartment: "Apartamento",
+  farm: "Sítio ou chácara",
 };
 
-export type HousingOwnership = "propria" | "alugada";
+export type HousingOwnership = "owned" | "rented";
 
 export const HOUSING_OWNERSHIP_LABEL: Record<HousingOwnership, string> = {
-  propria: "Própria",
-  alugada: "Alugada",
+  owned: "Própria",
+  rented: "Alugada",
 };
 
 export type AdopterHousing = {
   type: HousingType | "";
   ownership: HousingOwnership | "";
-  /** Só relevante quando `ownership === "alugada"`. */
+  /** Relevant only for rented housing. */
   landlordAllowsPets: boolean;
   hasYard: boolean;
-  /** Telas de proteção nas janelas — importante para gatos. */
+  /** Window safety screens, particularly relevant for cats. */
   hasScreens: boolean;
   residentsCount: number | null;
   hasChildren: boolean;
@@ -76,7 +69,7 @@ export type AdopterHousing = {
 };
 
 // ---------------------------------------------------------------------------
-// 3. Preferências de adoção
+// 3. Adoption preferences.
 // ---------------------------------------------------------------------------
 
 export type AdopterPreferences = {
@@ -84,43 +77,42 @@ export type AdopterPreferences = {
   sizes: PetSize[];
   ageGroups: PetAgeGroup[];
   acceptsSpecialNeeds: boolean;
-  /** O que você procura num pet. */
+  /** Desired pet characteristics. */
   aboutIdealPet: string;
 };
 
 // ---------------------------------------------------------------------------
-// 4. Verificação
+// 4. Verification.
 // ---------------------------------------------------------------------------
 
 export const ADOPTER_VERIFICATION_STATUS_LABEL: Record<
   VerificationStatus,
   string
 > = {
-  pendente: "Perfil incompleto",
-  em_analise: "Em verificação",
-  verificada: "Adotante verificado",
-  suspensa: "Suspenso",
+  pending: "Perfil incompleto",
+  under_review: "Em verificação",
+  verified: "Adotante verificado",
+  suspended: "Suspenso",
 };
 
 export type AdopterVerification = {
   status: VerificationStatus;
-  /** ISO datetime da última mudança de status. */
+  /** ISO timestamp of the latest status change. */
   statusUpdatedAt: string;
   statusNote: string;
 };
 
 // ---------------------------------------------------------------------------
-// 5. Jurídico e LGPD
+// 5. Legal and privacy consent.
 // ---------------------------------------------------------------------------
 
 export type AdopterLegalConsent = {
-  /** Aceito no cadastro (`register-form.tsx`). Null só em contas antigas, que
-   *  aceitam depois em /adotante/perfil. */
+  /** Acceptance recorded during signup. Legacy accounts may have no record. */
   terms: TermsAcceptance | null;
 };
 
 // ---------------------------------------------------------------------------
-// Perfil completo
+// Complete profile.
 // ---------------------------------------------------------------------------
 
 export type AdopterProfile = {
@@ -137,7 +129,7 @@ export function createEmptyAdopterProfile(fullName: string): AdopterProfile {
     personal: {
       avatar: null,
       fullName,
-      cpf: "",
+      personalTaxId: "",
       birthDate: "",
       phone: "",
       phoneVerifiedAt: null,
@@ -147,7 +139,7 @@ export function createEmptyAdopterProfile(fullName: string): AdopterProfile {
       idDocument: null,
       addressProof: null,
       address: {
-        cep: "",
+        postalCode: "",
         street: "",
         number: "",
         complement: "",
@@ -178,7 +170,7 @@ export function createEmptyAdopterProfile(fullName: string): AdopterProfile {
       aboutIdealPet: "",
     },
     verification: {
-      status: "pendente",
+      status: "pending",
       statusUpdatedAt: now,
       statusNote: "",
     },
@@ -189,17 +181,15 @@ export function createEmptyAdopterProfile(fullName: string): AdopterProfile {
 }
 
 // ---------------------------------------------------------------------------
-// Checklist: o que falta para o perfil ficar completo
+// Profile-completion checklist.
 // ---------------------------------------------------------------------------
 
-export type AdopterProfileSection =
-  "personal" | "housing" | "preferences" | "legalConsent";
+export type AdopterProfileSection = "personal" | "housing" | "preferences";
 
 export const ADOPTER_SECTION_LABEL: Record<AdopterProfileSection, string> = {
   personal: "Identificação",
   housing: "Moradia e rotina",
   preferences: "Preferências de adoção",
-  legalConsent: "Termos e privacidade",
 };
 
 export const ADOPTER_SECTION_KEYS = Object.keys(
@@ -210,18 +200,18 @@ export type AdopterChecklistItem = {
   id: string;
   label: string;
   done: boolean;
-  /** Seção de /adotante/perfil onde o item é preenchido. */
+  /** Profile section containing this checklist item. */
   section: AdopterProfileSection;
-  /** O que falta dentro do item, em palavras simples (vazio se pronto). */
+  /** Plain-language explanation of missing information; empty when complete. */
   missing: string;
 };
 
 export function getAdopterChecklist(
   profile: AdopterProfile,
 ): AdopterChecklistItem[] {
-  const { personal, housing, preferences, legalConsent } = profile;
+  const { personal, housing, preferences } = profile;
   const addressDone = Boolean(
-    personal.address.cep &&
+    personal.address.postalCode &&
     personal.address.street &&
     personal.address.city &&
     personal.address.state,
@@ -229,12 +219,12 @@ export function getAdopterChecklist(
 
   const missingPersonal = [
     !personal.fullName && "nome completo",
-    !personal.cpf && "CPF",
+    !personal.personalTaxId && "CPF",
     !personal.birthDate && "data de nascimento",
     !personal.phone && "telefone",
   ].filter(Boolean);
   const missingAddress = [
-    !personal.address.cep && "CEP",
+    !personal.address.postalCode && "CEP",
     !personal.address.street && "rua",
     !personal.address.city && "cidade",
     !personal.address.state && "estado",
@@ -246,7 +236,7 @@ export function getAdopterChecklist(
       label: "Nome completo, CPF, data de nascimento e telefone",
       done: Boolean(
         personal.fullName &&
-        personal.cpf &&
+        personal.personalTaxId &&
         personal.birthDate &&
         personal.phone,
       ),
@@ -286,17 +276,10 @@ export function getAdopterChecklist(
       section: "preferences",
       missing: "escolher ao menos uma espécie",
     },
-    {
-      id: "consent",
-      label: "Aceite dos termos de uso e da política de privacidade",
-      done: legalConsent.terms !== null,
-      section: "legalConsent",
-      missing: "marcar o aceite",
-    },
   ];
 }
 
-/** Pode pedir verificação? */
+/** Whether verification can be requested. */
 export function isAdopterReadyForReview(profile: AdopterProfile): boolean {
   return getAdopterChecklist(profile).every((item) => item.done);
 }

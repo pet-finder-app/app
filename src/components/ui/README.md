@@ -21,7 +21,7 @@ Avoid thick borders and `backdrop-blur`.
   the large elevation by default.
 - Use round pills, badges, and avatars; rounded fields, buttons, and cards.
 - Authentication uses the user's photo-based design, including its smaller field
-  corner radius and green registration panel.
+  corner radius and white registration panel with theme-colored field borders.
 
 ```tsx
 import { Button, shadowSoft } from "@/components/ui";
@@ -40,6 +40,7 @@ repeating hex values in page components.
 | `text`, `bg-black` | `#151316` | Dark text and backgrounds |
 | `text-light`, `bg-white` | `#ffffff` | Light text and white surfaces |
 | `primary`, `accent` | `#45fd66` | Primary actions, active states, checkmarks |
+| `accent-tertiary` | `#249c42` | Selected navigation text, filled icons, and profile-photo outlines; 3.55:1 contrast on white |
 | `secondary`, `primary-soft` | `#effae7` | Soft green surfaces |
 | `border-light`, `line` | `#c3c3c3` | Borders and separators |
 | `primary-hover` | Darkened primary | Primary hover state |
@@ -57,6 +58,10 @@ Use Nunito Sans throughout the application. Reserve Montserrat for the PETFINDER
 wordmark: PET uses Black (900), while FINDER. uses Light Italic (300). Do not restore
 NATS-specific line-height overrides.
 
+Input, Select, Textarea, FileInput, and Checkbox support an optional `labelIcon`
+Lucide component beside the label. These icons are decorative and do not replace
+accessible label text.
+
 ## Field tones
 
 Fields, checkboxes, and links support these tones:
@@ -66,24 +71,34 @@ Fields, checkboxes, and links support these tones:
 - `brutal`: thin dark borders without soft elevation.
 - `photo`: dark photographic surfaces, with white labels and white controls.
 
+Links also support `tone="accent-underline"` for bold theme-black text with an
+accent-green underline, used inside the registration panel.
+
 Checkboxes retain their native checked state, keyboard behavior, and label
-association. The custom visual is a white box with a primary-green checkmark.
+association. The default shared style uses an accent-green background and a
+theme-black checkmark when checked, including registration and profile forms.
+The `chip` variant displays a compact selectable pill with an accent fill while
+preserving native checkbox semantics; use wrapping groups for multiple choices.
+Unchecked boxes remain white. `variant="default"` retains the white box with a
+primary-green checkmark when an explicit alternative is needed.
 
 ## Components
 
 | Component | Purpose |
 | --- | --- |
-| `Button` | Primary, secondary, outline, pill, danger, dark, photo, and photo-back variants; sm/md/lg sizes and loading states. |
+| `Button` | Primary, secondary, outline, pill, filter, danger, danger-ghost, dark, photo, and photo-back variants; sm/md/lg sizes and loading states. |
 | `LinkButton` | The same visual treatment for navigation. |
 | `TextLink` | Inline link with a visible focus indicator. |
 | `Input`, `Select`, `Textarea` | Controls with accessible labels, hints, and errors. Always supply id and label. |
-| `Checkbox` | White checkbox with a primary-green tick and an associated label that may contain links. |
+| `PasswordInput` | Reuses `Input` with an independent show/hide eye button. Supports the same tones, hints, and validation props. |
+| `Checkbox` | Accent-green checked box with a theme-black tick and an associated label that may contain links. |
 | `FileInput` | File selection and metadata. |
 | `PhotoInput` | Multiple photo selection with previews and individual removal. |
 | `MediaInput` | Multiple photos/videos with previews; retain actual Files for multipart uploads. |
 | `FormError` | Always-mounted form alert; fields reference its id through errorId. |
 | `Card`, `CardTitle`, `CardDescription` | Shared content surfaces. Card tone controls the background. |
 | `Badge` | Neutral, informational, success, warning, and danger status labels. |
+| `BottomSheet` | Modal panel with a draggable handle, animated dismissal, focus management, scroll lock, an independently scrolling body, and an optional fixed footer. Mount to open and unmount in `onClose`. |
 | `Progress` | Progress indicator without built-in text. |
 | `Field`, `useFieldA11y`, `cn` | Shared field structure, accessibility, and class composition. |
 
@@ -117,15 +132,57 @@ const ERROR_ID = "login-error";
 ## Page shells and authentication
 
 Application pages use `PageShell` for centered content and mobile gutters.
-Headers belong inside the same content bounds. Forms with fixed actions use
-`ActionBar`, aligned with the page width and device safe area.
+Its default background is white. The home feed removes outer gutters for
+edge-to-edge media, while its headers, captions, and controls retain padding.
+Home filters use the `Button` filter variant: white with a theme border by
+default, accent green with dark text when `aria-checked` or `data-selected` is
+true. Location and hidden-pet toggles are icon-only on the left and right; a
+denied location control stays clickable at 75% opacity. The center uses two
+exclusive mode buttons with `aria-pressed` and a sliding accent-green background.
+Toggle controls retain accessible names, switch semantics, keyboard interaction,
+and visible focus. Reduced-motion preferences disable the sliding transition.
+The filter row stays directly below the fixed header. Scroll is the default
+view; the grid shows animal photos without post chrome. Selecting a photo opens
+a temporary scroll feed positioned at that exact post. Browser Back or the
+temporary back arrow restores the grid's loaded batch and scroll position.
+Hidden-pet and location choices remain live through preview and return; Back
+does not revert them. Filter state uses `view`, `hidden`, and `location` URL
+parameters, with `post` identifying a temporary preview. Reloading or sharing
+these URLs restores the same filters and selected post. Keep Next.js history
+fields intact and its canonical URL synchronized when writing feed history.
+Location denial opens the shared `LocationDisabledDialog`, with a crossed-pin
+illustration and browser-settings guidance. The filter retains a static crossed
+pin and reopens the notice, leaving denial text out of the feed. The shared icon
+uses a transparent gap around its diagonal stroke so it works on any surface;
+reduced-motion preferences disable the modal's wiggle and line-drawing animation.
+Scroll-feed photos support double-tap/double-click likes and a temporary heart
+overlay. This gesture only adds a like; the separate accessible heart button
+still toggles it. Swiping the carousel or scrolling the feed must not trigger a
+like. Reduced-motion preferences replace the moving heart with a static one.
+The home post-options sheet has a draggable handle: upward and short downward
+pulls spring back, while a longer downward pull or flick dismisses it. Close
+buttons, backdrop clicks, and Escape use the same exit animation. Keep the modal
+and background scroll lock until the animation completes; hide actions update
+the feed afterward. Reduced-motion preferences disable sheet animations.
+Pages with `hasActionBar` also show the fixed PETFINDER header and reserve space
+above the content. Use `hasHeader` to override that default when needed. Page
+headings belong inside the same content bounds. Forms with fixed actions use
+`ActionBar`, aligned with the page width and device safe area. Bottom navigation
+uses compact padding while keeping 44 px touch targets and bottom safe-area space.
+Shared navigation icons fill inward from their outlines on selection using
+`accent-tertiary`. Press feedback scales
+the content inside a stable touch target, with a small overshoot on release.
+Reduced-motion preferences disable the fill animation and scaling.
 
-Login and registration share `PhotoAuthLayout`: the pet slideshow, dark gradient,
-wordmark, and initial logo position. The logo moves upward when registration opens.
-The rounded green panel slides over disabled role cards; only the panel scrolls.
+Login, registration, and password recovery share `PhotoAuthLayout`: the dark
+gradient, wordmark, and initial logo position. Their `(auth)` route-group layout
+keeps `PetSlideshow` mounted across navigation, preserving its active slide,
+timer, fade, and scale animation. The logo moves upward when registration opens.
+The rounded white panel slides over disabled role cards; only the panel scrolls.
 Back navigation or clicking outside closes it with a prompt-starting ease-out
-animation. Reduced-motion preferences disable movement. Legacy password-recovery
-pages use `AuthLayout`.
+animation. Reduced-motion preferences disable movement. The forgot-password page
+uses photo-tone controls and a custom footer linking back to login. The
+reset-password page currently uses `AuthLayout`.
 
 ## Icons and accessibility
 
@@ -140,7 +197,7 @@ Use `lucide-react` icons, imported where needed, with `iconSize.sm | md | lg` fr
   aria-invalid and aria-describedby.
 - Keep FormError mounted so assistive technology announces updates reliably.
 - Provide visible focus and comfortable touch targets of at least 24 px.
-- Maintain readable contrast, including dark text on the primary-green panel.
+- Maintain readable contrast, including dark text on the white registration panel.
 - Check mobile layouts at 375 px: no horizontal scrolling, cropped text, or overlap.
 
 ## Domain components and loading

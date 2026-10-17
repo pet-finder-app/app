@@ -1,13 +1,15 @@
+import { AppHeader } from "@/components/brand/app-header";
 import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "./cn";
 
 export type PageShellProps = HTMLAttributes<HTMLElement> & {
-  /** Largura máxima do conteúdo. "sm" para autenticação, "md" para o app,
-   *  "lg" para textos longos (termos). */
+  /** Maximum content width: sm for authentication, md for application pages, lg for long documents. */
   width?: "sm" | "md" | "lg";
-  /** Reserva espaço para uma `ActionBar` fixa no rodapé. */
+  /** Reserve space for a fixed bottom ActionBar. */
   hasActionBar?: boolean;
-  /** Fundo: neutro (padrão) ou o verde primário (autenticação). */
+  /** Show the fixed application header; defaults to pages with a bottom bar. */
+  hasHeader?: boolean;
+  /** Page background: white by default, or primary green. */
   background?: "neutral" | "primary";
   children: ReactNode;
 };
@@ -18,45 +20,43 @@ const widths = {
   lg: "max-w-2xl",
 };
 
-/**
- * Moldura padrão de página: fundo, gutter de 16px no celular, conteúdo
- * centralizado com largura máxima. Tudo que aparece na tela fica dentro
- * dela — cabeçalhos inclusive — para nada "vazar" do quadro.
- */
+/** Standard centered page shell with mobile gutters and a maximum width, including page headers. */
 export function PageShell({
   width = "md",
   hasActionBar = false,
+  hasHeader = hasActionBar,
   background = "neutral",
   className,
   children,
   ...props
 }: PageShellProps) {
   return (
-    <main
-      className={cn(
-        "flex min-h-dvh flex-col px-4 py-6",
-        background === "primary" ? "bg-primary" : "bg-neutral-100",
-        hasActionBar && "pb-32",
-        className,
-      )}
-      {...props}
-    >
-      <div
+    <>
+      {hasHeader ? <AppHeader /> : null}
+      <main
         className={cn(
-          "mx-auto flex w-full flex-1 flex-col gap-4",
-          widths[width],
+          "flex min-h-dvh flex-col px-4 py-6",
+          background === "primary" ? "bg-primary" : "bg-white",
+          hasActionBar && "pb-32",
+          hasHeader && "pt-[calc(4.5rem+env(safe-area-inset-top))]",
+          className,
         )}
+        {...props}
       >
-        {children}
-      </div>
-    </main>
+        <div
+          className={cn(
+            "mx-auto flex w-full flex-1 flex-col gap-4",
+            widths[width],
+          )}
+        >
+          {children}
+        </div>
+      </main>
+    </>
   );
 }
 
-/**
- * Barra fixa no rodapé para ações do formulário. Alinha com a mesma
- * largura da `PageShell` e respeita a área segura de celulares com notch.
- */
+/** Fixed bottom form action bar aligned with PageShell and the device safe area. */
 export function ActionBar({
   width = "md",
   className,

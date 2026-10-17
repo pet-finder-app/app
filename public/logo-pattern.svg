@@ -1,13 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160">
-  <!--
-    Marca d'água do fundo do login: a própria marca (lupa + pegada, mesma
-    geometria de src/components/petfinder-mark.tsx), num verde escuro fixo
-    (green-700) — não usa currentColor porque é referenciada via CSS
-    background-image. Tom sobre tom com o fundo green-300 (mesma família
-    de cor), para ter contraste real em vez de um cinza que se perdia no
-    verde. Um exemplar por ladrilho, levemente girado; o espaçamento vem
-    do background-size em auth-layout.tsx.
-  -->
+  <!-- Repeated magnifier-and-paw watermark matching the shared mark geometry. Use a fixed dark green because CSS background images do not inherit currentColor. Tile spacing is controlled by background-size. -->
   <g transform="rotate(-8 80 80) translate(36.5,36.5) scale(0.75)">
     <g fill="#15803d" stroke="none">
       <ellipse cx="50" cy="57" rx="6.5" ry="5.5" />

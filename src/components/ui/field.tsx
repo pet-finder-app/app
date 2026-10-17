@@ -1,52 +1,44 @@
+import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "./cn";
 
-/**
- * Base compartilhada por todos os campos do UI System: rótulo, dica e
- * associação de erro (aria-describedby / aria-invalid).
- *
- * `tone` escolhe as cores conforme o fundo: "primary" para as telas de
- * autenticação (fundo verde), "light" para o resto do app (soft UI) e
- * "brutal" para as telas neo-brutalistas (Dashboard, Perfil, cadastro de
- * pet) — borda grossa `neutral-900`, sem sombra.
- */
+/** Shared field labels, hints, and accessible error associations. Tone selects colors appropriate to the surrounding surface. */
 
-export type FieldTone = "primary" | "light" | "brutal";
+export type FieldTone = "primary" | "light" | "brutal" | "photo";
 
 export const fieldLabelClass: Record<FieldTone, string> = {
+  photo: "text-base font-semibold text-text-light",
   primary: "text-sm font-semibold text-neutral-900",
   light: "text-sm font-semibold text-neutral-900",
   brutal: "text-sm font-bold text-neutral-900",
 };
 
 export const fieldHintClass: Record<FieldTone, string> = {
+  photo: "text-xs text-text-light/85",
   primary: "text-xs text-neutral-900",
   light: "text-xs text-neutral-600",
   brutal: "text-xs text-neutral-600",
 };
 
-/**
- * Borda fina e sombra bem suave; o foco troca a borda para o verde
- * primário e acrescenta um halo (`ring`) em vez de qualquer efeito de
- * "afundar" — só cor e leve profundidade.
- */
+/** Thin border, subtle shadow, and a primary focus ring. */
 const fieldControlBase =
-  "w-full rounded-2xl border border-stone-300 bg-white px-4 py-3 text-sm text-neutral-900 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors placeholder:text-neutral-600 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-400 disabled:opacity-60";
+  "w-full rounded-2xl border border-border-light bg-white px-4 py-3 text-sm text-neutral-900 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors placeholder:text-neutral-600 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-400 disabled:opacity-60";
 
-/** Mesma base, mas com a borda grossa `neutral-900` e sem sombra. */
+/** Dark-border variant without a shadow. */
 const fieldControlBrutal =
   "w-full rounded-xl border border-neutral-900 bg-white px-4 py-3 text-sm text-neutral-900 transition-colors placeholder:text-neutral-600 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:outline-none aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-400 disabled:opacity-60";
 
-/** Telas de autenticação (fundo verde): mesma base, mas com a borda escura
- *  `neutral-900` do restante do app, para o campo se destacar do fundo. */
+/** Authentication field variant with a dark border for contrast on green surfaces. */
 const fieldControlPrimary = fieldControlBase
-  .replace("border-stone-300", "border-neutral-900")
+  .replace("border-border-light", "border-neutral-900")
   .replace(
     "focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/30",
     "focus-visible:border-neutral-900 focus-visible:ring-4 focus-visible:ring-lime-800/40",
   );
 
 export const fieldControlClass: Record<FieldTone, string> = {
+  photo:
+    "min-h-13 w-full rounded-[0.625rem] border border-border-light bg-bg-white px-3.5 py-3 text-base text-text transition-colors placeholder:text-text/55 focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[invalid=true]:border-red-500 aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-red-400 disabled:opacity-60",
   primary: fieldControlPrimary,
   light: fieldControlBase,
   brutal: fieldControlBrutal,
@@ -55,11 +47,13 @@ export const fieldControlClass: Record<FieldTone, string> = {
 export type FieldBaseProps = {
   id: string;
   label: string;
-  /** Instrução visível e associada ao campo (ex.: "Mínimo de 6 caracteres."). */
+  /** Decorative icon beside the visible label. */
+  labelIcon?: LucideIcon;
+  /** Visible instructions associated with the field. */
   hint?: string;
-  /** Marca o campo como inválido para leitores de tela (WCAG 4.1.2 / 3.3.1). */
+  /** Expose invalid state to assistive technology. */
   invalid?: boolean;
-  /** Id de um elemento de erro externo (ex.: o alerta do formulário). */
+  /** Identifier of an external error message. */
   errorId?: string;
   tone?: FieldTone;
 };
@@ -81,9 +75,12 @@ export function useFieldA11y({
   };
 }
 
-type FieldProps = Pick<FieldBaseProps, "id" | "label" | "hint" | "tone"> & {
+type FieldProps = Pick<
+  FieldBaseProps,
+  "id" | "label" | "labelIcon" | "hint" | "tone"
+> & {
   hintId?: string;
-  /** Quando true, o rótulo é um <span> (para inputs escondidos, ex.: file). */
+  /** Use a span label for hidden inputs such as file controls. */
   labelAsSpan?: boolean;
   children: ReactNode;
   className?: string;
@@ -92,6 +89,7 @@ type FieldProps = Pick<FieldBaseProps, "id" | "label" | "hint" | "tone"> & {
 export function Field({
   id,
   label,
+  labelIcon: LabelIcon,
   hint,
   hintId,
   tone = "light",
@@ -99,13 +97,25 @@ export function Field({
   children,
   className,
 }: FieldProps) {
+  const labelContent = LabelIcon ? (
+    <>
+      <LabelIcon
+        className="mr-1.5 inline size-4 align-text-bottom"
+        aria-hidden="true"
+      />
+      {label}
+    </>
+  ) : (
+    label
+  );
+
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       {labelAsSpan ? (
-        <span className={fieldLabelClass[tone]}>{label}</span>
+        <span className={fieldLabelClass[tone]}>{labelContent}</span>
       ) : (
         <label htmlFor={id} className={fieldLabelClass[tone]}>
-          {label}
+          {labelContent}
         </label>
       )}
       {children}

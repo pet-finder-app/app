@@ -9,16 +9,17 @@ import {
 
 export type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "id"> &
   FieldBaseProps & {
-    /** Elemento à direita, dentro do campo (ex.: mostrar/ocultar senha). */
+    /** Trailing content inside the input, such as password visibility controls. */
     trailing?: ReactNode;
-    /** Ícone decorativo à esquerda, dentro do campo. */
+    /** Decorative leading input icon. */
     leading?: ReactNode;
   };
 
-/** Campo de texto (text, email, password, number, date, tel...). */
+/** Standard text-like input control. */
 export function Input({
   id,
   label,
+  labelIcon,
   hint,
   invalid,
   errorId,
@@ -31,7 +32,14 @@ export function Input({
   const { hintId, ...a11y } = useFieldA11y({ id, hint, invalid, errorId });
 
   return (
-    <Field id={id} label={label} hint={hint} hintId={hintId} tone={tone}>
+    <Field
+      id={id}
+      label={label}
+      labelIcon={labelIcon}
+      hint={hint}
+      hintId={hintId}
+      tone={tone}
+    >
       <div className="relative">
         <input
           id={id}
