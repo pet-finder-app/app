@@ -1,41 +1,51 @@
 import { cookies } from "next/headers";
-import { distancesFromCep, distancesFromCoords } from "./geo";
+import { distancesFromCoords, distancesFromPostalCode } from "./geo";
 
-/**
- * Localização de referência do adotante: a do navegador (cookie, guardada com
- * precisão de ~1 km) ou, se não houver, o CEP do perfil. Só roda no servidor.
- */
+/** Server-side adopter location reference: approximate browser coordinates from the cookie, falling back to the profile postal code. */
 export const LOCATION_COOKIE = "petfinder_loc";
+export const LOCATION_ENABLED_COOKIE = "petfinder_location_enabled";
 
 export type SavedLocation = { lat: number; lon: number };
 
+/** Location starts enabled until the adopter disables it or denies permission. */
+export async function isLocationEnabled(): Promise<boolean> {
+  return (await cookies()).get(LOCATION_ENABLED_COOKIE)?.value !== "0";
+}
+
 export async function readSavedLocation(): Promise<SavedLocation | null> {
+  if (!(await isLocationEnabled())) return null;
   const raw = (await cookies()).get(LOCATION_COOKIE)?.value;
   if (!raw) return null;
   const [lat, lon] = raw.split(",").map(Number);
   return Number.isFinite(lat) && Number.isFinite(lon) ? { lat, lon } : null;
 }
 
-/** Distância até cada ONG a partir da melhor referência disponível. */
+/** Distances to NGOs using the best available location reference. */
 export async function distancesForAdopter(
-  adopterCep: string,
-  ongs: Map<string, { cep: string }>,
+  adopterPostalCode: string,
+  ngos: Map<string, { postalCode: string }>,
+  useBrowserCoordinates = true,
 ): Promise<{
   distances: Map<string, number | null>;
-  source: "gps" | "cep" | null;
+  source: "gps" | "postalCode" | null;
 }> {
-  const ongCeps = new Map([...ongs].map(([id, ong]) => [id, ong.cep]));
-  const saved = await readSavedLocation();
+  const ngoPostalCodes = new Map(
+    [...ngos].map(([id, ngo]) => [id, ngo.postalCode]),
+  );
+  const saved = useBrowserCoordinates ? await readSavedLocation() : null;
   if (saved) {
     return {
-      distances: await distancesFromCoords(saved, ongCeps),
+      distances: await distancesFromCoords(saved, ngoPostalCodes),
       source: "gps",
     };
   }
-  if (adopterCep) {
+  if (adopterPostalCode) {
     return {
-      distances: await distancesFromCep(adopterCep, ongCeps),
-      source: "cep",
+      distances: await distancesFromPostalCode(
+        adopterPostalCode,
+        ngoPostalCodes,
+      ),
+      source: "postalCode",
     };
   }
   return { distances: new Map(), source: null };

@@ -1,15 +1,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 
-/**
- * Pets que o adotante marcou como "Não tenho interesse". Hoje um arquivo
- * JSON, amanhã o backend — só este arquivo muda (ver `lib/follows.ts`).
- */
+/** Persist pets discarded by each adopter using the JSON adapter. */
 
 export type Dislike = {
   adopterId: string;
   petId: string;
-  /** ISO datetime. */
+  /** ISO timestamp. */
   createdAt: string;
 };
 
@@ -28,7 +25,7 @@ async function writeDislikes(dislikes: Dislike[]): Promise<void> {
   );
 }
 
-/** IDs dos pets descartados pelo adotante, mais recentes primeiro. */
+/** Discarded pet identifiers, newest first. */
 export async function listDislikedPetIds(adopterId: string): Promise<string[]> {
   const dislikes = await readDislikes();
   return dislikes
@@ -37,7 +34,7 @@ export async function listDislikedPetIds(adopterId: string): Promise<string[]> {
     .map((d) => d.petId);
 }
 
-/** Alterna "Não tenho interesse". Retorna se o pet agora está descartado. */
+/** Toggle whether a pet is discarded and return its new state. */
 export async function toggleDislike(
   adopterId: string,
   petId: string,
@@ -59,7 +56,28 @@ export async function toggleDislike(
   return { disliked: true };
 }
 
-/** Apaga os descartes do adotante (exclusão de conta). */
+/** Set an explicit visibility preference without undoing an already-saved choice. */
+export async function setPetHidden(
+  adopterId: string,
+  petId: string,
+  hidden: boolean,
+): Promise<{ disliked: boolean }> {
+  const dislikes = await readDislikes();
+  const exists = dislikes.some(
+    (item) => item.adopterId === adopterId && item.petId === petId,
+  );
+  if (exists === hidden) return { disliked: hidden };
+  await writeDislikes(
+    hidden
+      ? [...dislikes, { adopterId, petId, createdAt: new Date().toISOString() }]
+      : dislikes.filter(
+          (item) => item.adopterId !== adopterId || item.petId !== petId,
+        ),
+  );
+  return { disliked: hidden };
+}
+
+/** Remove an adopter's discard preferences during account deletion. */
 export async function deleteDislikesOfUser(adopterId: string): Promise<void> {
   const dislikes = await readDislikes();
   await writeDislikes(dislikes.filter((d) => d.adopterId !== adopterId));

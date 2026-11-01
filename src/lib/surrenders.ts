@@ -7,7 +7,7 @@ import {
   appendSystemMessage,
   createSurrenderConversation,
 } from "./conversations";
-import { formatAddress } from "./ong";
+import { formatAddress } from "./ngo";
 import {
   PET_AGE_GROUP_LABEL,
   PET_SEX_LABEL,
@@ -27,12 +27,7 @@ import {
 import { renderTermTemplate } from "./term-template";
 import { findUserById, readUsers } from "./users";
 
-/**
- * Regras da entrega de pet à ONG — hoje um arquivo JSON, amanhã o backend. É o
- * espelho de `lib/adoptions.ts`: toda mudança depois de criado passa por
- * `performAction`, que confere quem pode o quê e registra o histórico (e um
- * aviso no chat).
- */
+/** Surrender persistence and workflow rules. All post-creation transitions pass through performAction for authorization, history, and chat notices. */
 
 const FILE = path.join(process.cwd(), "src", "data", "surrenders.json");
 
@@ -58,8 +53,8 @@ export async function getSurrenderById(
   return (await readAll()).find((s) => s.id === id);
 }
 
-export async function listSurrendersByOng(ongId: string): Promise<Surrender[]> {
-  return (await readAll()).filter((s) => s.ongId === ongId).sort(byRecent);
+export async function listSurrendersByNgo(ngoId: string): Promise<Surrender[]> {
+  return (await readAll()).filter((s) => s.ngoId === ngoId).sort(byRecent);
 }
 
 export async function listSurrendersByAdopter(
@@ -107,7 +102,7 @@ function addEvent(
   });
 }
 
-/** Registra o evento e avisa no chat (a conversa continua sendo o centro). */
+/** Record an event and announce it in the conversation. */
 async function announce(
   surrender: Surrender,
   by: AdoptionEvent["by"],
@@ -120,31 +115,31 @@ async function announce(
 }
 
 export type CreateSurrenderInput = {
-  ongId: string;
-  /** Preenchido quando o pet foi adotado pelo app e está sendo devolvido. */
+  ngoId: string;
+  /** Present when a previously adopted pet is being returned. */
   adoptionId?: string | null;
   pet: SurrenderPet;
   form: SurrenderFormInput;
 };
 
-/** O adotante pede para deixar um pet com a ONG. O pedido já nasce "em análise". */
+/** Create a guardian's surrender request directly in the review stage. */
 export async function createSurrender(
   adopterId: string,
   input: CreateSurrenderInput,
 ): Promise<ActionResult> {
   const adopter = await findUserById(adopterId);
-  const ong = (await readUsers()).find(
-    (u) => u.id === input.ongId && u.role === "ong",
+  const ngo = (await readUsers()).find(
+    (u) => u.id === input.ngoId && u.role === "ngo",
   );
   if (!adopter?.adopter) return fail(401, "Faça login como adotante.");
-  if (!ong?.ong || ong.ong.verification.status !== "verificada") {
+  if (!ngo?.ngo || ngo.ngo.verification.status !== "verified") {
     return fail(404, "ONG não encontrada.");
   }
 
   const problem = validateSurrenderRequest(input.pet, input.form);
   if (problem) return fail(400, problem);
 
-  // Devolução: o pet precisa ser da ONG escolhida e ter sido adotado por esta pessoa.
+  // For returns, verify that the chosen NGO owns the pet and this person adopted it.
   let petId: string | null = null;
   const adoptionId = input.adoptionId ?? null;
   if (adoptionId) {
@@ -152,8 +147,8 @@ export async function createSurrender(
     if (
       !adoption ||
       adoption.adopterId !== adopterId ||
-      adoption.ongId !== ong.id ||
-      (adoption.status !== "acompanhamento" && adoption.status !== "concluida")
+      adoption.ngoId !== ngo.id ||
+      (adoption.status !== "follow_up" && adoption.status !== "completed")
     ) {
       return fail(409, "Esta adoção não está disponível para devolução.");
     }
@@ -165,7 +160,7 @@ export async function createSurrender(
   const duplicate = all.find(
     (s) =>
       s.adopterId === adopterId &&
-      s.ongId === ong.id &&
+      s.ngoId === ngo.id &&
       isSurrenderActive(s.status) &&
       (petId ? s.petId === petId : s.pet.name.trim().toLowerCase() === name),
   );
@@ -180,12 +175,12 @@ export async function createSurrender(
   const id = crypto.randomUUID();
   const surrender: Surrender = {
     id,
-    ongId: ong.id,
-    ongName: ong.ong.legal.tradeName || ong.name,
+    ngoId: ngo.id,
+    ngoName: ngo.ngo.legal.tradeName || ngo.name,
     adopterId,
     adopterName: adopter.adopter.personal.fullName || adopter.name,
     conversationId: null,
-    status: "analise",
+    status: "review",
     petId,
     adoptionId,
     pet: { ...input.pet, name: input.pet.name.trim() },
@@ -202,7 +197,7 @@ export async function createSurrender(
   const conversation = await createSurrenderConversation({
     surrenderId: id,
     petName: surrender.pet.name,
-    ongId: ong.id,
+    ngoId: ngo.id,
     adopterId,
     adopterName: surrender.adopterName,
   });
@@ -228,13 +223,13 @@ export type SurrenderAction =
   | { action: "receive" };
 
 async function generateTerm(surrender: Surrender): Promise<string | null> {
-  const [ongUser, adopterUser] = await Promise.all([
-    findUserById(surrender.ongId),
+  const [ngoUser, adopterUser] = await Promise.all([
+    findUserById(surrender.ngoId),
     findUserById(surrender.adopterId),
   ]);
-  if (!ongUser?.ong || !adopterUser?.adopter) return null;
+  if (!ngoUser?.ngo || !adopterUser?.adopter) return null;
 
-  const { legal, representative } = ongUser.ong;
+  const { legal, representative } = ngoUser.ngo;
   const { personal } = adopterUser.adopter;
   const { pet, form } = surrender;
   const health = [
@@ -247,23 +242,24 @@ async function generateTerm(surrender: Surrender): Promise<string | null> {
   ].filter(Boolean);
 
   return renderTermTemplate(SURRENDER_TERM_TEMPLATE, {
-    "tutor.nome": personal.fullName || adopterUser.name,
-    "tutor.cpf": personal.cpf || "(CPF não informado)",
-    "tutor.endereco":
+    "guardian.name": personal.fullName || adopterUser.name,
+    "guardian.personalTaxId": personal.personalTaxId || "(CPF não informado)",
+    "guardian.address":
       formatAddress(personal.address) || "(endereço não informado)",
-    "pet.nome": pet.name,
-    "pet.especie": PET_SPECIES_LABEL[pet.species],
-    "pet.raca": pet.breed || "sem raça definida",
-    "pet.sexo": PET_SEX_LABEL[pet.sex],
-    "pet.porte": PET_SIZE_LABEL[pet.size],
-    "pet.idade": PET_AGE_GROUP_LABEL[pet.ageGroup],
-    "pet.saude": health.length > 0 ? health.join(", ") : "nada informado",
-    motivo: SURRENDER_REASON_LABEL[form.reason],
-    "ong.nome": legal.tradeName || ongUser.name,
-    "ong.documento": legal.document || "(documento não informado)",
-    "ong.responsavel": representative.fullName || "(responsável não informado)",
-    cidade: legal.address.city || "(cidade)",
-    data: new Date().toLocaleDateString("pt-BR", {
+    "pet.name": pet.name,
+    "pet.species": PET_SPECIES_LABEL[pet.species],
+    "pet.breed": pet.breed || "sem raça definida",
+    "pet.sex": PET_SEX_LABEL[pet.sex],
+    "pet.size": PET_SIZE_LABEL[pet.size],
+    "pet.age": PET_AGE_GROUP_LABEL[pet.ageGroup],
+    "pet.health": health.length > 0 ? health.join(", ") : "nada informado",
+    reason: SURRENDER_REASON_LABEL[form.reason],
+    "ngo.name": legal.tradeName || ngoUser.name,
+    "ngo.document": legal.document || "(documento não informado)",
+    "ngo.representative":
+      representative.fullName || "(responsável não informado)",
+    city: legal.address.city || "(cidade)",
+    date: new Date().toLocaleDateString("pt-BR", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -271,23 +267,19 @@ async function generateTerm(surrender: Surrender): Promise<string | null> {
   });
 }
 
-/**
- * A ONG recebeu o animal: ele entra no catálogo dela como "indisponível" (para
- * ser avaliado, tratado e só então publicado). Se já era um pet da ONG
- * (devolução), reabre o mesmo cadastro.
- */
+/** On intake, create an unavailable pet pending evaluation and care. Returning pets reuse the existing organization record. */
 async function registerReceivedPet(surrender: Surrender): Promise<string> {
   if (surrender.petId) {
     const existing = await getPetById(surrender.petId);
-    if (existing && existing.ongId === surrender.ongId) {
-      await setPetStatus(existing.id, "indisponivel");
-      await setPetArchived(existing.id, surrender.ongId, false);
+    if (existing && existing.ngoId === surrender.ngoId) {
+      await setPetStatus(existing.id, "unavailable");
+      await setPetArchived(existing.id, surrender.ngoId, false);
       return existing.id;
     }
   }
   const { pet } = surrender;
   const created = await createPet(
-    surrender.ongId,
+    surrender.ngoId,
     {
       name: pet.name,
       species: pet.species,
@@ -301,12 +293,12 @@ async function registerReceivedPet(surrender: Surrender): Promise<string> {
       description: pet.description,
       photos: pet.photos,
     },
-    "indisponivel",
+    "unavailable",
   );
   return created.id;
 }
 
-/** Única porta de entrada para mudar um pedido depois de criado. */
+/** Single entry point for modifying an existing surrender request. */
 export async function performAction(
   id: string,
   actor: Actor,
@@ -317,13 +309,13 @@ export async function performAction(
   if (index === -1) return fail(404, "Pedido não encontrado.");
 
   const surrender: Surrender = structuredClone(all[index]);
-  const isOng = actor.role === "ong" && actor.id === surrender.ongId;
+  const isNgo = actor.role === "ngo" && actor.id === surrender.ngoId;
   const isAdopter =
     actor.role === "adopter" && actor.id === surrender.adopterId;
-  if (!isOng && !isAdopter) return fail(404, "Pedido não encontrado.");
+  if (!isNgo && !isAdopter) return fail(404, "Pedido não encontrado.");
 
-  const requireOng = () =>
-    isOng ? null : fail(403, "Só a ONG pode fazer isso.");
+  const requireNgo = () =>
+    isNgo ? null : fail(403, "Só a ONG pode fazer isso.");
   const requireAdopter = () =>
     isAdopter
       ? null
@@ -340,13 +332,13 @@ export async function performAction(
 
   switch (input.action) {
     case "resubmit": {
-      error = requireAdopter() ?? requireStatus("ficha");
+      error = requireAdopter() ?? requireStatus("application");
       if (error) return error;
       const problem = validateSurrenderRequest(input.pet, input.form);
       if (problem) return fail(400, problem);
       surrender.pet = { ...input.pet, name: input.pet.name.trim() };
       surrender.form = { ...input.form, submittedAt: now };
-      surrender.status = "analise";
+      surrender.status = "review";
       await announce(
         surrender,
         "adopter",
@@ -355,33 +347,33 @@ export async function performAction(
       break;
     }
     case "request_changes": {
-      error = requireOng() ?? requireStatus("analise");
+      error = requireNgo() ?? requireStatus("review");
       if (error) return error;
       if (!input.note.trim()) return fail(400, "Explique o que precisa mudar.");
       surrender.decisionNote = input.note.trim();
-      surrender.status = "ficha";
+      surrender.status = "application";
       await announce(
         surrender,
-        "ong",
+        "ngo",
         `A ONG pediu ajustes no pedido: ${surrender.decisionNote}`,
       );
       break;
     }
     case "reject": {
-      error = requireOng() ?? requireStatus("ficha", "analise");
+      error = requireNgo() ?? requireStatus("application", "review");
       if (error) return error;
       if (!input.note.trim()) return fail(400, "Conte o motivo com educação.");
       surrender.decisionNote = input.note.trim();
-      surrender.status = "recusada";
+      surrender.status = "rejected";
       await announce(
         surrender,
-        "ong",
+        "ngo",
         `A ONG não conseguiu receber ${petName} agora. Motivo: ${surrender.decisionNote}`,
       );
       break;
     }
     case "approve": {
-      error = requireOng() ?? requireStatus("analise");
+      error = requireNgo() ?? requireStatus("review");
       if (error) return error;
       const text = await generateTerm(surrender);
       if (!text) return fail(500, "Não foi possível montar o termo.");
@@ -393,16 +385,16 @@ export async function performAction(
         pendingCodes: {},
         finalHash: null,
       };
-      surrender.status = "termo";
+      surrender.status = "agreement";
       await announce(
         surrender,
-        "ong",
+        "ngo",
         `A ONG aceitou receber ${petName}! O termo de entrega está pronto para assinar, por você e pela ONG.`,
       );
       break;
     }
     case "set_handover": {
-      error = requireOng() ?? requireStatus("termo", "entrega");
+      error = requireNgo() ?? requireStatus("agreement", "handover");
       if (error) return error;
       const place = input.place.trim();
       const at = new Date(input.at);
@@ -416,31 +408,31 @@ export async function performAction(
       surrender.handover = { place, at: at.toISOString() };
       await announce(
         surrender,
-        "ong",
+        "ngo",
         `A ONG marcou o encontro para receber ${petName}: ${at.toLocaleString("pt-BR", { dateStyle: "full", timeStyle: "short" })}, em ${place}.`,
       );
       break;
     }
     case "cancel": {
-      error = requireStatus("ficha", "analise", "termo", "entrega");
+      error = requireStatus("application", "review", "agreement", "handover");
       if (error) return error;
-      surrender.status = "cancelada";
+      surrender.status = "cancelled";
       surrender.decisionNote = input.note?.trim() ?? "";
       await announce(
         surrender,
-        isOng ? "ong" : "adopter",
-        `${isOng ? "A ONG" : surrender.adopterName} cancelou o pedido de entrega.`,
+        isNgo ? "ngo" : "adopter",
+        `${isNgo ? "A ONG" : surrender.adopterName} cancelou o pedido de entrega.`,
       );
       break;
     }
     case "send_code": {
-      error = requireStatus("termo");
+      error = requireStatus("agreement");
       if (error) return error;
       if (surrender.term?.signatures.some((s) => s.role === actor.role)) {
         return fail(409, "Você já assinou este termo.");
       }
-      // Protótipo: sem e-mail/SMS, o código volta na resposta e a tela o
-      // mostra como "e-mail de teste". Com backend, sai por e-mail/SMS.
+      // Prototype: without email/SMS, return the signing code so
+      // the UI can display it as a test message. Production must deliver it separately.
       devCode = String(randomInt(100000, 1000000));
       surrender.term!.pendingCodes[actor.role] = {
         code: devCode,
@@ -449,7 +441,7 @@ export async function performAction(
       break;
     }
     case "sign": {
-      error = requireStatus("termo");
+      error = requireStatus("agreement");
       if (error) return error;
       const term = surrender.term!;
       if (term.signatures.some((s) => s.role === actor.role)) {
@@ -464,16 +456,16 @@ export async function performAction(
       }
 
       const signer = await findUserById(actor.id);
-      const cpf = isOng
-        ? signer?.ong?.representative.cpf
-        : signer?.adopter?.personal.cpf;
-      const name = isOng
-        ? signer?.ong?.representative.fullName
+      const personalTaxId = isNgo
+        ? signer?.ngo?.representative.personalTaxId
+        : signer?.adopter?.personal.personalTaxId;
+      const name = isNgo
+        ? signer?.ngo?.representative.fullName
         : signer?.adopter?.personal.fullName || signer?.name;
-      if (!cpf || !name) {
+      if (!personalTaxId || !name) {
         return fail(
           409,
-          isOng
+          isNgo
             ? "Complete o CPF do responsável em Configurações antes de assinar."
             : "Complete seu nome e CPF no perfil antes de assinar.",
         );
@@ -483,11 +475,11 @@ export async function performAction(
         role: actor.role,
         userId: actor.id,
         name,
-        cpf,
+        personalTaxId,
         signedAt: now,
         ip: actor.ip,
         userAgent: actor.userAgent,
-        hash: sha256(`${term.textHash}|${actor.id}|${cpf}|${now}`),
+        hash: sha256(`${term.textHash}|${actor.id}|${personalTaxId}|${now}`),
       });
       delete term.pendingCodes[actor.role];
 
@@ -495,34 +487,34 @@ export async function performAction(
         term.finalHash = sha256(
           term.textHash + term.signatures.map((s) => s.hash).join(""),
         );
-        surrender.status = "entrega";
+        surrender.status = "handover";
         await announce(
           surrender,
-          "sistema",
+          "system",
           `Termo assinado pelas duas partes! Combinem aqui o dia e o lugar para levar ${petName} até a ONG.`,
         );
       } else {
         await announce(
           surrender,
-          isOng ? "ong" : "adopter",
-          `${isOng ? "A ONG" : surrender.adopterName} assinou o termo. Falta a assinatura de ${isOng ? surrender.adopterName : "a ONG"}.`,
+          isNgo ? "ngo" : "adopter",
+          `${isNgo ? "A ONG" : surrender.adopterName} assinou o termo. Falta a assinatura de ${isNgo ? surrender.adopterName : "a ONG"}.`,
         );
       }
       break;
     }
     case "receive": {
-      error = requireOng() ?? requireStatus("entrega");
+      error = requireNgo() ?? requireStatus("handover");
       if (error) return error;
       surrender.receivedAt = now;
-      surrender.status = "concluida";
+      surrender.status = "completed";
       surrender.receivedPetId = await registerReceivedPet(surrender);
       if (surrender.adoptionId) {
-        await markAdoptionReturned(surrender.adoptionId, surrender.ongId);
+        await markAdoptionReturned(surrender.adoptionId, surrender.ngoId);
       }
       await announce(
         surrender,
-        "ong",
-        `${surrender.ongName} recebeu ${petName}. Obrigado por cuidar dele até aqui e por confiar na ONG!`,
+        "ngo",
+        `${surrender.ngoName} recebeu ${petName}. Obrigado por cuidar dele até aqui e por confiar na ONG!`,
       );
       break;
     }

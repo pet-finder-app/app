@@ -1,31 +1,34 @@
 # Petfinder App
 
-Interface oficial do Petfinder.
+The official Petfinder interface, built with Next.js, React, Tailwind CSS, and pnpm.
 
-## Contribuindo
+Source code, identifiers, comments, and routes use English. Visible product text
+remains in Brazilian Portuguese.
 
-### Pré-requisitos
+## Development
 
-1. NodeJS. Ele irá executar o código.
-
-2. PNPM. Ele irá gerenciar as dependências do projeto.
-
-```sh
-npm install --global pnpm
-```
-
-### Rodando o projeto
-
-1. Instale as dependências.
+Install Node.js 24 and pnpm, then run:
 
 ```sh
 pnpm install
-```
-
-2. Inicie o projeto localmente.
-
-```sh
 pnpm dev
 ```
 
-3. Abra `http://localhost:3000` no seu navegador.
+Open `http://localhost:3000` in your browser.
+
+## Validation
+
+```sh
+pnpm lint
+pnpm test
+pnpm exec tsc --noEmit
+pnpm format:check
+pnpm build
+```
+
+Migration checks cover internal route targets, persisted domain values, workflow
+roles, agreement placeholders, and registration API behavior without changing
+application data.
+
+See [the UI system](src/components/ui/README.md) and
+[the adoption workflow plan](docs/adoption-workflow-plan.md) for project details.

@@ -1,6 +1,6 @@
 "use client";
 
-import type { UploadedFile } from "@/lib/ong";
+import type { UploadedFile } from "@/lib/ngo";
 import Image from "next/image";
 import type { ChangeEvent } from "react";
 import { Button } from "./button";
@@ -15,12 +15,15 @@ import {
 import { formatSize } from "./file-input";
 
 const listItemClass: Record<FieldTone, string> = {
+  photo: "rounded-xl border border-border-light bg-bg-white",
   primary: cn("rounded-2xl border border-stone-300 bg-white", shadowSoft.sm),
   light: cn("rounded-2xl border border-stone-300 bg-white", shadowSoft.sm),
   brutal: "rounded-xl border border-neutral-900 bg-white",
 };
 
 const dropzoneClass: Record<FieldTone, string> = {
+  photo:
+    "rounded-xl border border-dashed border-border-light bg-bg-white hover:bg-secondary",
   primary:
     "rounded-2xl border border-dashed border-stone-300 bg-neutral-50 hover:bg-primary-faint",
   light:
@@ -29,14 +32,10 @@ const dropzoneClass: Record<FieldTone, string> = {
     "rounded-xl border border-dashed border-neutral-900 bg-white hover:bg-neutral-50",
 };
 
-/** Maior lado da foto guardada: o suficiente para cartões e posts, sem pesar. */
+/** Maximum stored image dimension, balancing display quality and file size. */
 const MAX_SIDE = 1200;
 
-/**
- * Lê a imagem, reduz para `MAX_SIDE` e devolve um data URL em JPEG. Enquanto
- * não há backend de upload, é isso que permite a foto aparecer depois de
- * salva. Se algo falhar, devolve `null` (o arquivo fica só com os metadados).
- */
+/** Resize images to MAX_SIDE and return a JPEG data URL for prototype persistence. On failure, retain metadata and return null. */
 async function toDataUrl(file: File): Promise<string | null> {
   try {
     const bitmap = await createImageBitmap(file);
@@ -56,15 +55,11 @@ async function toDataUrl(file: File): Promise<string | null> {
 export type PhotoInputProps = FieldBaseProps & {
   value: UploadedFile[];
   onChange: (files: UploadedFile[]) => void;
-  /** Padrão: 6. */
+  /** Default: 6. */
   maxFiles?: number;
 };
 
-/**
- * Variação do `FileInput` para várias fotos (pets, perfil público da ONG).
- * Só guarda os metadados de cada arquivo — o upload real entra com o
- * backend, ver `UploadedFile.url`.
- */
+/** Multi-photo input for pets and public profiles. Store metadata and prototype data URLs until an upload backend is available. */
 export function PhotoInput({
   id,
   label,

@@ -1,0 +1,118 @@
+.dialog {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--color-bg-black);
+  color: var(--color-text-light);
+  overflow: hidden;
+}
+
+.dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog::backdrop {
+  background: var(--color-bg-black);
+}
+
+.header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: calc(0.5rem + env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right)) 0.5rem
+    max(1rem, env(safe-area-inset-left));
+  font-size: 0.875rem;
+}
+
+.surface {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.surface:active {
+  cursor: grabbing;
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding: 0.5rem max(0.5rem, env(safe-area-inset-right))
+    calc(0.5rem + env(safe-area-inset-bottom))
+    max(0.5rem, env(safe-area-inset-left));
+}
+
+.zoom {
+  display: flex;
+  align-items: center;
+}
+
+.scale {
+  min-width: 3rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.control {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.control:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-text-light) 15%, transparent);
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.control:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.control svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+@media (max-width: 359px) {
+  .scale {
+    min-width: 2.5rem;
+  }
+
+  .footer {
+    flex-wrap: wrap;
+  }
+}

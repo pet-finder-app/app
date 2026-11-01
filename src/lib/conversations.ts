@@ -2,11 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import type { ChatMessage, ChatRole, Conversation } from "./conversation";
 
-/**
- * Camada de acesso às conversas — hoje um arquivo JSON, amanhã o backend com
- * chat em tempo real (hoje o client busca de tempos em tempos). Só este
- * arquivo precisa mudar (ver `lib/notifications.ts`).
- */
+/** Conversation persistence adapter using JSON and client polling until a real-time backend is available. */
 
 const FILE = path.join(process.cwd(), "src", "data", "conversations.json");
 
@@ -51,19 +47,19 @@ export async function listConversationsByAdopter(
     .sort(byRecent);
 }
 
-export async function listConversationsByOng(
-  ongId: string,
+export async function listConversationsByNgo(
+  ngoId: string,
 ): Promise<Conversation[]> {
   return (await readConversations())
-    .filter((c) => c.ongId === ongId)
+    .filter((c) => c.ngoId === ngoId)
     .sort(byRecent);
 }
 
-/** O adotante escreve sobre um pet: abre a conversa se ainda não existir. */
+/** Open an adopter conversation about a pet if none exists. */
 export async function startOrAppendConversation(input: {
   petId: string;
   petName: string;
-  ongId: string;
+  ngoId: string;
   adopterId: string;
   adopterName: string;
   text: string;
@@ -85,11 +81,11 @@ export async function startOrAppendConversation(input: {
       id: crypto.randomUUID(),
       petId: input.petId,
       petName: input.petName,
-      ongId: input.ongId,
+      ngoId: input.ngoId,
       adopterId: input.adopterId,
       adopterName: input.adopterName,
       messages: [message],
-      lastReadAt: { adopter: now, ong: null },
+      lastReadAt: { adopter: now, ngo: null },
       createdAt: now,
       updatedAt: now,
     };
@@ -108,14 +104,11 @@ export async function startOrAppendConversation(input: {
   return updated;
 }
 
-/**
- * A ONG puxa assunto com um interessado que ainda não escreveu. Se a conversa
- * desse pet com esse adotante já existe, só devolve ela.
- */
-export async function startConversationByOng(input: {
+/** Start an NGO conversation with an interested adopter, reusing an existing conversation for that pet/adopter pair. */
+export async function startConversationByNgo(input: {
   petId: string;
   petName: string;
-  ongId: string;
+  ngoId: string;
   adopterId: string;
   adopterName: string;
   text: string;
@@ -131,18 +124,18 @@ export async function startConversationByOng(input: {
     id: crypto.randomUUID(),
     petId: input.petId,
     petName: input.petName,
-    ongId: input.ongId,
+    ngoId: input.ngoId,
     adopterId: input.adopterId,
     adopterName: input.adopterName,
     messages: [
       {
         id: crypto.randomUUID(),
-        senderId: input.ongId,
+        senderId: input.ngoId,
         text: input.text,
         createdAt: now,
       },
     ],
-    lastReadAt: { adopter: null, ong: now },
+    lastReadAt: { adopter: null, ngo: now },
     createdAt: now,
     updatedAt: now,
   };
@@ -150,11 +143,11 @@ export async function startConversationByOng(input: {
   return conversation;
 }
 
-/** Abre a conversa de um pedido de entrega de pet à ONG (uma por pedido). */
+/** Open one conversation per surrender request. */
 export async function createSurrenderConversation(input: {
   surrenderId: string;
   petName: string;
-  ongId: string;
+  ngoId: string;
   adopterId: string;
   adopterName: string;
 }): Promise<Conversation> {
@@ -164,12 +157,12 @@ export async function createSurrenderConversation(input: {
     id: crypto.randomUUID(),
     petId: `acolhimento-${input.surrenderId}`,
     petName: input.petName,
-    ongId: input.ongId,
+    ngoId: input.ngoId,
     adopterId: input.adopterId,
     adopterName: input.adopterName,
     surrenderId: input.surrenderId,
     messages: [],
-    lastReadAt: { adopter: now, ong: null },
+    lastReadAt: { adopter: now, ngo: null },
     createdAt: now,
     updatedAt: now,
   };
@@ -177,7 +170,7 @@ export async function createSurrenderConversation(input: {
   return conversation;
 }
 
-/** Acrescenta uma mensagem a uma conversa existente. */
+/** Append a message to an existing conversation. */
 export async function appendMessage(
   id: string,
   senderId: string,
@@ -206,7 +199,7 @@ export async function appendMessage(
   return { conversation, message };
 }
 
-/** Aviso automático (ex.: "A ONG enviou o termo"). Não muda quem leu até agora. */
+/** Append an automatic workflow notice without advancing either read marker. */
 export async function appendSystemMessage(
   id: string,
   text: string,
@@ -232,7 +225,7 @@ export async function appendSystemMessage(
   await writeConversations(conversations);
 }
 
-/** Marca como lido para um lado; só grava se havia algo novo. */
+/** Advance a participant's read marker only when new messages exist. */
 export async function markConversationRead(
   id: string,
   role: ChatRole,

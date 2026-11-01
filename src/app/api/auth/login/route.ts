@@ -17,9 +17,9 @@ export async function POST(request: Request) {
   const found = await findUserByEmail(email);
 
   if (!found || found.password !== password) {
-    // Mensagem deliberadamente genérica: não expõe se o e-mail existe ou se
-    // a senha está errada. Por isso a resposta não traz um campo `field` —
-    // o front marca e-mail e senha juntos como inválidos.
+    // Use a generic message to avoid revealing whether the email exists or
+    // the password is incorrect. Omit a field-specific error so
+    // the form marks both credentials as invalid.
     return NextResponse.json(
       { message: "E-mail ou senha incorretos." },
       { status: 401 },

@@ -12,7 +12,7 @@
         "personal": {
           "avatar": null,
           "fullName": "Carla Lopes",
-          "cpf": "52998224725",
+          "personalTaxId": "52998224725",
           "birthDate": "1992-04-15",
           "phone": "11991234567",
           "phoneVerifiedAt": null,
@@ -34,7 +34,7 @@
             "url": null
           },
           "address": {
-            "cep": "04538132",
+            "postalCode": "04538132",
             "street": "Avenida Brigadeiro Faria Lima",
             "number": "2232",
             "complement": "Apto 91",
@@ -44,8 +44,8 @@
           }
         },
         "housing": {
-          "type": "apartamento",
-          "ownership": "propria",
+          "type": "apartment",
+          "ownership": "owned",
           "landlordAllowsPets": false,
           "hasYard": false,
           "hasScreens": true,
@@ -58,14 +58,14 @@
           "acceptsHomeVisit": true
         },
         "preferences": {
-          "species": ["cachorro", "gato"],
+          "species": ["dog", "cat"],
           "sizes": ["pequeno", "medio"],
           "ageGroups": ["adulto", "idoso"],
           "acceptsSpecialNeeds": true,
           "aboutIdealPet": "Um pet tranquilo que se dê bem com outra gata em casa."
         },
         "verification": {
-          "status": "verificada",
+          "status": "verified",
           "statusUpdatedAt": "2026-09-05T12:00:00.000Z",
           "statusNote": ""
         },
@@ -91,7 +91,7 @@
         "personal": {
           "avatar": null,
           "fullName": "Felipe Melo",
-          "cpf": "",
+          "personalTaxId": "",
           "birthDate": "",
           "phone": "",
           "phoneVerifiedAt": null,
@@ -101,7 +101,7 @@
           "idDocument": null,
           "addressProof": null,
           "address": {
-            "cep": "",
+            "postalCode": "",
             "street": "",
             "number": "",
             "complement": "",
@@ -132,7 +132,7 @@
           "aboutIdealPet": ""
         },
         "verification": {
-          "status": "pendente",
+          "status": "pending",
           "statusUpdatedAt": "2026-09-01T12:00:00.000Z",
           "statusNote": ""
         },
@@ -143,25 +143,25 @@
     },
     {
       "id": "3",
-      "role": "ong",
+      "role": "ngo",
       "name": "Amigos de Quatro Patas",
       "email": "contato@quatropatas.org",
       "password": "123456",
       "avatarUrl": null,
       "createdAt": "2026-08-10T14:30:00.000Z",
-      "ong": {
+      "ngo": {
         "legal": {
-          "organizationType": "ong_formalizada",
-          "documentType": "cnpj",
+          "organizationType": "registered_ngo",
+          "documentType": "companyTaxId",
           "document": "11222333000181",
-          "receitaStatus": "ativa",
+          "taxRegistryStatus": "active",
           "legalName": "Associação Amigos de Quatro Patas",
           "tradeName": "Amigos de Quatro Patas",
           "nickname": "AmigosQuatroPatas",
-          "rg": "",
+          "identityCardNumber": "",
           "foundedAt": "2015-03-12",
           "address": {
-            "cep": "01310100",
+            "postalCode": "01310100",
             "street": "Avenida Paulista",
             "number": "1000",
             "complement": "Sala 12",
@@ -172,7 +172,7 @@
         },
         "representative": {
           "fullName": "Mariana Souza",
-          "cpf": "52998224725",
+          "personalTaxId": "52998224725",
           "position": "Presidente",
           "email": "mariana@quatropatas.org",
           "phone": "11987654321",
@@ -187,7 +187,7 @@
           }
         },
         "verification": {
-          "status": "verificada",
+          "status": "verified",
           "statusUpdatedAt": "2026-08-15T16:00:00.000Z",
           "statusNote": "",
           "bylaws": {
@@ -211,7 +211,7 @@
         "operations": {
           "shelterCapacity": 80,
           "currentAnimals": 63,
-          "species": ["caes", "gatos"],
+          "species": ["dogs", "cats"],
           "serviceAreas": [
             "São Paulo - Zona Sul",
             "São Paulo - Centro",
@@ -278,25 +278,25 @@
     },
     {
       "id": "4",
-      "role": "ong",
+      "role": "ngo",
       "name": "Resgates da Bia",
       "email": "bia@petfinder.app",
       "password": "123456",
       "avatarUrl": null,
       "createdAt": "2026-09-20T18:00:00.000Z",
-      "ong": {
+      "ngo": {
         "legal": {
-          "organizationType": "protetor_independente",
-          "documentType": "cpf",
+          "organizationType": "independent_rescuer",
+          "documentType": "personalTaxId",
           "document": "39053344705",
-          "receitaStatus": "nao_consultado",
+          "taxRegistryStatus": "not_checked",
           "legalName": "",
           "tradeName": "Resgates da Bia",
           "nickname": "ResgatesDaBia",
-          "rg": "",
+          "identityCardNumber": "",
           "foundedAt": "",
           "address": {
-            "cep": "",
+            "postalCode": "",
             "street": "",
             "number": "",
             "complement": "",
@@ -307,7 +307,7 @@
         },
         "representative": {
           "fullName": "",
-          "cpf": "",
+          "personalTaxId": "",
           "position": "",
           "email": "bia@petfinder.app",
           "phone": "",
@@ -316,7 +316,7 @@
           "idDocument": null
         },
         "verification": {
-          "status": "pendente",
+          "status": "pending",
           "statusUpdatedAt": "2026-09-20T18:00:00.000Z",
           "statusNote": "",
           "bylaws": null,
@@ -370,21 +370,21 @@
       "password": "Teste1234!",
       "avatarUrl": null,
       "createdAt": "2026-10-02T22:54:05.239Z",
-      "role": "ong",
+      "role": "ngo",
       "name": "Patinhas Felizes de Marlene",
-      "ong": {
+      "ngo": {
         "legal": {
-          "organizationType": "protetor_independente",
-          "documentType": "cpf",
+          "organizationType": "independent_rescuer",
+          "documentType": "personalTaxId",
           "document": "11144477735",
-          "receitaStatus": "nao_consultado",
+          "taxRegistryStatus": "not_checked",
           "legalName": "Marlene da Silva",
           "tradeName": "Patinhas Felizes de Marlene",
           "nickname": "PatinhasFelizes",
-          "rg": "123456789",
+          "identityCardNumber": "123456789",
           "foundedAt": "2020-01-10",
           "address": {
-            "cep": "01310100",
+            "postalCode": "01310100",
             "street": "Avenida Paulista",
             "number": "1000",
             "complement": "",
@@ -395,7 +395,7 @@
         },
         "representative": {
           "fullName": "Marlene da Silva",
-          "cpf": "11144477735",
+          "personalTaxId": "11144477735",
           "position": "Fundadora",
           "email": "marlene.teste+48213@example.com",
           "phone": "11912345678",
@@ -410,7 +410,7 @@
           }
         },
         "verification": {
-          "status": "verificada",
+          "status": "verified",
           "statusUpdatedAt": "2026-10-02T22:55:51.704Z",
           "statusNote": "",
           "bylaws": null,
@@ -428,7 +428,7 @@
         "operations": {
           "shelterCapacity": null,
           "currentAnimals": null,
-          "species": ["caes", "gatos"],
+          "species": ["dogs", "cats"],
           "serviceAreas": ["São Paulo", "Osasco"],
           "homeVisit": false,
           "requiresContract": false,
@@ -475,21 +475,21 @@
       "password": "Teste1234!",
       "avatarUrl": null,
       "createdAt": "2026-10-02T23:02:20.508Z",
-      "role": "ong",
+      "role": "ngo",
       "name": "Cantinho dos Bichos da Lu",
-      "ong": {
+      "ngo": {
         "legal": {
-          "organizationType": "abrigo_particular",
-          "documentType": "cpf",
+          "organizationType": "private_shelter",
+          "documentType": "personalTaxId",
           "document": "52998224725",
-          "receitaStatus": "nao_consultado",
+          "taxRegistryStatus": "not_checked",
           "legalName": "",
           "tradeName": "Cantinho dos Bichos da Lu",
           "nickname": "Cantinhodo_Bicho_daLu",
-          "rg": "",
+          "identityCardNumber": "",
           "foundedAt": "",
           "address": {
-            "cep": "",
+            "postalCode": "",
             "street": "",
             "number": "",
             "complement": "",
@@ -500,7 +500,7 @@
         },
         "representative": {
           "fullName": "",
-          "cpf": "",
+          "personalTaxId": "",
           "position": "",
           "email": "lu.teste+73105@example.com",
           "phone": "",
@@ -509,7 +509,7 @@
           "idDocument": null
         },
         "verification": {
-          "status": "pendente",
+          "status": "pending",
           "statusUpdatedAt": "2026-10-02T23:02:20.508Z",
           "statusNote": "",
           "bylaws": null,
@@ -569,7 +569,7 @@
         "personal": {
           "avatar": null,
           "fullName": "Marlene Souza",
-          "cpf": "52998224725",
+          "personalTaxId": "52998224725",
           "birthDate": "",
           "phone": "11912345678",
           "phoneVerifiedAt": null,
@@ -579,7 +579,7 @@
           "idDocument": null,
           "addressProof": null,
           "address": {
-            "cep": "01310100",
+            "postalCode": "01310100",
             "street": "",
             "number": "",
             "complement": "",
@@ -610,7 +610,7 @@
           "aboutIdealPet": ""
         },
         "verification": {
-          "status": "pendente",
+          "status": "pending",
           "statusUpdatedAt": "2026-10-02T23:40:14.328Z",
           "statusNote": ""
         },
@@ -631,7 +631,7 @@
         "personal": {
           "avatar": null,
           "fullName": "Marlene Souza",
-          "cpf": "52998224725",
+          "personalTaxId": "52998224725",
           "birthDate": "",
           "phone": "11912345678",
           "phoneVerifiedAt": null,
@@ -641,7 +641,7 @@
           "idDocument": null,
           "addressProof": null,
           "address": {
-            "cep": "01310100",
+            "postalCode": "01310100",
             "street": "Avenida Paulista",
             "number": "",
             "complement": "",
@@ -672,7 +672,7 @@
           "aboutIdealPet": ""
         },
         "verification": {
-          "status": "pendente",
+          "status": "pending",
           "statusUpdatedAt": "2026-10-02T23:57:01.782Z",
           "statusNote": ""
         },
@@ -693,7 +693,7 @@
         "personal": {
           "avatar": null,
           "fullName": "Marlene Souza",
-          "cpf": "52998224725",
+          "personalTaxId": "52998224725",
           "birthDate": "",
           "phone": "11912345678",
           "phoneVerifiedAt": null,
@@ -703,7 +703,7 @@
           "idDocument": null,
           "addressProof": null,
           "address": {
-            "cep": "01310100",
+            "postalCode": "01310100",
             "street": "Avenida Paulista",
             "number": "",
             "complement": "",
@@ -734,7 +734,7 @@
           "aboutIdealPet": ""
         },
         "verification": {
-          "status": "pendente",
+          "status": "pending",
           "statusUpdatedAt": "2026-10-03T00:04:39.188Z",
           "statusNote": ""
         },

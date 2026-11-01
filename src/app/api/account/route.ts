@@ -1,17 +1,14 @@
 import { deleteDislikesOfUser } from "@/lib/dislikes";
 import { deleteFollowsOfUser } from "@/lib/follows";
 import { deleteNotificationsOfUser } from "@/lib/notifications";
-import { deletePetsByOng } from "@/lib/pets";
-import { deletePostsByOng } from "@/lib/posts";
+import { deletePetsByNgo } from "@/lib/pets";
+import { deletePostLikesOfUser } from "@/lib/post-likes";
+import { deletePostsByNgo } from "@/lib/posts";
 import { deleteUser, findUserById, SESSION_COOKIE } from "@/lib/users";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-/**
- * DELETE /api/account — o usuário logado exclui a própria conta (LGPD). Apaga
- * o cadastro e o que ele publicou ou marcou. Conversas e adoções já feitas
- * ficam, porque o termo assinado precisa ser guardado por obrigação legal.
- */
+/** Delete the authenticated account and its published content and preferences. Retain conversations and signed adoption records for legal retention requirements. */
 export async function DELETE() {
   const store = await cookies();
   const session = store.get(SESSION_COOKIE);
@@ -20,10 +17,13 @@ export async function DELETE() {
     return NextResponse.json({ message: "Faça login." }, { status: 401 });
   }
 
-  if (user.role === "ong") {
-    await Promise.all([deletePetsByOng(user.id), deletePostsByOng(user.id)]);
+  if (user.role === "ngo") {
+    await Promise.all([deletePetsByNgo(user.id), deletePostsByNgo(user.id)]);
   } else {
-    await deleteDislikesOfUser(user.id);
+    await Promise.all([
+      deleteDislikesOfUser(user.id),
+      deletePostLikesOfUser(user.id),
+    ]);
   }
   await Promise.all([
     deleteNotificationsOfUser(user.id),

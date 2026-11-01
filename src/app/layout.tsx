@@ -1,45 +1,36 @@
-import { NavigationProgress } from "@/components/navigation-progress";
-import { SplashGate } from "@/components/splash-gate";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Modak } from "next/font/google";
-import { Suspense } from "react";
+import { Montserrat, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const nunitoSans = Nunito_Sans({
+  variable: "--font-nunito-sans",
   subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  weight: ["300", "900"],
+  style: ["normal", "italic"],
   subsets: ["latin"],
-});
-
-/** Fonte da marca "PETFINDER." — só tem o peso 400, ver `font-brand` em globals.css. */
-const modak = Modak({
-  weight: "400",
-  variable: "--font-modak",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Petfinder",
+  icons: {
+    icon: { url: "/logo-round.svg", type: "image/svg+xml", sizes: "any" },
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} ${modak.variable} h-full antialiased`}
+      className={`${nunitoSans.variable} ${montserrat.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
-        <SplashGate>
-          <Suspense fallback={null}>
-            <NavigationProgress />
-          </Suspense>
-          {children}
-        </SplashGate>
-      </body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }

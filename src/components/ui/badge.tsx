@@ -11,7 +11,7 @@ const tones: Record<BadgeTone, string> = {
   success: "bg-primary-soft text-lime-800",
   warning: "bg-orange-300 text-neutral-900",
   danger: "bg-accent-peach text-neutral-900",
-  /** Tag neutra de metadado (espécie, raça, idade...) — não é status. */
+  /** Neutral metadata tag for species, breed, or age; not a status indicator. */
   outline: "border border-neutral-900 bg-white text-neutral-900",
 };
 
@@ -25,7 +25,7 @@ export type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
   size?: BadgeSize;
 };
 
-/** Selo pequeno de status — sem borda nem sombra por padrão. */
+/** Compact status badge with no border or shadow by default. */
 export function Badge({
   tone = "neutral",
   size = "md",

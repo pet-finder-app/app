@@ -1,0 +1,24 @@
+.likePop {
+  animation: likePop 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes likePop {
+  0% {
+    transform: scale(0);
+  }
+  55% {
+    transform: scale(1.45);
+  }
+  78% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .likePop {
+    animation: none;
+  }
+}

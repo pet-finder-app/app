@@ -1,16 +1,20 @@
-import { isValidDocument, onlyDigits } from "@/lib/br-documents";
 import {
-  isOrganizationType,
+  DOCUMENT_LABEL,
+  isValidDocument,
+  onlyDigits,
+} from "@/lib/br-documents";
+import {
+  isNgoSignupType,
   isValidNickname,
   normalizeNickname,
   ORGANIZATION_TYPES,
   TERMS_VERSION,
-} from "@/lib/ong";
+} from "@/lib/ngo";
 import type { AccountRole } from "@/lib/users";
 import {
   createUser,
-  findOngByDocument,
-  findOngByNickname,
+  findNgoByDocument,
+  findNgoByNickname,
   findUserByEmail,
   SESSION_COOKIE,
   toPublicUser,
@@ -18,7 +22,7 @@ import {
 import { NextResponse } from "next/server";
 
 function isAccountRole(value: unknown): value is AccountRole {
-  return value === "adopter" || value === "ong";
+  return value === "adopter" || value === "ngo";
 }
 
 function getClientIp(request: Request): string {
@@ -26,7 +30,7 @@ function getClientIp(request: Request): string {
   return (
     forwarded?.split(",")[0].trim() ||
     request.headers.get("x-real-ip") ||
-    "desconhecido"
+    "unknown"
   );
 }
 
@@ -35,11 +39,13 @@ type RegisterBody = {
   name?: string;
   email?: string;
   password?: string;
-  /** ONG: tipo de organização, CPF/CNPJ (com ou sem máscara), nickname e aceite. */
+  /** NGO signup includes organization identification, document number, nickname, and consent. */
   organizationType?: string;
   document?: string;
   nickname?: string;
   acceptedTerms?: boolean;
+  representativeName?: string;
+  acceptedRepresentation?: boolean;
 };
 
 export async function POST(request: Request) {
@@ -48,7 +54,7 @@ export async function POST(request: Request) {
 
   if (!isAccountRole(role)) {
     return NextResponse.json(
-      { message: "Selecione se você é ONG ou adotante." },
+      { message: "Selecione se o cadastro é pessoal ou de uma ONG." },
       { status: 400 },
     );
   }
@@ -66,6 +72,13 @@ export async function POST(request: Request) {
         message: "A senha precisa ter ao menos 6 caracteres.",
         field: "password",
       },
+      { status: 400 },
+    );
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return NextResponse.json(
+      { message: "Informe um e-mail válido.", field: "email" },
       { status: 400 },
     );
   }
@@ -102,11 +115,36 @@ export async function POST(request: Request) {
     return respondWithSession(created);
   }
 
-  // --- ONG -----------------------------------------------------------------
+  // NGO registration.
 
-  if (!isOrganizationType(body.organizationType)) {
+  if (!isNgoSignupType(body.organizationType)) {
     return NextResponse.json(
-      { message: "Escolha o tipo de organização.", field: "organizationType" },
+      {
+        message:
+          "Selecione uma organização formalizada. Para adotar ou encaminhar um animal a uma ONG, use o cadastro pessoal.",
+        field: "organizationType",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (!body.representativeName?.trim()) {
+    return NextResponse.json(
+      {
+        message: "Informe o nome completo do representante da organização.",
+        field: "representativeName",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (body.acceptedRepresentation !== true) {
+    return NextResponse.json(
+      {
+        message:
+          "Confirme que você tem autorização para representar a organização.",
+        field: "acceptedRepresentation",
+      },
       { status: 400 },
     );
   }
@@ -117,17 +155,17 @@ export async function POST(request: Request) {
   if (!isValidDocument(documentType, document)) {
     return NextResponse.json(
       {
-        message: `Informe um ${documentType.toUpperCase()} válido.`,
+        message: `Informe um ${DOCUMENT_LABEL[documentType]} válido.`,
         field: "document",
       },
       { status: 400 },
     );
   }
 
-  if (await findOngByDocument(document)) {
+  if (await findNgoByDocument(document)) {
     return NextResponse.json(
       {
-        message: `Já existe uma ONG cadastrada com esse ${documentType.toUpperCase()}.`,
+        message: `Já existe uma ONG cadastrada com esse ${DOCUMENT_LABEL[documentType]}.`,
         field: "document",
       },
       { status: 409 },
@@ -147,7 +185,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (await findOngByNickname(nickname)) {
+  if (await findNgoByNickname(nickname)) {
     return NextResponse.json(
       { message: "Esse nome de usuário já está em uso.", field: "nickname" },
       { status: 409 },
@@ -165,14 +203,21 @@ export async function POST(request: Request) {
   }
 
   const created = await createUser({
-    role: "ong",
+    role: "ngo",
     email,
     password,
-    ong: {
+    ngo: {
       organizationType: body.organizationType,
       document,
       tradeName: name,
       nickname,
+      representativeName: body.representativeName.trim(),
+      representativeAuthorization: {
+        version: TERMS_VERSION,
+        acceptedAt: new Date().toISOString(),
+        ip: getClientIp(request),
+        userAgent: request.headers.get("user-agent") ?? "",
+      },
       terms: {
         version: TERMS_VERSION,
         acceptedAt: new Date().toISOString(),

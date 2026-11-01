@@ -10,20 +10,20 @@ import {
   type FollowUpKind,
   type SignerRole,
 } from "./adoption";
-import { maskCnpj, maskCpf, onlyDigits } from "./br-documents";
+import {
+  maskCompanyTaxId,
+  maskPersonalTaxId,
+  onlyDigits,
+} from "./br-documents";
 import { appendSystemMessage, getConversationById } from "./conversations";
-import type { Address } from "./ong";
+import type { Address } from "./ngo";
 import { PET_AGE_GROUP_LABEL, PET_SEX_LABEL, PET_SPECIES_LABEL } from "./pet";
 import { getPetById, setPetStatus } from "./pets";
 import { renderTermTemplate } from "./term-template";
 import { getTermTemplate } from "./term-templates";
 import { findUserById } from "./users";
 
-/**
- * Regras do processo de adoção — hoje um arquivo JSON, amanhã o backend. Todas
- * as mudanças de estado passam por `performAction`, que confere quem pode
- * fazer o quê e registra o histórico (e um aviso no chat).
- */
+/** Adoption persistence and workflow rules. All transitions pass through performAction for authorization, history recording, and chat notifications. */
 
 const FILE = path.join(process.cwd(), "src", "data", "adoptions.json");
 
@@ -49,8 +49,8 @@ export async function getAdoptionById(
   return (await readAll()).find((a) => a.id === id);
 }
 
-export async function listAdoptionsByOng(ongId: string): Promise<Adoption[]> {
-  return (await readAll()).filter((a) => a.ongId === ongId).sort(byRecent);
+export async function listAdoptionsByNgo(ngoId: string): Promise<Adoption[]> {
+  return (await readAll()).filter((a) => a.ngoId === ngoId).sort(byRecent);
 }
 
 export async function listAdoptionsByAdopter(
@@ -61,7 +61,7 @@ export async function listAdoptionsByAdopter(
     .sort(byRecent);
 }
 
-/** A adoção mais recente deste adotante para este pet, se houver. */
+/** The adopter's latest adoption record for this pet, when available. */
 export async function findAdoptionByPetAndAdopter(
   petId: string,
   adopterId: string,
@@ -109,7 +109,7 @@ function addEvent(
   });
 }
 
-/** Registra o evento e avisa no chat (a conversa continua sendo o centro). */
+/** Record an event and announce it in the conversation. */
 async function announce(
   adoption: Adoption,
   by: AdoptionEvent["by"],
@@ -121,17 +121,17 @@ async function announce(
   }
 }
 
-/** A ONG inicia o processo a partir de uma conversa. */
+/** The NGO starts the process from a conversation. */
 export async function startAdoption(
-  ongId: string,
+  ngoId: string,
   conversationId: string,
 ): Promise<ActionResult> {
   const conversation = await getConversationById(conversationId);
-  if (!conversation || conversation.ongId !== ongId) {
+  if (!conversation || conversation.ngoId !== ngoId) {
     return fail(404, "Conversa não encontrada.");
   }
   const pet = await getPetById(conversation.petId);
-  if (!pet || pet.ongId !== ongId) return fail(404, "Pet não encontrado.");
+  if (!pet || pet.ngoId !== ngoId) return fail(404, "Pet não encontrado.");
 
   const all = await readAll();
   const active = all.find(
@@ -151,11 +151,11 @@ export async function startAdoption(
     id: crypto.randomUUID(),
     petId: pet.id,
     petName: pet.name,
-    ongId,
+    ngoId,
     adopterId: conversation.adopterId,
     adopterName: conversation.adopterName,
     conversationId: conversation.id,
-    status: "ficha",
+    status: "application",
     form: null,
     visit: { required: false, scheduledFor: "", notes: "", done: false },
     decisionNote: "",
@@ -168,31 +168,28 @@ export async function startAdoption(
   };
   await announce(
     adoption,
-    "ong",
+    "ngo",
     `A ONG iniciou o processo de adoção de ${pet.name}. Preencha a ficha de adoção para continuar.`,
   );
-  await setPetStatus(pet.id, "em_processo");
+  await setPetStatus(pet.id, "in_progress");
   await writeAll([...all, adoption]);
   return { ok: true, adoption };
 }
 
-/**
- * O adotante devolveu o pet à ONG (pelo fluxo de entrega, `lib/surrenders.ts`):
- * encerra o acompanhamento. Só vale para adoções já entregues.
- */
+/** End follow-up when an already-delivered pet is returned through the surrender workflow. */
 export async function markAdoptionReturned(
   adoptionId: string,
-  ongId: string,
+  ngoId: string,
 ): Promise<void> {
   const all = await readAll();
-  const index = all.findIndex((a) => a.id === adoptionId && a.ongId === ongId);
+  const index = all.findIndex((a) => a.id === adoptionId && a.ngoId === ngoId);
   if (index === -1) return;
   const adoption: Adoption = structuredClone(all[index]);
-  if (adoption.status !== "acompanhamento" && adoption.status !== "concluida") {
+  if (adoption.status !== "follow_up" && adoption.status !== "completed") {
     return;
   }
-  adoption.status = "devolvida";
-  addEvent(adoption, "sistema", `${adoption.petName} voltou para a ONG.`);
+  adoption.status = "returned";
+  addEvent(adoption, "system", `${adoption.petName} voltou para a ONG.`);
   adoption.updatedAt = new Date().toISOString();
   all[index] = adoption;
   await writeAll(all);
@@ -217,7 +214,7 @@ export type AdoptionAction =
       action: "schedule_handover";
       place: string;
       at: string;
-      /** Exigir o código (OTP) na entrega. Padrão: sim. */
+      /** Whether handover requires an OTP; defaults to true. */
       otpEnabled?: boolean;
     }
   | { action: "reveal_otp" }
@@ -231,44 +228,44 @@ export type AdoptionAction =
     }
   | { action: "close" };
 
-/** "CNPJ 00.000.000/0000-00" ou "CPF 000.000.000-00", conforme o tamanho. */
-function ongDocument(value: string): string {
+/** Format a Brazilian company or personal tax identifier according to its length. */
+function ngoDocument(value: string): string {
   const digits = onlyDigits(value);
   return digits.length === 14
-    ? `CNPJ ${maskCnpj(digits)}`
-    : `CPF ${maskCpf(digits)}`;
+    ? `CNPJ ${maskCompanyTaxId(digits)}`
+    : `CPF ${maskPersonalTaxId(digits)}`;
 }
 
-/** Endereço completo para o termo: rua, número, complemento, bairro, cidade/UF e CEP. */
+/** Full postal address for agreement rendering, omitting empty parts. */
 function fullAddress(address: Address): string {
   const street = [address.street, address.number].filter(Boolean).join(", ");
   const place = [street, address.complement, address.neighborhood]
     .filter(Boolean)
     .join(" - ");
   const city = [address.city, address.state].filter(Boolean).join("/");
-  const cep = address.cep ? `CEP ${address.cep}` : "";
-  return [place, city, cep].filter(Boolean).join(", ");
+  const postalCode = address.postalCode ? `CEP ${address.postalCode}` : "";
+  return [place, city, postalCode].filter(Boolean).join(", ");
 }
 
 async function generateTerm(adoption: Adoption): Promise<string | null> {
-  const [pet, ongUser, adopterUser] = await Promise.all([
+  const [pet, ngoUser, adopterUser] = await Promise.all([
     getPetById(adoption.petId),
-    findUserById(adoption.ongId),
+    findUserById(adoption.ngoId),
     findUserById(adoption.adopterId),
   ]);
-  if (!pet || !ongUser?.ong || !adopterUser?.adopter) return null;
+  if (!pet || !ngoUser?.ngo || !adopterUser?.adopter) return null;
 
-  const { legal, representative } = ongUser.ong;
+  const { legal, representative } = ngoUser.ngo;
   const { personal } = adopterUser.adopter;
-  const template = await getTermTemplate(adoption.ongId);
+  const template = await getTermTemplate(adoption.ngoId);
   return renderTermTemplate(template.body, {
-    "pet.nome": pet.name,
-    "pet.especie": PET_SPECIES_LABEL[pet.species],
-    "pet.raca": pet.breed || "sem raça definida",
-    "pet.sexo": PET_SEX_LABEL[pet.sex],
-    "adotante.nome": personal.fullName || adopterUser.name,
-    "pet.idade": PET_AGE_GROUP_LABEL[pet.ageGroup],
-    "pet.saude":
+    "pet.name": pet.name,
+    "pet.species": PET_SPECIES_LABEL[pet.species],
+    "pet.breed": pet.breed || "sem raça definida",
+    "pet.sex": PET_SEX_LABEL[pet.sex],
+    "adopter.name": personal.fullName || adopterUser.name,
+    "pet.age": PET_AGE_GROUP_LABEL[pet.ageGroup],
+    "pet.health":
       [
         pet.health.vaccinated ? "vacinado" : null,
         pet.health.neutered ? "castrado" : null,
@@ -276,16 +273,18 @@ async function generateTerm(adoption: Adoption): Promise<string | null> {
       ]
         .filter(Boolean)
         .join(", ") || "sem registro de vacinas ou castração",
-    "adotante.cpf": maskCpf(personal.cpf) || "(CPF não informado)",
-    "adotante.endereco":
+    "adopter.personalTaxId":
+      maskPersonalTaxId(personal.personalTaxId) || "(CPF não informado)",
+    "adopter.address":
       fullAddress(personal.address) || "(endereço não informado)",
-    "ong.nome": legal.tradeName || ongUser.name,
-    "ong.documento": legal.document
-      ? ongDocument(legal.document)
+    "ngo.name": legal.tradeName || ngoUser.name,
+    "ngo.document": legal.document
+      ? ngoDocument(legal.document)
       : "(documento não informado)",
-    "ong.responsavel": representative.fullName || "(responsável não informado)",
-    cidade: legal.address.city || "(cidade)",
-    data: new Date().toLocaleDateString("pt-BR", {
+    "ngo.representative":
+      representative.fullName || "(responsável não informado)",
+    city: legal.address.city || "(cidade)",
+    date: new Date().toLocaleDateString("pt-BR", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -293,7 +292,7 @@ async function generateTerm(adoption: Adoption): Promise<string | null> {
   });
 }
 
-/** Única porta de entrada para mudar uma adoção depois de criada. */
+/** Single entry point for changing an existing adoption. */
 export async function performAction(
   id: string,
   actor: Actor,
@@ -304,12 +303,12 @@ export async function performAction(
   if (index === -1) return fail(404, "Adoção não encontrada.");
 
   const adoption: Adoption = structuredClone(all[index]);
-  const isOng = actor.role === "ong" && actor.id === adoption.ongId;
+  const isNgo = actor.role === "ngo" && actor.id === adoption.ngoId;
   const isAdopter = actor.role === "adopter" && actor.id === adoption.adopterId;
-  if (!isOng && !isAdopter) return fail(404, "Adoção não encontrada.");
+  if (!isNgo && !isAdopter) return fail(404, "Adoção não encontrada.");
 
-  const requireOng = () =>
-    isOng ? null : fail(403, "Só a ONG pode fazer isso.");
+  const requireNgo = () =>
+    isNgo ? null : fail(403, "Só a ONG pode fazer isso.");
   const requireAdopter = () =>
     isAdopter ? null : fail(403, "Só quem quer adotar pode fazer isso.");
   const requireStatus = (...statuses: Adoption["status"][]) =>
@@ -319,10 +318,10 @@ export async function performAction(
 
   const now = new Date().toISOString();
 
-  /** Entrega e recebimento confirmados: começa o acompanhamento e o pet vira "Adotado". */
+  /** Both handover confirmations start follow-up and mark the pet adopted. */
   const finalizeDelivery = async () => {
     adoption.deliveredAt = now;
-    adoption.status = "acompanhamento";
+    adoption.status = "follow_up";
     const plan: [FollowUpKind, number][] = [
       ["7d", 7],
       ["30d", 30],
@@ -337,10 +336,10 @@ export async function performAction(
     }));
     await announce(
       adoption,
-      "sistema",
+      "system",
       `${adoption.petName} foi entregue e recebido! Vamos pedir notícias dele daqui a 1 semana, 1 mês e 3 meses.`,
     );
-    await setPetStatus(adoption.petId, "adotado");
+    await setPetStatus(adoption.petId, "adopted");
   };
 
   let devCode: string | undefined;
@@ -348,12 +347,12 @@ export async function performAction(
 
   switch (input.action) {
     case "submit_form": {
-      error = requireAdopter() ?? requireStatus("ficha");
+      error = requireAdopter() ?? requireStatus("application");
       if (error) return error;
       const problem = validateAdoptionForm(input.form);
       if (problem) return fail(400, problem);
       adoption.form = { ...input.form, submittedAt: now };
-      adoption.status = "analise";
+      adoption.status = "review";
       await announce(
         adoption,
         "adopter",
@@ -362,7 +361,7 @@ export async function performAction(
       break;
     }
     case "set_visit": {
-      error = requireOng() ?? requireStatus("analise");
+      error = requireNgo() ?? requireStatus("review");
       if (error) return error;
       adoption.visit = {
         required: input.required,
@@ -372,7 +371,7 @@ export async function performAction(
       };
       addEvent(
         adoption,
-        "ong",
+        "ngo",
         input.required
           ? input.done
             ? "Visita registrada como feita."
@@ -390,34 +389,34 @@ export async function performAction(
       break;
     }
     case "request_changes": {
-      error = requireOng() ?? requireStatus("analise");
+      error = requireNgo() ?? requireStatus("review");
       if (error) return error;
       if (!input.note.trim()) return fail(400, "Explique o que precisa mudar.");
       adoption.decisionNote = input.note.trim();
-      adoption.status = "ficha";
+      adoption.status = "application";
       await announce(
         adoption,
-        "ong",
+        "ngo",
         `A ONG pediu ajustes na ficha: ${adoption.decisionNote}`,
       );
       break;
     }
     case "reject": {
-      error = requireOng() ?? requireStatus("ficha", "analise");
+      error = requireNgo() ?? requireStatus("application", "review");
       if (error) return error;
       if (!input.note.trim()) return fail(400, "Conte o motivo com educação.");
       adoption.decisionNote = input.note.trim();
-      adoption.status = "recusada";
+      adoption.status = "rejected";
       await announce(
         adoption,
-        "ong",
+        "ngo",
         `A ONG não seguiu com esta adoção. Motivo: ${adoption.decisionNote}`,
       );
-      await setPetStatus(adoption.petId, "disponivel");
+      await setPetStatus(adoption.petId, "available");
       break;
     }
     case "approve": {
-      error = requireOng() ?? requireStatus("analise");
+      error = requireNgo() ?? requireStatus("review");
       if (error) return error;
       if (adoption.visit.required && !adoption.visit.done) {
         return fail(409, "Registre que a visita foi feita antes de aprovar.");
@@ -432,35 +431,35 @@ export async function performAction(
         pendingCodes: {},
         finalHash: null,
       };
-      adoption.status = "termo";
+      adoption.status = "agreement";
       await announce(
         adoption,
-        "ong",
+        "ngo",
         `Adoção aprovada! O termo de adoção de ${adoption.petName} está pronto para assinar, pela ONG e por você.`,
       );
       break;
     }
     case "cancel": {
-      error = requireStatus("ficha", "analise", "termo", "entrega");
+      error = requireStatus("application", "review", "agreement", "handover");
       if (error) return error;
-      adoption.status = "cancelada";
+      adoption.status = "cancelled";
       adoption.decisionNote = input.note?.trim() ?? "";
       await announce(
         adoption,
-        isOng ? "ong" : "adopter",
-        `${isOng ? "A ONG" : adoption.adopterName} cancelou o processo de adoção.`,
+        isNgo ? "ngo" : "adopter",
+        `${isNgo ? "A ONG" : adoption.adopterName} cancelou o processo de adoção.`,
       );
-      await setPetStatus(adoption.petId, "disponivel");
+      await setPetStatus(adoption.petId, "available");
       break;
     }
     case "send_code": {
-      error = requireStatus("termo");
+      error = requireStatus("agreement");
       if (error) return error;
       if (adoption.term?.signatures.some((s) => s.role === actor.role)) {
         return fail(409, "Você já assinou este termo.");
       }
-      // Protótipo: sem e-mail/SMS, o código volta na resposta e a tela o
-      // mostra como "e-mail de teste". Com backend, sai por e-mail/SMS.
+      // Prototype: without email/SMS, return the signing code so
+      // the UI can display it as a test message. Production must deliver it separately.
       devCode = String(randomInt(100000, 1000000));
       adoption.term!.pendingCodes[actor.role] = {
         code: devCode,
@@ -469,7 +468,7 @@ export async function performAction(
       break;
     }
     case "sign": {
-      error = requireStatus("termo");
+      error = requireStatus("agreement");
       if (error) return error;
       const term = adoption.term!;
       if (term.signatures.some((s) => s.role === actor.role)) {
@@ -484,16 +483,16 @@ export async function performAction(
       }
 
       const signer = await findUserById(actor.id);
-      const cpf = isOng
-        ? signer?.ong?.representative.cpf
-        : signer?.adopter?.personal.cpf;
-      const name = isOng
-        ? signer?.ong?.representative.fullName
+      const personalTaxId = isNgo
+        ? signer?.ngo?.representative.personalTaxId
+        : signer?.adopter?.personal.personalTaxId;
+      const name = isNgo
+        ? signer?.ngo?.representative.fullName
         : signer?.adopter?.personal.fullName || signer?.name;
-      if (!cpf || !name) {
+      if (!personalTaxId || !name) {
         return fail(
           409,
-          isOng
+          isNgo
             ? "Complete o CPF do responsável em Configurações antes de assinar."
             : "Complete seu nome e CPF no perfil antes de assinar.",
         );
@@ -503,11 +502,11 @@ export async function performAction(
         role: actor.role,
         userId: actor.id,
         name,
-        cpf,
+        personalTaxId,
         signedAt: now,
         ip: actor.ip,
         userAgent: actor.userAgent,
-        hash: sha256(`${term.textHash}|${actor.id}|${cpf}|${now}`),
+        hash: sha256(`${term.textHash}|${actor.id}|${personalTaxId}|${now}`),
       });
       delete term.pendingCodes[actor.role];
 
@@ -515,24 +514,24 @@ export async function performAction(
         term.finalHash = sha256(
           term.textHash + term.signatures.map((s) => s.hash).join(""),
         );
-        adoption.status = "entrega";
+        adoption.status = "handover";
         await announce(
           adoption,
-          "sistema",
+          "system",
           "Termo assinado pelas duas partes! Combinem aqui a entrega de " +
             `${adoption.petName}.`,
         );
       } else {
         await announce(
           adoption,
-          isOng ? "ong" : "adopter",
-          `${isOng ? "A ONG" : adoption.adopterName} assinou o termo. Falta a assinatura de ${isOng ? adoption.adopterName : "a ONG"}.`,
+          isNgo ? "ngo" : "adopter",
+          `${isNgo ? "A ONG" : adoption.adopterName} assinou o termo. Falta a assinatura de ${isNgo ? adoption.adopterName : "a ONG"}.`,
         );
       }
       break;
     }
     case "schedule_handover": {
-      error = requireStatus("entrega");
+      error = requireStatus("handover");
       if (error) return error;
       const place = input.place?.trim();
       const at = new Date(input.at);
@@ -542,7 +541,7 @@ export async function performAction(
       if (at.getTime() < Date.now() - 60_000)
         return fail(400, "Escolha uma data e horário que ainda não passaram.");
       if (
-        adoption.handover?.ongDeliveredAt ||
+        adoption.handover?.ngoDeliveredAt ||
         adoption.handover?.adopterReceivedAt
       ) {
         return fail(409, "A entrega já foi confirmada por uma das partes.");
@@ -556,32 +555,32 @@ export async function performAction(
         otp: otpEnabled
           ? (adoption.handover?.otp ?? String(randomInt(100000, 1000000)))
           : null,
-        ongDeliveredAt: null,
+        ngoDeliveredAt: null,
         adopterReceivedAt: null,
       };
       await announce(
         adoption,
-        isOng ? "ong" : "adopter",
+        isNgo ? "ngo" : "adopter",
         `Encontro marcado: ${at.toLocaleString("pt-BR", { dateStyle: "full", timeStyle: "short" })}, em ${place}. Vocês receberão um lembrete perto do horário.`,
       );
       break;
     }
     case "reveal_otp": {
-      error = requireAdopter() ?? requireStatus("entrega");
+      error = requireAdopter() ?? requireStatus("handover");
       if (error) return error;
       if (!adoption.handover?.otp)
         return fail(409, "Marque o encontro para gerar o código.");
-      // Protótipo: o código volta na resposta; com backend, vai por e-mail/SMS.
+      // Prototype: return the code in the response; production must send it by email/SMS.
       devCode = adoption.handover.otp;
       break;
     }
     case "deliver": {
-      error = requireOng() ?? requireStatus("entrega");
+      error = requireNgo() ?? requireStatus("handover");
       if (error) return error;
       const handover = adoption.handover;
       if (!handover)
         return fail(409, "Marque o encontro antes de confirmar a entrega.");
-      if (handover.ongDeliveredAt)
+      if (handover.ngoDeliveredAt)
         return fail(409, "Você já confirmou a entrega.");
       if (handover.otpEnabled && handover.otp !== input.code?.trim()) {
         return fail(
@@ -589,20 +588,20 @@ export async function performAction(
           "Código incorreto. Peça ao adotante o código que aparece no app dele.",
         );
       }
-      handover.ongDeliveredAt = now;
+      handover.ngoDeliveredAt = now;
       if (handover.adopterReceivedAt) {
         await finalizeDelivery();
       } else {
         await announce(
           adoption,
-          "ong",
+          "ngo",
           `A ONG confirmou a entrega de ${adoption.petName}. Falta ${adoption.adopterName} confirmar o recebimento.`,
         );
       }
       break;
     }
     case "confirm_receipt": {
-      error = requireAdopter() ?? requireStatus("entrega");
+      error = requireAdopter() ?? requireStatus("handover");
       if (error) return error;
       const handover = adoption.handover;
       if (!handover)
@@ -610,7 +609,7 @@ export async function performAction(
       if (handover.adopterReceivedAt)
         return fail(409, "Você já confirmou o recebimento.");
       handover.adopterReceivedAt = now;
-      if (handover.ongDeliveredAt) {
+      if (handover.ngoDeliveredAt) {
         await finalizeDelivery();
       } else {
         await announce(
@@ -622,7 +621,7 @@ export async function performAction(
       break;
     }
     case "followup": {
-      error = requireAdopter() ?? requireStatus("acompanhamento");
+      error = requireAdopter() ?? requireStatus("follow_up");
       if (error) return error;
       const followUp = adoption.followUps.find(
         (f) => f.id === input.followUpId,
@@ -640,12 +639,12 @@ export async function performAction(
       break;
     }
     case "close": {
-      error = requireOng() ?? requireStatus("acompanhamento");
+      error = requireNgo() ?? requireStatus("follow_up");
       if (error) return error;
-      adoption.status = "concluida";
+      adoption.status = "completed";
       await announce(
         adoption,
-        "ong",
+        "ngo",
         `Adoção de ${adoption.petName} concluída. Obrigado por dar um lar!`,
       );
       break;

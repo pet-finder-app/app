@@ -1,38 +1,29 @@
-/**
- * Conversa entre um adotante e uma ONG sobre um pet (como o chat de anúncio
- * do OLX): uma conversa por pet + adotante. Fica em `conversations.json`.
- *
- * Este arquivo não importa nada do Node: pode ser usado no client.
- */
+/** Client-safe conversation model: one conversation per pet/adopter, persisted in conversations.json. */
 
 export type ChatMessage = {
   id: string;
-  /** `StoredUser.id` de quem escreveu. */
+  /** Identifier of the message author. */
   senderId: string;
   text: string;
-  /** "system" = aviso automático do processo de adoção (senderId "system"). */
+  /** System messages are automatic workflow notices with senderId set to system. */
   kind?: "system";
-  /** ISO datetime. */
+  /** ISO timestamp. */
   createdAt: string;
 };
 
-export type ChatRole = "adopter" | "ong";
+export type ChatRole = "adopter" | "ngo";
 
 export type Conversation = {
   id: string;
   petId: string;
   petName: string;
-  ongId: string;
+  ngoId: string;
   adopterId: string;
   adopterName: string;
-  /**
-   * Conversa sobre a entrega de um pet à ONG (ver `lib/surrender.ts`), e não
-   * sobre um pet publicado. Nesse caso `petId` é só um identificador próprio
-   * e `petName` é o animal que será entregue.
-   */
+  /** Surrender conversation rather than a published-pet conversation. The pet identifier is request-specific and the name identifies the incoming pet. */
   surrenderId?: string;
   messages: ChatMessage[];
-  /** Até quando cada lado já leu (ISO datetime). */
+  /** Latest timestamp read by each participant. */
   lastReadAt: Record<ChatRole, string | null>;
   createdAt: string;
   updatedAt: string;
@@ -40,19 +31,19 @@ export type Conversation = {
 
 export const MAX_MESSAGE_LENGTH = 2000;
 
-/** Mensagens do outro lado que este lado ainda não leu. */
+/** Other participant's messages not yet read by the current viewer. */
 export function countUnreadFor(
   conversation: Conversation,
   role: ChatRole,
 ): number {
-  const myId = role === "adopter" ? conversation.adopterId : conversation.ongId;
+  const myId = role === "adopter" ? conversation.adopterId : conversation.ngoId;
   const readAt = conversation.lastReadAt[role];
   return conversation.messages.filter(
     (m) => m.senderId !== myId && (readAt === null || m.createdAt > readAt),
   ).length;
 }
 
-/** "14:32" hoje, "ontem" ou "03/10" para mensagens mais antigas. */
+/** Format message time as today's clock time, yesterday, or an older calendar date. */
 export function formatChatTime(iso: string): string {
   const date = new Date(iso);
   const now = new Date();

@@ -12,7 +12,7 @@ import {
   type FieldTone,
 } from "./field";
 
-/** Mídia escolhida: já salva (`file` ausente) ou recém-escolhida (`file`). */
+/** Selected media, either previously saved or backed by a newly selected File. */
 export type MediaItem = {
   key: string;
   url: string;
@@ -22,6 +22,7 @@ export type MediaItem = {
 };
 
 const tileClass: Record<FieldTone, string> = {
+  photo: "border border-border-light",
   primary: "border border-stone-300",
   light: "border border-stone-300",
   brutal: "border border-neutral-900",
@@ -30,18 +31,13 @@ const tileClass: Record<FieldTone, string> = {
 export type MediaInputProps = FieldBaseProps & {
   value: MediaItem[];
   onChange: (items: MediaItem[]) => void;
-  /** Padrão: 10. */
+  /** Default: 10. */
   maxFiles?: number;
-  /** Valor do `accept` do input de arquivo. */
+  /** Accepted file MIME types and extensions. */
   accept: string;
 };
 
-/**
- * Escolha de várias fotos e vídeos (estilo post do Instagram), com
- * miniaturas em grade e remoção individual. Diferente do `PhotoInput`, guarda
- * o `File` de verdade (para enviar em multipart) e mostra a prévia da mídia.
- * A primeira miniatura é a capa.
- */
+/** Select multiple photos/videos with previews and individual removal. Retain actual File objects for multipart upload; the first item is the cover. */
 export function MediaInput({
   id,
   label,
