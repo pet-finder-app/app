@@ -5,106 +5,66 @@ architecture or project conventions.
 
 ## Architecture
 
-Petfinder is a full-stack Next.js App Router application using React, TypeScript,
-Tailwind CSS v4, and pnpm. The Next.js application serves both the interface and
-the HTTP API; there is no separate backend service. React Compiler is enabled.
+Petfinder uses Next.js App Router, React, TypeScript, Tailwind CSS v4, pnpm,
+and React Compiler. The Go API in `../api` owns authentication and domain data.
+Next.js serves the interface and a same-origin API proxy; it does not persist
+prototype records locally.
 
-| Location                     | Responsibility                                                                     |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
-| `src/app`                    | Routes, page composition, layouts, global styles, and application metadata         |
-| `src/app/api/**/route.ts`    | HTTP handlers for authentication, authorization, validation, and domain operations |
-| `src/app/**/_components`     | Components and styles owned by a specific page                                     |
-| `src/components/<feature>`   | Reusable components grouped by domain or capability                                |
-| `src/components/ui`          | Shared controls, surfaces, layout primitives, and styling helpers                  |
-| `src/lib`                    | Domain types, validation, services, persistence, and supporting utilities          |
-| `src/data/*.json`, `*.jsonl` | Local prototype data persisted by server-side services                             |
-| `public`                     | Public branding, pet photographs, and uploaded media                               |
-| `tests`                      | Node test-runner tests, including English route and data migration coverage        |
-| `docs`                       | Supporting project and workflow documentation                                      |
+| Location                   | Responsibility                                                                      |
+| -------------------------- | ----------------------------------------------------------------------------------- |
+| `src/app`                  | English routes, page composition, layouts, styles, and metadata                     |
+| `src/app/api/backend`      | Authenticated proxy to the Go API's `/v1/*` contract                                |
+| `src/app/api/session`      | Login, registration, refresh, and logout with HTTP-only cookies                     |
+| `src/components/api`       | Shared React Query screens for API-backed features                                  |
+| `src/components/<feature>` | Shared domain components, authentication layout, branding, and media controls       |
+| `src/components/ui`        | Shared controls, surfaces, layout primitives, and styling helpers                   |
+| `src/lib/api`              | Generated OpenAPI types, typed HTTP client, query keys, hooks, and server transport |
+| `src/lib`                  | Client-safe models, validation, and supporting utilities                            |
+| `public`                   | Branding and decorative authentication photography                                  |
+| `tests`                    | Node test-runner coverage for API transport, profile models, and photo gestures     |
+| `docs`                     | Project documentation and historical workflow plans                                 |
 
 ### Rendering and data flow
 
-- Pages and layouts are Server Components by default. Add `"use client"` only
-  when a component needs state, effects, event handlers, or browser APIs.
-- Server-rendered pages read sessions and domain data through `src/lib` services.
-  Client interactions call internal `/api/...` endpoints.
-- Route handlers check the session, role, resource ownership, and request data
-  before invoking domain services. Do not rely on hidden buttons for authorization.
-- Model modules such as `pet.ts`, `adoption.ts`, and `surrender.ts` provide domain
-  types, labels, validation, and client projections. Service modules such as
-  `pets.ts`, `adoptions.ts`, and `surrenders.ts` handle persistence and transitions.
-- Keep Node filesystem access and server-only operations out of client imports.
-  Client-safe models must not import persistence services.
-- JSON files are the current storage mechanism, not a production database.
-  Authentication and delivery of reset/signing codes also have prototype
-  limitations; do not describe them as production authentication or delivery.
+- Pages and layouts are Server Components by default; interactive screens use
+  React Query through the root `QueryProvider`.
+- Generate `src/lib/api/schema.d.ts` with `pnpm api:generate` from
+  `../api/build/openapi.yaml`. Commit generated types so builds do not require
+  the API checkout. Do not edit generated types manually.
+- Use `openapi-fetch` through `src/lib/api/client.ts` and query hooks in
+  `queries.ts`. Invalidate affected query keys after successful mutations.
+- Tokens stay in HTTP-only cookies. Never expose them in browser responses,
+  localStorage, logs, or component props. Clear personal caches on login/logout.
+- The Go API enforces authentication, membership, permissions, and resource
+  ownership. The local organization ID is an interface preference, not proof
+  of authorization.
+- A session failure can trigger one shared refresh and replay. Invalid OTPs
+  must not trigger refresh or replay. Other mutations have no automatic retry.
+- Do not reintroduce JSON/JSONL stores, demo users, mock responses, or local
+  workflow services. Client-safe model helpers are not persistence services.
 
 ### Routes and domain boundaries
 
-- Authentication pages include `/login`, `/register`, `/forgot-password`, and
-  `/reset-password`.
-- Login, registration, and forgot-password pages live in the `(auth)` route group.
-  Its shared layout keeps the pet slideshow mounted during navigation. Preserve
-  that layout boundary so changing auth routes does not reset the slide or timer.
-  Route groups do not add segments to public URLs.
-- `/adopter/*` serves personal accounts; `/ngo/*` serves organization accounts.
-  They are separate account roles with different profiles and permissions.
-- Personal profile categories open their forms in the shared `BottomSheet`, also
-  used by home post options. Keep drafts in the parent profile state and save
-  actions inside the sheet; checklist links open the corresponding category.
-  Verification progress appears beneath the profile header, outside the settings
-  list. It counts required checklist items and links the next missing item to its
-  settings category. Completing the checklist enables review
-  submission; it does not change verification status automatically. Logout and
-  account deletion are direct actions in the personal profile list, each opening
-  a confirmation modal before making a request. Terms and privacy are linked in
-  the profile footer. Terms acceptance is collected at signup and preserved in
-  stored records; the verification checklist covers profile data without asking
-  for acceptance again.
-- `/me` is the signed-in account's profile and renders either the personal form
-  or the NGO profile according to the server-side session. It is implemented in
-  `src/app/me`. Do not add compatibility redirects for the removed profile URLs.
-- `/pets/[id]` displays a pet. Its shared media carousel enables an opt-in
-  full-screen photo viewer with pinch zoom, panning, and keyboard controls.
-  Keep this opt-in separate from Home photo double-tap likes. Adoption and
-  surrender agreements have dedicated printable pages under `/adoptions/[id]/agreement` and
-  `/surrenders/[id]/agreement`.
-- Adoption and surrender services own workflow transitions, participant checks,
-  event histories, signing, handover, and related conversation updates. Invoke
-  their actions instead of assigning workflow statuses directly in components.
-- Preserve NGO verification and ownership checks for publishing and workflow
-  actions. Registration does not automatically verify an organization.
-- Use client projections when returning workflow data. Do not expose passwords,
-  pending signing codes, or another participant's private data.
-- Donations track direct Pix payments to an NGO and subsequent NGO confirmation;
-  the application does not process payments itself.
-- Home feed filters, navigation, and progressive batches live in
-  `src/app/_components`. Home and Favorites share post presentation and options
-  in `components/posts`. Favorites includes nonarchived liked pets even when
-  unavailable or hidden from Home. Shared NGO identity and media carousels live
-  in `components/ngo` and `components/posts`. Sticky tag filters choose the default scroll feed or a
-  photo-only grid, toggle GPS, and optionally reveal hidden pets. Hiding a pet
-  also hides posts tagged with that pet unless the visibility filter is enabled.
-- Selecting a grid animal opens its post in a temporary scroll view. Browser
-  Back and the temporary back arrow restore the grid snapshot, including its
-  loaded batch and scroll position, while keeping the latest hidden-pet and
-  location choices. `feed-query.ts` parses and serializes the `view`, `hidden`,
-  `location`, and optional `post` URL parameters. A preview retains `view=grid`
-  and adds `post`; shared preview URLs also create a grid return entry.
-  Validate custom history state and preserve Next.js fields when writing history.
-  URL-changing writes must use Next's native History integration so subsequent
-  server refreshes read the current filter URL.
-- Browser location starts enabled, requests permission, and turns off when
-  permission is denied. `/api/location` stores approximate coordinates and an
-  explicit enabled/disabled cookie; honor a saved disabled preference. Turning
-  GPS off falls back to the profile postal code for distance ordering.
-- Content reports are appended to `src/data/reports.jsonl` through `/api/reports`.
-  This stores reports for later review; there is no moderation dashboard or
-  automatic delivery. Standalone post likes use `post-likes.json`; tagged posts
-  keep the existing pet-like workflow and NGO notifications.
-- Pet and standalone-post like endpoints accept `POST` to toggle and `PUT` to
-  ensure a like exists. Photo double-taps use `PUT` so repeating the gesture
-  cannot remove a like or duplicate a notification.
+- Preserve English routes: `/login`, `/register`, `/forgot-password`,
+  `/reset-password`, `/adopter/*`, `/ngo/*`, `/ngos/*`, and `/me`.
+- Login, registration, and forgot-password pages stay in the `(auth)` route
+  group. Its shared layout keeps the decorative pet slideshow mounted during
+  navigation. Preserve the photographic auth layout and reduced-motion support.
+- `/me` displays the account profile; `/ngo/settings` manages organizations
+  and members. Do not add compatibility redirects for removed profile URLs.
+- Animals support discovery, preferences, details, URL-based galleries,
+  edits, and availability changes. Publishing requires a verified organization.
+- Applications require a liked animal and an introduction, then support
+  screening, decisions, chat, and appointments. The organization issues the
+  delivery OTP; the adopter uses it to confirm receipt.
+- Respect the gaps in the current contract, documented in `README.md`:
+  posts, donations, follows, read receipts, password recovery, account deletion,
+  signed agreements, and complete surrender workflows have no endpoints.
+  Their existing routes show unavailable states instead of simulated success.
+- Organization animal lists contain only the selected organization's animals
+  on the current discovery page. Never present these partial results as totals.
+- Preserve reusable photo viewer/carousel controls and their gesture coverage.
+  Authentication photography is decorative and does not represent API records.
 
 ## Component ownership
 
@@ -219,6 +179,5 @@ changes, also verify mobile layout and affected interactions. Documentation-only
 changes need formatting and factual review, not a full application build.
 
 Consult `README.md` for project context, `src/components/README.md` for component
-placement, `src/components/ui/README.md` for UI conventions, and
-`docs/adoption-workflow-plan.md` for adoption workflow context. Distinguish planned
-behavior in design documents from behavior implemented in the source.
+placement, and `src/components/ui/README.md` for UI conventions. Distinguish
+planned behavior in design documents from behavior implemented in the source.

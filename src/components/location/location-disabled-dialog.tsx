@@ -5,7 +5,9 @@ import { X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
 import { CrossedLocationIcon } from "./crossed-location-icon";
 import styles from "./location-disabled-dialog.module.css";
-import { LOCATION_DISABLED_MESSAGE } from "./use-browser-location";
+
+const LOCATION_DISABLED_MESSAGE =
+  "Localização desativada. Para usar, permita o acesso nas configurações do navegador.";
 
 type LocationDisabledDialogProps = {
   isOpen: boolean;

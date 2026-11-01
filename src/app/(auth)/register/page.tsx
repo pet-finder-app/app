@@ -1,15 +1,5 @@
-import { PhotoAuthLayout } from "@/components/auth/photo-auth-layout";
-import type { Metadata } from "next";
-import { RegisterFlow } from "./_components/register-flow";
+import { AuthScreen } from "@/components/api/auth";
 
-export const metadata: Metadata = {
-  title: "Criar conta – Petfinder",
-};
-
-export default function RegisterPage() {
-  return (
-    <PhotoAuthLayout registration>
-      <RegisterFlow />
-    </PhotoAuthLayout>
-  );
+export default function Page() {
+  return <AuthScreen register />;
 }

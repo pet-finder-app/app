@@ -1,6 +1,6 @@
 import type { PetAgeGroup, PetSex, PetSize, PetSpecies } from "./pet";
 
-/** Client-safe NGO post model with caption, media, and optional pet tag, persisted in posts.json. */
+/** Client-safe media model shared by the reusable carousel controls. */
 
 export type PostMediaType = "image" | "video";
 

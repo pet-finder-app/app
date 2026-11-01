@@ -1,15 +1,5 @@
-import { PhotoAuthLayout } from "@/components/auth/photo-auth-layout";
-import type { Metadata } from "next";
-import { LoginForm } from "./_components/login-form";
+import { AuthScreen } from "@/components/api/auth";
 
-export const metadata: Metadata = {
-  title: "Entrar – Petfinder",
-};
-
-export default function LoginPage() {
-  return (
-    <PhotoAuthLayout>
-      <LoginForm />
-    </PhotoAuthLayout>
-  );
+export default function Page() {
+  return <AuthScreen />;
 }
