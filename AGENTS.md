@@ -5,106 +5,79 @@ architecture or project conventions.
 
 ## Architecture
 
-Petfinder is a full-stack Next.js App Router application using React, TypeScript,
-Tailwind CSS v4, and pnpm. The Next.js application serves both the interface and
-the HTTP API; there is no separate backend service. React Compiler is enabled.
+Petfinder uses Next.js App Router, React, TypeScript, Tailwind CSS v4, pnpm,
+and React Compiler for its interface. The separate Go service in `../api` owns
+PostgreSQL persistence, authentication, authorization, validation, and domain
+workflows. Do not implement missing backend features in Next.js.
 
-| Location                     | Responsibility                                                                     |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
-| `src/app`                    | Routes, page composition, layouts, global styles, and application metadata         |
-| `src/app/api/**/route.ts`    | HTTP handlers for authentication, authorization, validation, and domain operations |
-| `src/app/**/_components`     | Components and styles owned by a specific page                                     |
-| `src/components/<feature>`   | Reusable components grouped by domain or capability                                |
-| `src/components/ui`          | Shared controls, surfaces, layout primitives, and styling helpers                  |
-| `src/lib`                    | Domain types, validation, services, persistence, and supporting utilities          |
-| `src/data/*.json`, `*.jsonl` | Local prototype data persisted by server-side services                             |
-| `public`                     | Public branding, pet photographs, and uploaded media                               |
-| `tests`                      | Node test-runner tests, including English route and data migration coverage        |
-| `docs`                       | Supporting project and workflow documentation                                      |
+| Location                        | Responsibility                                                          |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| `src/app`                       | Pages, layouts, metadata, styles, and composition                       |
+| `src/app/api/backend/[...path]` | Allowlisted transport to existing Go routes                             |
+| `src/app/api/session/[action]`  | JWT cookie management and selected organization context                 |
+| `src/app/api/location`          | Browser location preference cookies                                     |
+| `src/app/**/_components`        | Page-owned components                                                   |
+| `src/components/backend`        | Reusable forms and workflows using the Go API                           |
+| `src/components/ui`             | Shared controls and surfaces                                            |
+| `src/lib/api`                   | React Query keys, queries, mutations, errors, and invalidation          |
+| `src/lib/backend`               | Generated response schemas and route allowlist, transport, server reads |
+| `public/auth`                   | Decorative authentication photographs, never animal records             |
+| `tests`                         | Contract, cache, authentication, and interaction regression coverage    |
+| `UNSUPPORTED.md`                | Backend gaps and proposed routes for a later issue                      |
 
 ### Rendering and data flow
 
 - Pages and layouts are Server Components by default. Add `"use client"` only
-  when a component needs state, effects, event handlers, or browser APIs.
-- Server-rendered pages read sessions and domain data through `src/lib` services.
-  Client interactions call internal `/api/...` endpoints.
-- Route handlers check the session, role, resource ownership, and request data
-  before invoking domain services. Do not rely on hidden buttons for authorization.
-- Model modules such as `pet.ts`, `adoption.ts`, and `surrender.ts` provide domain
-  types, labels, validation, and client projections. Service modules such as
-  `pets.ts`, `adoptions.ts`, and `surrenders.ts` handle persistence and transitions.
-- Keep Node filesystem access and server-only operations out of client imports.
-  Client-safe models must not import persistence services.
-- JSON files are the current storage mechanism, not a production database.
-  Authentication and delivery of reset/signing codes also have prototype
-  limitations; do not describe them as production authentication or delivery.
+  when state, effects, event handlers, or browser APIs require it.
+- Server Components use `lib/backend/server.ts`; browser requests use React Query
+  through `lib/api`. Keep requests and pending state in query/mutation hooks.
+- `API_BASE_URL` is server-only and required. Copy `.env.example` for local setup.
+  Never expose backend credentials or JWTs through public environment variables.
+- Access and rotating refresh tokens stay in HttpOnly cookies. The Next proxy
+  checks `/v1/me`, preserves login return URLs, and passes rotated cookies to
+  server rendering. `SessionGuard` checks `/api/session/me` in the browser.
+- Go remains authoritative for every permission and transition. A selected NGO
+  cookie is only a navigation preference; validate membership against Go before
+  using it. Never infer membership solely from a role or cookie.
+- Regenerate `contracts.ts` and `routes.ts` with `pnpm api:generate` after updating
+  the backend OpenAPI contract. Keep snake_case at the integration boundary and
+  map to camelCase internally. Validate responses before putting them in caches.
+- Mutations never retry automatically. Shared metadata invalidates related
+  resources; account/context changes cancel requests and clear private caches.
+- Invalid appointment OTP responses use HTTP 401 but must not expire sessions.
+- No JSON/JSONL stores, local accounts, seed records, mock API fallbacks, or local
+  domain services are allowed. Tests may isolate transport fixtures from runtime.
+- Unsupported features show an explicit Portuguese unavailable state. List gaps
+  in `UNSUPPORTED.md`; do not create Next domain handlers or extend Go within a
+  frontend-only migration.
 
 ### Routes and domain boundaries
 
-- Authentication pages include `/login`, `/register`, `/forgot-password`, and
-  `/reset-password`.
-- Login, registration, and forgot-password pages live in the `(auth)` route group.
-  Its shared layout keeps the pet slideshow mounted during navigation. Preserve
-  that layout boundary so changing auth routes does not reset the slide or timer.
-  Route groups do not add segments to public URLs.
-- `/adopter/*` serves personal accounts; `/ngo/*` serves organization accounts.
-  They are separate account roles with different profiles and permissions.
-- Personal profile categories open their forms in the shared `BottomSheet`, also
-  used by home post options. Keep drafts in the parent profile state and save
-  actions inside the sheet; checklist links open the corresponding category.
-  Verification progress appears beneath the profile header, outside the settings
-  list. It counts required checklist items and links the next missing item to its
-  settings category. Completing the checklist enables review
-  submission; it does not change verification status automatically. Logout and
-  account deletion are direct actions in the personal profile list, each opening
-  a confirmation modal before making a request. Terms and privacy are linked in
-  the profile footer. Terms acceptance is collected at signup and preserved in
-  stored records; the verification checklist covers profile data without asking
-  for acceptance again.
-- `/me` is the signed-in account's profile and renders either the personal form
-  or the NGO profile according to the server-side session. It is implemented in
-  `src/app/me`. Do not add compatibility redirects for the removed profile URLs.
-- `/pets/[id]` displays a pet. Its shared media carousel enables an opt-in
-  full-screen photo viewer with pinch zoom, panning, and keyboard controls.
-  Keep this opt-in separate from Home photo double-tap likes. Adoption and
-  surrender agreements have dedicated printable pages under `/adoptions/[id]/agreement` and
-  `/surrenders/[id]/agreement`.
-- Adoption and surrender services own workflow transitions, participant checks,
-  event histories, signing, handover, and related conversation updates. Invoke
-  their actions instead of assigning workflow statuses directly in components.
-- Preserve NGO verification and ownership checks for publishing and workflow
-  actions. Registration does not automatically verify an organization.
-- Use client projections when returning workflow data. Do not expose passwords,
-  pending signing codes, or another participant's private data.
-- Donations track direct Pix payments to an NGO and subsequent NGO confirmation;
-  the application does not process payments itself.
-- Home feed filters, navigation, and progressive batches live in
-  `src/app/_components`. Home and Favorites share post presentation and options
-  in `components/posts`. Favorites includes nonarchived liked pets even when
-  unavailable or hidden from Home. Shared NGO identity and media carousels live
-  in `components/ngo` and `components/posts`. Sticky tag filters choose the default scroll feed or a
-  photo-only grid, toggle GPS, and optionally reveal hidden pets. Hiding a pet
-  also hides posts tagged with that pet unless the visibility filter is enabled.
-- Selecting a grid animal opens its post in a temporary scroll view. Browser
-  Back and the temporary back arrow restore the grid snapshot, including its
-  loaded batch and scroll position, while keeping the latest hidden-pet and
-  location choices. `feed-query.ts` parses and serializes the `view`, `hidden`,
-  `location`, and optional `post` URL parameters. A preview retains `view=grid`
-  and adds `post`; shared preview URLs also create a grid return entry.
-  Validate custom history state and preserve Next.js fields when writing history.
-  URL-changing writes must use Next's native History integration so subsequent
-  server refreshes read the current filter URL.
-- Browser location starts enabled, requests permission, and turns off when
-  permission is denied. `/api/location` stores approximate coordinates and an
-  explicit enabled/disabled cookie; honor a saved disabled preference. Turning
-  GPS off falls back to the profile postal code for distance ordering.
-- Content reports are appended to `src/data/reports.jsonl` through `/api/reports`.
-  This stores reports for later review; there is no moderation dashboard or
-  automatic delivery. Standalone post likes use `post-likes.json`; tagged posts
-  keep the existing pet-like workflow and NGO notifications.
-- Pet and standalone-post like endpoints accept `POST` to toggle and `PUT` to
-  ensure a like exists. Photo double-taps use `PUT` so repeating the gesture
-  cannot remove a like or duplicate a notification.
+- `(auth)` keeps the shared photographic background mounted across `/login`,
+  `/register`, and `/forgot-password`. Preserve slideshow state and reduced motion.
+- `/me` edits the actual Go user fields. Profile forms reuse `BottomSheet`, retain
+  drafts in parent state, and save inside the sheet. Password resets, account
+  deletion, and personal verification await backend routes.
+- Backend accounts can be adopters and advertisers. NGO context is selected
+  separately through `/ngo/organizations`; creation is `/ngo/register` and never
+  implies verification. Go enforces publication and membership permissions.
+- `/pets/[id]` uses Go animals and approved image URLs. Its carousel supports an
+  opt-in full-screen viewer separate from Home's photo double-tap likes.
+- Adoption applications, screening, decisions, messages, appointments, OTPs, and
+  confirmations call existing Go routes. Do not invent workflow statuses or
+  agreement/signature records. Existing appointment reads are a backend gap.
+- Home filters, grid preview history, progressive batches, and scroll snapshots
+  stay in `src/app/_components`. Shared presentation stays in `components/posts`.
+  Preserve Next.js history fields and use its native History integration.
+- Go preferences are mutually exclusive `liked` and `not_interested` values.
+  Likes use idempotent PUT. There is no clear-preference endpoint; do not simulate
+  toggles or provide a successful unhide/unlike action.
+- Location cookies store approximate coordinates and an enabled preference.
+  Disabled GPS must stay disabled. Discovery uses Go latitude/longitude filters;
+  no local postal-code geocoding or ordering fallback is implemented.
+- Messages poll the actual Go endpoint. Do not invent unread counts or message
+  delivery receipts. Binary uploads, standalone posts, donations, follows,
+  notifications, and surrender workflows remain unsupported as documented.
 
 ## Component ownership
 
@@ -222,3 +195,13 @@ Consult `README.md` for project context, `src/components/README.md` for componen
 placement, `src/components/ui/README.md` for UI conventions, and
 `docs/adoption-workflow-plan.md` for adoption workflow context. Distinguish planned
 behavior in design documents from behavior implemented in the source.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
