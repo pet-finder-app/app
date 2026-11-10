@@ -3,6 +3,8 @@
 import styles from "@/components/auth/photo-auth-layout.module.css";
 import { FormError } from "@/components/ui";
 import { iconSize } from "@/components/ui/icon";
+import { apiMutations } from "@/lib/api/mutations";
+import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,39 +12,28 @@ import { useState, type FormEvent } from "react";
 
 const ERROR_ID = "login-error";
 
-export function LoginForm() {
+type LoginFormProps = { destination: string };
+
+export function LoginForm({ destination }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const login = useMutation({
+    ...apiMutations.login(),
+    onSuccess: async () => {
+      // Browsers inherit the original fragment across an HTTP redirect.
+      const fragment = destination.includes("#") ? "" : window.location.hash;
+      router.replace(`${destination}${fragment}`);
+      router.refresh();
+    },
+  });
+  const isSubmitting = login.isPending;
+  const error = login.error?.message ?? null;
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message ?? "Não foi possível entrar.");
-        return;
-      }
-
-      router.push("/");
-    } catch {
-      setError("Falha de conexão. Tente de novo.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    if (!isSubmitting) login.mutate({ email, password });
   }
 
   return (

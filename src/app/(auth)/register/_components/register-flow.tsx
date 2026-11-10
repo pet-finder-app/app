@@ -1,6 +1,6 @@
 "use client";
 
-import type { AccountRole } from "@/lib/users";
+import type { AccountRole } from "@/lib/session";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { NgoRegisterForm } from "./ngo-register-form";

@@ -9,6 +9,9 @@ import {
   PasswordInput,
   TextLink,
 } from "@/components/ui";
+import { ApiError } from "@/lib/api/client";
+import { apiMutations } from "@/lib/api/mutations";
+import { useMutation } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -19,14 +22,27 @@ const ERROR_ID = "register-error";
 type ErrorField =
   "name" | "email" | "password" | "confirmPassword" | "acceptedTerms" | null;
 
+function isErrorField(value: unknown): value is Exclude<ErrorField, null> {
+  const fields: Exclude<ErrorField, null>[] = [
+    "name",
+    "email",
+    "password",
+    "confirmPassword",
+    "acceptedTerms",
+  ];
+  return fields.some((field) => field === value);
+}
+
 type RegisterFormProps = {
   /** Return to account-type selection. */
   onBack: () => void;
+  afterSignup?: string;
 };
 
 /** Personal accounts support adoption and requests for NGO assistance. */
-export function RegisterForm({ onBack }: RegisterFormProps) {
+export function RegisterForm({ onBack, afterSignup = "/" }: RegisterFormProps) {
   const router = useRouter();
+  const authMutation = useMutation(apiMutations.register());
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +50,7 @@ export function RegisterForm({ onBack }: RegisterFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [errorField, setErrorField] = useState<ErrorField>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmitting = authMutation.isPending;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -53,35 +69,25 @@ export function RegisterForm({ onBack }: RegisterFormProps) {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          role: "adopter",
-          name,
-          email,
-          password,
-          acceptedTerms,
-        }),
+      await authMutation.mutateAsync({
+        name,
+        email,
+        password,
+        acceptedTerms,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message ?? "Não foi possível criar a conta.");
-        setErrorField(data.field ?? null);
-        return;
-      }
-
-      router.push("/");
-    } catch {
-      setError("Falha de conexão. Tente de novo.");
-      setErrorField(null);
-    } finally {
-      setIsSubmitting(false);
+      router.push(afterSignup);
+    } catch (error: unknown) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível concluir. Tente novamente.",
+      );
+      setErrorField(
+        error instanceof ApiError && isErrorField(error.field)
+          ? error.field
+          : null,
+      );
     }
   }
 
@@ -98,8 +104,8 @@ export function RegisterForm({ onBack }: RegisterFormProps) {
       </Button>
 
       <p className="text-sm text-neutral-900">
-        Com sua conta pessoal, você pode adotar ou encaminhar um animal a uma
-        ONG. A ONG responsável acompanha todo o processo.
+        Crie sua conta para conversar com organizações e acompanhar adoções. A
+        ONG responsável acompanha todo o processo.
       </p>
 
       <Input
@@ -136,9 +142,9 @@ export function RegisterForm({ onBack }: RegisterFormProps) {
         label="Senha"
         autoComplete="new-password"
         required
-        minLength={6}
+        minLength={12}
         placeholder="Senha"
-        hint="Mínimo de 6 caracteres."
+        hint="Mínimo de 12 caracteres, incluindo letras e números."
         value={password}
         onChange={(event) => setPassword(event.target.value)}
         invalid={errorField === "password"}
