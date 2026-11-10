@@ -44,6 +44,10 @@ workflows. Do not implement missing backend features in Next.js.
   map to camelCase internally. Validate responses before putting them in caches.
 - Mutations never retry automatically. Shared metadata invalidates related
   resources; account/context changes cancel requests and clear private caches.
+- CI gates the app build on lint and tests. Main pushes publish the standalone
+  Docker image to GHCR and deploy through `.github/actions/deploy` and
+  `deploy/run.sh`. Server runtime settings live in `DEPLOY_PATH/.env`; SSH Actions
+  settings use `HOST`, `USER`, `PORT`, `DEPLOY_PATH`, and `SSH_KEY`.
 - Invalid appointment OTP responses use HTTP 401 but must not expire sessions.
 - No JSON/JSONL stores, local accounts, seed records, mock API fallbacks, or local
   domain services are allowed. Tests may isolate transport fixtures from runtime.
