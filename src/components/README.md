@@ -19,23 +19,17 @@ Reusable components belong in `src/components`, grouped by feature:
 
 | Folder | Responsibility |
 | --- | --- |
-| `account` | Sign-out and account-deletion controls |
-| `adopter` | Shared adopter feed, pet cards, and navigation |
-| `adoptions` | Adoption panels and actions shared between participants |
-| `agreements` | Printable agreement content and signature evidence |
-| `auth` | Shared authentication layouts and pet slideshow |
-| `brand` | Wordmarks, marks, and brand icons |
-| `conversations` | Chat threads, conversation lists, and chat actions |
-| `donations` | Reusable donation forms and confirmation controls |
-| `location` | Browser-location controls, crossed-pin icon, and permission-denied notice |
-| `navigation` | Shared tab definitions, links, selected states, and unread badges |
-| `ngo` | Reusable NGO cards, navigation, summaries, and charts |
-| `pets` | Pet editing, list items, and pet actions |
-| `posts` | Post editing, media carousels, and post actions |
-| `surrenders` | Shared surrender requests and process panels |
-| `ui` | Generic controls, surfaces, icons, and layout primitives |
-| `verification` | Shared verification status displays |
-| `workflows` | Controls shared by adoption and surrender workflows |
+| `account` | Sign-out confirmation |
+| `adopter` | Personal account navigation |
+| `api` | React Query provider |
+| `auth` | Shared auth layout, slideshow, session guard |
+| `backend` | Go-backed profiles, organizations, animals, applications, chat, appointments |
+| `brand` | Wordmarks and brand icons |
+| `location` | Browser location preference controls |
+| `navigation` | Shared navigation primitives |
+| `ngo` | NGO identity and navigation |
+| `posts` | Animal feed presentation, media carousel, and options |
+| `ui` | Generic controls, surfaces, and layout primitives |
 
 Keep reusable components independent of page-private `_components` folders. Move
 a page component into the appropriate shared feature folder when another page
@@ -47,9 +41,8 @@ to show its icon or avatar above the label. NGO create actions stay in the NGO b
 
 Home feed filters, navigation, and progressive batches belong to
 `src/app/_components`. Home and Favorites reuse `FeedPost` and `FeedPostMenu`
-from `components/posts`, including the NGO header, media carousel, like actions,
-and options sheet. Favorites keeps nonarchived liked pets visible regardless of
-availability or Home's hidden-pet filter; adoption actions live on pet details.
+from `components/posts`, including the NGO header, media carousel, idempotent likes,
+and options sheet. Favorites loads actual Go liked preferences independently of discovery; adoption actions live on pet details.
 The carousel supports edge-to-edge media and optional pet tags. Its optional
 photo double-tap callback excludes swipes, long presses, and video controls, and
 displays a temporary heart with reduced-motion support. Home post options and
@@ -58,6 +51,5 @@ Pet details enable the carousel's optional full-screen `PhotoViewer`, with pinch
 zoom, panning, and keyboard navigation. Other carousel callers retain their
 existing photo double-tap behavior.
 
-For example, the print button lives in `ui` because both adoption and surrender
-agreement pages use it, while the NGO dashboard composition lives in
-`src/app/ngo/dashboard/_components`.
+Go-backed workflows live in `backend`. Missing backend capabilities render
+`UnsupportedFeature`; see `UNSUPPORTED.md` before adding an interaction.

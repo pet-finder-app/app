@@ -8,11 +8,9 @@ import {
 } from "@/components/navigation/navigation-tab-link";
 import { usePressFeedback } from "@/components/navigation/use-press-feedback";
 import { ActionBar, Button, cn, iconSize, LinkButton } from "@/components/ui";
-import { useAlerts } from "@/lib/use-alerts";
 import {
   Heart,
   House,
-  Images,
   MessageCircle,
   PawPrint,
   Plus,
@@ -29,8 +27,8 @@ const TABS: NgoTab[] = [
   { type: "icon", href: "/ngo/dashboard", label: "Início", icon: House },
   {
     type: "icon",
-    href: "/ngo/notifications",
-    label: "Notificações",
+    href: "/ngo/adoptions",
+    label: "Solicitações",
     icon: Heart,
   },
   {
@@ -72,10 +70,9 @@ export function NgoTabBar({
   const createDialog = useRef<HTMLDialogElement>(null);
   const createPressFeedback = usePressFeedback();
 
-  const { chats, avatarUrl } = useAlerts();
   const badgeCount: Record<string, number> = {
     "/ngo/notifications": unreadCount,
-    "/ngo/messages": Math.max(unreadMessageCount, chats),
+    "/ngo/messages": unreadMessageCount,
   };
 
   return (
@@ -137,7 +134,7 @@ export function NgoTabBar({
               key={tab.href}
               tab={tab}
               pathname={pathname}
-              avatarUrl={avatarUrl}
+              avatarUrl={null}
               unreadCount={badgeCount[tab.href] ?? 0}
               style={style}
             />
@@ -165,15 +162,6 @@ export function NgoTabBar({
           >
             <PawPrint className={iconSize.md} aria-hidden="true" />
             Cadastrar pet
-          </LinkButton>
-          <LinkButton
-            href="/ngo/posts/new"
-            variant="outline"
-            size="lg"
-            onClick={() => createDialog.current?.close()}
-          >
-            <Images className={iconSize.md} aria-hidden="true" />
-            Novo post
           </LinkButton>
           <Button
             variant="pill"

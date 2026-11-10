@@ -1,15 +1,17 @@
 "use client";
 
 import { cn, shadowSoft } from "@/components/ui";
-import { DEFAULT_TAG_POS, type Post } from "@/lib/post";
+import { DEFAULT_TAG_POS, type TagPos } from "@/lib/post";
 import { ChevronLeft, ChevronRight, Heart, Maximize2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { PhotoViewer } from "./photo-viewer";
 import styles from "./post-media-carousel.module.css";
 
+export type CarouselMedia = { url: string; type: "image" | "video" };
+
 type PostMediaCarouselProps = {
-  post: Pick<Post, "media" | "tagPos">;
+  post: { media: CarouselMedia[]; tagPos?: TagPos | null };
   edgeToEdge?: boolean;
   showTag?: boolean;
   petName: string | null;
@@ -243,6 +245,7 @@ export function PostMediaCarousel({
                   }}
                 >
                   <Image
+                    unoptimized
                     src={item.url}
                     alt={
                       petName ? `${petName}, foto ${i + 1}` : `Foto ${i + 1}`
@@ -256,6 +259,7 @@ export function PostMediaCarousel({
                 </button>
               ) : (
                 <Image
+                  unoptimized
                   src={item.url}
                   alt={petName ? `${petName}, foto ${i + 1}` : `Foto ${i + 1}`}
                   fill

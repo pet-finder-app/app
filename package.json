@@ -8,13 +8,16 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --test-isolation=none tests/*.test.mjs",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "api:generate": "node scripts/generate-backend-contract.mjs && prettier --write src/lib/backend/contracts.ts src/lib/backend/routes.ts"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.107.1",
     "lucide-react": "^1.48.0",
     "next": "16.3.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -28,7 +31,8 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "yaml": "^2.9.1"
   },
   "packageManager": "pnpm@11.22.0"
 }

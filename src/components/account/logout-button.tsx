@@ -6,6 +6,8 @@ import {
   type BottomSheetHandle,
 } from "@/components/ui/bottom-sheet";
 import { BrutalButton } from "@/components/ui/brutal-button";
+import { apiMutations } from "@/lib/api/mutations";
+import { useMutation } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
@@ -28,10 +30,11 @@ export function LogoutButton({
   ...props
 }: LogoutButtonProps) {
   const router = useRouter();
+  const authMutation = useMutation(apiMutations.logout());
   const id = useId();
   const sheetRef = useRef<BottomSheetHandle>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isLoggingOut = authMutation.isPending;
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,16 +45,17 @@ export function LogoutButton({
   async function handleLogout() {
     if (isLoggingOut) return;
     setError(null);
-    setIsLoggingOut(true);
+
     try {
-      const response = await fetch("/api/auth/logout", { method: "POST" });
-      if (!response.ok) throw new Error("Logout failed");
+      await authMutation.mutateAsync();
       router.replace("/login");
       router.refresh();
-    } catch {
-      setError("Não foi possível sair da conta. Tente novamente.");
-    } finally {
-      setIsLoggingOut(false);
+    } catch (error: unknown) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível sair da conta. Tente novamente.",
+      );
     }
   }
 

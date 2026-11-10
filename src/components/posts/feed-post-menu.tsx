@@ -5,7 +5,9 @@ import {
   BottomSheet,
   type BottomSheetHandle,
 } from "@/components/ui/bottom-sheet";
+import { apiMutations } from "@/lib/api/mutations";
 import type { ContentReportInput } from "@/lib/report";
+import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff, Flag, MoreVertical } from "lucide-react";
 import { useRef, useState, type FormEvent } from "react";
 
@@ -25,11 +27,13 @@ export function FeedPostMenu({
   onHiddenChange,
 }: FeedPostMenuProps) {
   const sheetRef = useRef<BottomSheetHandle>(null);
+  const reportMutation = useMutation(apiMutations.report());
+  const hideMutation = useMutation(apiMutations.hidePet());
   const afterCloseRef = useRef<(() => void) | null>(null);
   const id = `post-menu-${targetType}-${targetId}`;
   const [isOpen, setIsOpen] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
-  const [isBusy, setIsBusy] = useState(false);
+  const isBusy = hideMutation.isPending || reportMutation.isPending;
   const [isReported, setIsReported] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -54,54 +58,40 @@ export function FeedPostMenu({
 
   async function handleHide() {
     if (!petId || isBusy) return;
-    setIsBusy(true);
+
     setError(null);
     try {
-      const response = await fetch(`/api/pets/${petId}/dislike`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hidden: !isHidden }),
+      const data = await hideMutation.mutateAsync({
+        id: petId,
+        hidden: !isHidden,
       });
-      const data: unknown = await response.json();
-      if (
-        !response.ok ||
-        typeof data !== "object" ||
-        data === null ||
-        !("disliked" in data) ||
-        typeof data.disliked !== "boolean"
-      ) {
-        throw new Error("Não foi possível ocultar este pet. Tente novamente.");
-      }
       const hidden = data.disliked;
       afterCloseRef.current = () => onHiddenChange(petId, hidden);
       handleClose();
-    } catch {
+    } catch (error: unknown) {
       setError(
-        "Não foi possível atualizar a visibilidade deste pet. Tente novamente.",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar a visibilidade deste pet. Tente novamente.",
       );
-    } finally {
-      setIsBusy(false);
     }
   }
 
   async function handleReport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isBusy) return;
-    setIsBusy(true);
+
     setError(null);
     try {
-      const response = await fetch("/api/reports", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetType, targetId, reason }),
-      });
-      if (!response.ok) throw new Error("Report failed");
+      await reportMutation.mutateAsync({ targetType, targetId, reason });
       setIsReported(true);
       setReason("");
-    } catch {
-      setError("Não foi possível registrar a denúncia. Tente novamente.");
-    } finally {
-      setIsBusy(false);
+    } catch (error: unknown) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível registrar a denúncia. Tente novamente.",
+      );
     }
   }
 
@@ -151,7 +141,7 @@ export function FeedPostMenu({
             </form>
           ) : (
             <div className="flex flex-col gap-1">
-              {petId ? (
+              {petId && !isHidden ? (
                 <button
                   type="button"
                   disabled={isBusy}

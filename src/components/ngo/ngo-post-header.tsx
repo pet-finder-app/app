@@ -42,7 +42,7 @@ export function NgoPostHeader({
       </span>
       <div className="min-w-0 flex-1">
         <p className="flex items-center gap-1.5 text-sm font-bold">
-          <span className="truncate">@{nickname}</span>
+          <span className="truncate">{nickname ? `@${nickname}` : name}</span>
           <Building2 className="size-3.5 shrink-0" aria-hidden="true" />
           <span className="sr-only">ONG</span>
         </p>

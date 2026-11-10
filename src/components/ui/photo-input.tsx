@@ -1,6 +1,6 @@
 "use client";
 
-import type { UploadedFile } from "@/lib/ngo";
+import type { UploadedFile } from "@/lib/media";
 import Image from "next/image";
 import type { ChangeEvent } from "react";
 import { Button } from "./button";
@@ -32,10 +32,10 @@ const dropzoneClass: Record<FieldTone, string> = {
     "rounded-xl border border-dashed border-neutral-900 bg-white hover:bg-neutral-50",
 };
 
-/** Maximum stored image dimension, balancing display quality and file size. */
+/** Maximum preview image dimension, balancing display quality and file size. */
 const MAX_SIDE = 1200;
 
-/** Resize images to MAX_SIDE and return a JPEG data URL for prototype persistence. On failure, retain metadata and return null. */
+/** Resize images to MAX_SIDE and return a JPEG data URL for an in-memory preview. On failure, retain metadata and return null. */
 async function toDataUrl(file: File): Promise<string | null> {
   try {
     const bitmap = await createImageBitmap(file);
@@ -59,7 +59,7 @@ export type PhotoInputProps = FieldBaseProps & {
   maxFiles?: number;
 };
 
-/** Multi-photo input for pets and public profiles. Store metadata and prototype data URLs until an upload backend is available. */
+/** Local multi-photo selection and previews. Callers must handle upload separately. */
 export function PhotoInput({
   id,
   label,

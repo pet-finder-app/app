@@ -1,5 +1,7 @@
 "use client";
 
+import { apiMutations } from "@/lib/api/mutations";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -43,6 +45,7 @@ export function useBrowserLocation({
   onEnabledChange,
 }: UseBrowserLocationOptions) {
   const router = useRouter();
+  const { mutateAsync: persistLocation } = useMutation(apiMutations.location());
   const [isEnabled, setIsEnabled] = useState(
     autoEnable ? initialEnabled : active,
   );
@@ -88,24 +91,15 @@ export function useBrowserLocation({
           }
           const position = await requestCoordinates();
           if (signal.aborted) return;
-          const response = await fetch("/api/location", {
-            method: "POST",
-            signal,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          await persistLocation({
+            coordinates: {
               lat: position.coords.latitude,
               lon: position.coords.longitude,
-            }),
-          });
-          if (!response.ok)
-            throw new Error("Não foi possível salvar sua localização.");
-        } else {
-          const response = await fetch("/api/location", {
-            method: "DELETE",
+            },
             signal,
           });
-          if (!response.ok)
-            throw new Error("Não foi possível desativar a localização.");
+        } else {
+          await persistLocation({ coordinates: null, signal });
         }
         if (!signal.aborted) {
           if (enabled) {
@@ -122,11 +116,7 @@ export function useBrowserLocation({
           setIsNoticeOpen(true);
           setMessage(LOCATION_DISABLED_MESSAGE);
           try {
-            const response = await fetch("/api/location", {
-              method: "DELETE",
-              signal,
-            });
-            if (!response.ok) throw new Error("Location preference failed");
+            await persistLocation({ coordinates: null, signal });
             if (!signal.aborted) router.refresh();
           } catch {
             if (!signal.aborted)
@@ -147,7 +137,7 @@ export function useBrowserLocation({
         if (!signal.aborted) setIsBusy(false);
       }
     },
-    [autoEnable, router, updateEnabled],
+    [autoEnable, router, updateEnabled, persistLocation],
   );
 
   useEffect(() => {

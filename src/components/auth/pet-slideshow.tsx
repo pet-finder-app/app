@@ -50,7 +50,7 @@ export function PetSlideshow() {
       {PETS.map((pet, index) => (
         <Image
           key={pet}
-          src={`/pets/${pet}.jpg`}
+          src={`/auth/${pet}.jpg`}
           alt=""
           fill
           priority={index === 0}

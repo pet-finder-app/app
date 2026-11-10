@@ -1,26 +1,14 @@
 import { PhotoAuthLayout } from "@/components/auth/photo-auth-layout";
-import type { Metadata } from "next";
 import Link from "next/link";
-import { ForgotPasswordForm } from "./_components/forgot-password-form";
-
-export const metadata: Metadata = {
-  title: "Esqueceu a senha – Petfinder",
-};
-
-export default function ForgotPasswordPage() {
+export default function Page() {
   return (
-    <PhotoAuthLayout
-      heading="Esqueceu a senha"
-      footer={
-        <>
-          Lembrou?{" "}
-          <Link href="/login">
-            <strong>Voltar para o login.</strong>
-          </Link>
-        </>
-      }
-    >
-      <ForgotPasswordForm />
+    <PhotoAuthLayout heading="Recuperar senha">
+      <p className="text-text-light">
+        A recuperação de senha ainda não está disponível.
+      </p>
+      <Link href="/login" className="text-text-light underline">
+        Voltar para entrar
+      </Link>
     </PhotoAuthLayout>
   );
 }

@@ -1,6 +1,6 @@
 import { cn } from "@/components/ui/cn";
 import { pressSoft, shadowSoft } from "@/components/ui/elevation";
-import type { AccountRole } from "@/lib/users";
+import type { AccountRole } from "@/lib/session";
 import { HouseHeart, UserRound, type LucideIcon } from "lucide-react";
 import styles from "./role-select.module.css";
 
