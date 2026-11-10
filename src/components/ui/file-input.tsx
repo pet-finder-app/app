@@ -1,6 +1,6 @@
 "use client";
 
-import type { UploadedFile } from "@/lib/ngo";
+import type { UploadedFile } from "@/lib/media";
 import type { ChangeEvent } from "react";
 import { Button } from "./button";
 import { cn } from "./cn";

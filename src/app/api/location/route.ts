@@ -1,77 +1,71 @@
-import { LOCATION_COOKIE, LOCATION_ENABLED_COOKIE } from "@/lib/location";
-import { findUserById, SESSION_COOKIE } from "@/lib/users";
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { isSameOrigin } from "@/lib/backend/session-cookies";
+import {
+  LOCATION_COOKIE,
+  LOCATION_ENABLED_COOKIE,
+  isLocationEnabled,
+  readSavedLocation,
+} from "@/lib/location";
+import { ACCESS_COOKIE, REFRESH_COOKIE } from "@/lib/session";
+import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
 
-/** Save approximate browser coordinates and the GPS preference. Turning GPS off restores profile postal-code fallback. */
-async function requireAdopter() {
-  const session = (await cookies()).get(SESSION_COOKIE);
-  const user = session ? await findUserById(session.value) : undefined;
-  return user?.role === "adopter" ? user : null;
+/** Browser display preferences only; discovery coordinates are query parameters to the Go API. */
+export async function GET() {
+  return NextResponse.json(
+    {
+      enabled: await isLocationEnabled(),
+      coordinates: await readSavedLocation(),
+    },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }
-
-export async function POST(request: Request) {
-  if (!(await requireAdopter())) {
-    return NextResponse.json({ message: "Faça login." }, { status: 401 });
+async function save(request: NextRequest) {
+  if (!isSameOrigin(request))
+    return NextResponse.json({ message: "Origem inválida." }, { status: 403 });
+  if (
+    !request.cookies.get(ACCESS_COOKIE) &&
+    !request.cookies.get(REFRESH_COOKIE)
+  )
+    return NextResponse.json({ message: "Entre novamente." }, { status: 401 });
+  const response = NextResponse.json({ ok: true });
+  const options = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 30 * 24 * 60 * 60,
+  } as const;
+  if (request.method === "DELETE") {
+    response.cookies.delete(LOCATION_COOKIE);
+    response.cookies.set(LOCATION_ENABLED_COOKIE, "0", options);
+    return response;
   }
   let body: unknown;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { message: "Localização inválida." },
+      { message: "Coordenadas inválidas." },
       { status: 400 },
     );
   }
-  if (
-    typeof body !== "object" ||
-    body === null ||
-    !("lat" in body) ||
-    typeof body.lat !== "number" ||
-    !Number.isFinite(body.lat) ||
-    !("lon" in body) ||
-    typeof body.lon !== "number" ||
-    !Number.isFinite(body.lon) ||
-    Math.abs(body.lat) > 90 ||
-    Math.abs(body.lon) > 180
-  ) {
+  const input = z
+    .object({
+      lat: z.number().min(-90).max(90),
+      lon: z.number().min(-180).max(180),
+    })
+    .safeParse(body);
+  if (!input.success)
     return NextResponse.json(
-      { message: "Localização inválida." },
+      { message: "Coordenadas inválidas." },
       { status: 400 },
     );
-  }
-
-  const response = NextResponse.json({ ok: true });
   response.cookies.set(
     LOCATION_COOKIE,
-    `${body.lat.toFixed(2)},${body.lon.toFixed(2)}`,
-    {
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 30,
-    },
+    `${input.data.lat.toFixed(3)},${input.data.lon.toFixed(3)}`,
+    options,
   );
-  response.cookies.set(LOCATION_ENABLED_COOKIE, "1", {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
+  response.cookies.set(LOCATION_ENABLED_COOKIE, "1", options);
   return response;
 }
-
-export async function DELETE() {
-  if (!(await requireAdopter())) {
-    return NextResponse.json({ message: "Faça login." }, { status: 401 });
-  }
-  const response = NextResponse.json({ ok: true });
-  response.cookies.delete(LOCATION_COOKIE);
-  response.cookies.set(LOCATION_ENABLED_COOKIE, "0", {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
-  return response;
-}
+export { save as DELETE, save as POST };

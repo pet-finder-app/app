@@ -1,19 +1,17 @@
-import { findUserById, SESSION_COOKIE } from "@/lib/users";
-import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { NgoProfileForm } from "./_components/ngo-profile-form";
-
-export const metadata: Metadata = {
-  title: "Configurações – Petfinder",
-};
-
-export default async function EditNgoProfilePage() {
-  const session = (await cookies()).get(SESSION_COOKIE);
-  const user = session ? await findUserById(session.value) : undefined;
-
-  if (!user) redirect("/login");
-  if (user.role !== "ngo" || !user.ngo) redirect("/");
-
-  return <NgoProfileForm initialProfile={user.ngo} />;
+import { BackendShell } from "@/components/backend/backend-shell";
+import { OrganizationForm } from "@/components/backend/organization-form";
+import { OrganizationSelection } from "@/components/backend/organization-selection";
+import { getCurrentOrganization, getCurrentUser } from "@/lib/backend/server";
+export default async function Page() {
+  const user = await getCurrentUser();
+  const organization = await getCurrentOrganization();
+  return (
+    <BackendShell title="Configurações da ONG" organization>
+      {organization ? (
+        <OrganizationForm user={user} organization={organization} />
+      ) : (
+        <OrganizationSelection />
+      )}
+    </BackendShell>
+  );
 }

@@ -6,7 +6,6 @@ import {
   type NavigationTab,
 } from "@/components/navigation/navigation-tab-link";
 import { ActionBar } from "@/components/ui";
-import { useAlerts } from "@/lib/use-alerts";
 import { Heart, Home, MessagesSquare } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -35,8 +34,6 @@ const TABS: NavigationTab[] = [
 /** Fixed adopter navigation for feed, favorites, conversations, and profile. */
 export function AdopterTabBar() {
   const pathname = usePathname();
-  const { chats, avatarUrl } = useAlerts();
-  const badges: Record<string, number> = { "/adopter/conversations": chats };
 
   return (
     <ActionBar className="border-border-light! pt-1! pb-[calc(0.25rem+env(safe-area-inset-bottom))]! shadow-none!">
@@ -46,8 +43,7 @@ export function AdopterTabBar() {
             key={tab.href}
             tab={tab}
             pathname={pathname}
-            avatarUrl={avatarUrl}
-            unreadCount={badges[tab.href] ?? 0}
+            avatarUrl={null}
           />
         ))}
       </nav>

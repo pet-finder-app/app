@@ -2,21 +2,27 @@
 
 import { NgoPostHeader } from "@/components/ngo/ngo-post-header";
 import { cn, TextLink } from "@/components/ui";
+import { apiMutations } from "@/lib/api/mutations";
 import { PET_STATUS_LABEL, type Pet } from "@/lib/pet";
-import type { PetNgoInfo } from "@/lib/pets";
-import type { Post, PostMedia } from "@/lib/post";
+import type { Post } from "@/lib/post";
+import { useMutation } from "@tanstack/react-query";
 import { ChevronRight, Heart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { FeedPostMenu } from "./feed-post-menu";
 import styles from "./feed-post.module.css";
-import { PostMediaCarousel } from "./post-media-carousel";
+import { PostMediaCarousel, type CarouselMedia } from "./post-media-carousel";
 
 export type FeedPostItem = {
+  organizationId?: string | null;
   id: string;
   post: Post | null;
-  pet: Pet | null;
-  ngo: Pick<PetNgoInfo, "name" | "nickname" | "logoUrl">;
+  pet:
+    | (Pick<Pet, "id" | "name" | "description" | "status"> & {
+        photos: { url: string }[];
+      })
+    | null;
+  ngo: { name: string; nickname: string; logoUrl: string | null };
   liked: boolean;
   isHidden: boolean;
 };
@@ -35,50 +41,43 @@ export function FeedPost({
   showPetStatus = false,
 }: FeedPostProps) {
   const { post, pet, ngo } = item;
-  const [isLiked, setIsLiked] = useState(item.liked);
-  const [isLiking, setIsLiking] = useState(false);
+  const router = useRouter();
+  const likeMutation = useMutation(apiMutations.like());
+  const isLiked = item.liked;
+  const isLiking = likeMutation.isPending;
   const [likeAnimation, setLikeAnimation] = useState(0);
   const likeRequestPending = useRef(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  const media: PostMedia[] =
+  const media: CarouselMedia[] =
     post?.media ??
     pet?.photos.flatMap((photo) =>
-      photo.url ? [{ ...photo, url: photo.url, type: "image" as const }] : [],
+      photo.url ? [{ url: photo.url, type: "image" as const }] : [],
     ) ??
     [];
   const targetId = post?.id ?? pet?.id;
   if (!targetId) return null;
 
   async function handleLike(onlyLike = false) {
-    if (likeRequestPending.current) return;
+    if (!targetId || likeRequestPending.current) return;
     likeRequestPending.current = true;
-    setIsLiking(true);
+
     setError(null);
     try {
-      const response = await fetch(
-        pet ? `/api/pets/${pet.id}/like` : `/api/posts/${targetId}/like`,
-        {
-          method: onlyLike ? "PUT" : "POST",
-        },
-      );
-      const data: unknown = await response.json();
-      if (
-        !response.ok ||
-        typeof data !== "object" ||
-        data === null ||
-        !("liked" in data) ||
-        typeof data.liked !== "boolean"
-      )
-        throw new Error("Invalid like response");
-      setIsLiked(data.liked);
+      const data = await likeMutation.mutateAsync({
+        type: pet ? "pet" : "post",
+        id: pet?.id ?? targetId,
+        onlyLike,
+      });
       if (data.liked) setLikeAnimation((animation) => animation + 1);
       router.refresh();
-    } catch {
-      setError("Não foi possível atualizar sua curtida. Tente novamente.");
+    } catch (error: unknown) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar sua curtida. Tente novamente.",
+      );
     } finally {
       likeRequestPending.current = false;
-      setIsLiking(false);
     }
   }
 
@@ -123,9 +122,9 @@ export function FeedPost({
         <div className="flex items-center justify-between gap-3 px-4">
           <button
             type="button"
-            aria-label={`${isLiked ? "Descurtir" : "Curtir"} ${pet?.name ?? "publicação"}`}
+            aria-label={`${isLiked ? "Nos favoritos:" : "Curtir"} ${pet?.name ?? "publicação"}`}
             aria-pressed={isLiked}
-            disabled={isLiking}
+            disabled={isLiking || isLiked}
             onClick={() => void handleLike()}
             className={cn(
               "-ml-2.5 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full hover:bg-secondary focus-visible:outline-2 focus-visible:outline-accent-tertiary disabled:opacity-60 motion-safe:transition-transform motion-safe:active:scale-90",
@@ -163,7 +162,9 @@ export function FeedPost({
           </p>
         ) : null}
         <p className="px-4 text-sm leading-relaxed whitespace-pre-line">
-          <span className="font-bold">@{ngo.nickname}</span>{" "}
+          <span className="font-bold">
+            {ngo.nickname ? `@${ngo.nickname}` : ngo.name}
+          </span>{" "}
           {post?.caption || (pet ? `${pet.name} · ${pet.description}` : "")}
         </p>
         {error ? (

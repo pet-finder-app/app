@@ -400,6 +400,7 @@ function HomeFeedGridItem({ item, onOpen }: HomeFeedGridItemProps) {
       >
         {photo ? (
           <Image
+            unoptimized
             src={photo}
             alt={item.pet.name}
             fill
