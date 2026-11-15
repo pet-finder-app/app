@@ -1,30 +1,64 @@
 "use client";
 import { ActionBar, Button, FormError, Input, cn } from "@/components/ui";
 import { apiMutations } from "@/lib/api/mutations";
-import { messagesOptions } from "@/lib/api/queries";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, type FormEvent } from "react";
+import { messageHistoryOptions } from "@/lib/api/queries";
+import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { formatDate } from "./labels";
 import { QueryStatus } from "./query-status";
 
 export function ChatThread({ id, userId }: { id: string; userId: string }) {
-  const client = useQueryClient();
-  const query = useQuery(messagesOptions(id));
+  const query = useInfiniteQuery(messageHistoryOptions(id));
+  const scrollSnapshot = useRef<{ height: number; top: number } | null>(null);
+  const newestMessage = useRef<string | null>(null);
+  const shouldScrollToEnd = useRef(false);
   const mutation = useMutation({
     ...apiMutations.sendMessage(),
+    onMutate: () => {
+      shouldScrollToEnd.current = true;
+    },
+    onError: () => {
+      shouldScrollToEnd.current = false;
+    },
     onSuccess: () => {
       setText("");
-      void client.invalidateQueries({ queryKey: messagesOptions(id).queryKey });
     },
   });
   const [text, setText] = useState("");
-  const messages = query.data?.items.slice().reverse() ?? [];
-  useEffect(() => {
-    const frame = requestAnimationFrame(() =>
-      window.scrollTo({ top: document.body.scrollHeight }),
-    );
-    return () => cancelAnimationFrame(frame);
-  }, [messages.length]);
+  const messages = Array.from(
+    new Map(
+      (query.data?.pages.flatMap((page) => page.items) ?? []).map((message) => [
+        message.id,
+        message,
+      ]),
+    ).values(),
+  ).reverse();
+  const latestMessageId = messages.at(-1)?.id;
+  useLayoutEffect(() => {
+    if (scrollSnapshot.current && !query.isFetchingNextPage) {
+      const snapshot = scrollSnapshot.current;
+      window.scrollTo({
+        top: snapshot.top + document.body.scrollHeight - snapshot.height,
+      });
+      scrollSnapshot.current = null;
+    } else if (latestMessageId && latestMessageId !== newestMessage.current) {
+      if (
+        newestMessage.current === null ||
+        shouldScrollToEnd.current ||
+        window.innerHeight + window.scrollY >= document.body.scrollHeight - 200
+      )
+        window.scrollTo({ top: document.body.scrollHeight });
+      shouldScrollToEnd.current = false;
+    }
+    if (latestMessageId) newestMessage.current = latestMessageId;
+  }, [latestMessageId, query.data, query.isFetchingNextPage]);
+  function handleLoadOlder() {
+    scrollSnapshot.current = {
+      height: document.body.scrollHeight,
+      top: window.scrollY,
+    };
+    void query.fetchNextPage({ cancelRefetch: false });
+  }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (text.trim() && !mutation.isPending)
@@ -33,9 +67,17 @@ export function ChatThread({ id, userId }: { id: string; userId: string }) {
   return (
     <>
       <QueryStatus query={query} />
-      <p className="text-sm">
-        Mensagens recentes da conversa mediada pela organização.
-      </p>
+      <p className="text-sm">Conversa mediada pela organização.</p>
+      {query.hasNextPage ? (
+        <Button
+          variant="outline"
+          loading={query.isFetchingNextPage}
+          disabled={query.isFetching}
+          onClick={handleLoadOlder}
+        >
+          Carregar mensagens anteriores
+        </Button>
+      ) : null}
       <ul
         aria-live="polite"
         aria-label="Mensagens"

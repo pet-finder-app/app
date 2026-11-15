@@ -204,21 +204,6 @@ export function conversationsOptions(organizationId?: string, page = 1) {
     refetchInterval: 15_000,
   });
 }
-export function messagesOptions(id: string) {
-  return queryOptions({
-    queryKey: queryKeys.messages(id),
-    queryFn: ({ signal }) =>
-      requestData(
-        backendPath(
-          `/v1/conversations/${encodeURIComponent(id)}/messages?page_size=100`,
-        ),
-        collectionResponseMessageSchema,
-        { signal },
-      ),
-    staleTime: 0,
-    refetchInterval: 4_000,
-  });
-}
 export function messageHistoryOptions(id: string) {
   return infiniteQueryOptions({
     queryKey: [...queryKeys.messages(id), "history"],
