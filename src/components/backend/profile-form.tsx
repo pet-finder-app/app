@@ -161,6 +161,9 @@ export function ProfileForm({
       <LinkButton href="/adopter/animals/new" variant="outline">
         Encaminhar animal para uma ONG
       </LinkButton>
+      <LinkButton href="/adopter/animals" variant="outline">
+        Animais que encaminhei
+      </LinkButton>
       <LinkButton href="/adopter/adoptions" variant="outline">
         Meus pedidos de adoção
       </LinkButton>

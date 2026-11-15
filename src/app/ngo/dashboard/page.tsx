@@ -15,7 +15,7 @@ export default async function Page() {
               "Situação não informada"}
           </p>
           <p>{organization.description}</p>
-          <LinkButton href="/ngo/pets">Animais publicados</LinkButton>
+          <LinkButton href="/ngo/pets">Animais da ONG</LinkButton>
           <LinkButton href="/ngo/adoptions">Pedidos de adoção</LinkButton>
           <LinkButton href="/ngo/messages">Conversas</LinkButton>
           <LinkButton href="/ngo/settings">Editar ONG</LinkButton>
