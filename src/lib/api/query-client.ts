@@ -32,9 +32,17 @@ export function createQueryClient(): QueryClient {
           client.clear();
           return;
         }
+        const keys = mutation.meta?.invalidates ?? [];
+        // Composed queries may read other related caches during their refetch.
+        // Mark every dependency stale before starting any of those reads.
         await Promise.all(
-          (mutation.meta?.invalidates ?? []).map((queryKey) =>
-            client.invalidateQueries({ queryKey }),
+          keys.map((queryKey) =>
+            client.invalidateQueries({ queryKey, refetchType: "none" }),
+          ),
+        );
+        await Promise.all(
+          keys.map((queryKey) =>
+            client.refetchQueries({ queryKey, type: "active" }),
           ),
         );
       },
