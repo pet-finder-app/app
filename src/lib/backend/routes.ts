@@ -25,6 +25,14 @@ export const BACKEND_ROUTES = [
     path: "/v1/animals/{animalId}/images/{imageId}",
   },
   {
+    method: "POST",
+    path: "/v1/animals/{animalId}/images/{imageId}/moderation",
+  },
+  {
+    method: "DELETE",
+    path: "/v1/animals/{animalId}/preference",
+  },
+  {
     method: "PUT",
     path: "/v1/animals/{animalId}/preference",
   },
@@ -45,6 +53,10 @@ export const BACKEND_ROUTES = [
     path: "/v1/applications/{applicationId}",
   },
   {
+    method: "GET",
+    path: "/v1/applications/{applicationId}/appointments",
+  },
+  {
     method: "POST",
     path: "/v1/applications/{applicationId}/appointments",
   },
@@ -55,6 +67,14 @@ export const BACKEND_ROUTES = [
   {
     method: "PUT",
     path: "/v1/applications/{applicationId}/screening",
+  },
+  {
+    method: "POST",
+    path: "/v1/applications/{applicationId}/withdrawal",
+  },
+  {
+    method: "GET",
+    path: "/v1/appointments/{appointmentId}",
   },
   {
     method: "PATCH",
@@ -90,6 +110,14 @@ export const BACKEND_ROUTES = [
   },
   {
     method: "GET",
+    path: "/v1/me/animals",
+  },
+  {
+    method: "GET",
+    path: "/v1/me/organizations",
+  },
+  {
+    method: "GET",
     path: "/v1/organizations",
   },
   {
@@ -103,6 +131,10 @@ export const BACKEND_ROUTES = [
   {
     method: "PATCH",
     path: "/v1/organizations/{organizationId}",
+  },
+  {
+    method: "GET",
+    path: "/v1/organizations/{organizationId}/animals",
   },
   {
     method: "GET",

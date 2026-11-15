@@ -123,6 +123,32 @@ export type CollectionResponseOrganizationResponse = z.output<
   typeof collectionResponseOrganizationResponseSchema
 >;
 
+export const memberOrganizationResponseSchema = z
+  .object({
+    member_role: z.string(),
+    membership_status: z.enum(["active", "invited"]),
+    organization: organizationResponseSchema,
+  })
+  .transform((value) => ({
+    memberRole: value["member_role"],
+    membershipStatus: value["membership_status"],
+    organization: value["organization"],
+  }));
+export type MemberOrganizationResponse = z.output<
+  typeof memberOrganizationResponseSchema
+>;
+
+export const collectionResponseMemberOrganizationResponseSchema = z.object({
+  items: z
+    .array(memberOrganizationResponseSchema)
+    .nullish()
+    .transform((value) => value ?? []),
+  page: pageResponseSchema,
+});
+export type CollectionResponseMemberOrganizationResponse = z.output<
+  typeof collectionResponseMemberOrganizationResponseSchema
+>;
+
 export const animalSchema = z
   .object({
     adopted_at: z.string().nullable(),
@@ -195,6 +221,17 @@ export const animalSchema = z
     vaccinated: value["vaccinated"],
   }));
 export type Animal = z.output<typeof animalSchema>;
+
+export const collectionResponseAnimalSchema = z.object({
+  items: z
+    .array(animalSchema)
+    .nullish()
+    .transform((value) => value ?? []),
+  page: pageResponseSchema,
+});
+export type CollectionResponseAnimal = z.output<
+  typeof collectionResponseAnimalSchema
+>;
 
 export const animalImageSchema = z
   .object({
@@ -647,6 +684,35 @@ export type GetAdoptionApplicationByIDRow = z.output<
   typeof getAdoptionApplicationByIDRowSchema
 >;
 
+export const conversationSchema = z
+  .object({
+    animal_id: z.string().nullable(),
+    application_id: z.string().nullable(),
+    closed_at: z.string().nullable(),
+    closed_by: z.string().nullable(),
+    counterparty_user_id: z.string().nullable(),
+    created_at: z.string().nullable(),
+    id: z.string(),
+    kind: z.string(),
+    organization_id: z.string().nullable(),
+    status: z.string(),
+    updated_at: z.string().nullable(),
+  })
+  .transform((value) => ({
+    animalId: value["animal_id"],
+    applicationId: value["application_id"],
+    closedAt: value["closed_at"],
+    closedBy: value["closed_by"],
+    counterpartyUserId: value["counterparty_user_id"],
+    createdAt: value["created_at"],
+    id: value["id"],
+    kind: value["kind"],
+    organizationId: value["organization_id"],
+    status: value["status"],
+    updatedAt: value["updated_at"],
+  }));
+export type Conversation = z.output<typeof conversationSchema>;
+
 export const applicationStatusHistorySchema = z
   .object({
     application_id: z.string().nullable(),
@@ -707,6 +773,10 @@ export type ApplicationScreening = z.output<typeof applicationScreeningSchema>;
 
 export const applicationDetailResponseSchema = z.object({
   application: getAdoptionApplicationByIDRowSchema,
+  conversations: z
+    .array(conversationSchema)
+    .nullish()
+    .transform((value) => value ?? []),
   history: z
     .array(applicationStatusHistorySchema)
     .nullish()
@@ -911,13 +981,15 @@ export const appointmentSchema = z
   }));
 export type Appointment = z.output<typeof appointmentSchema>;
 
-export const issuedOTPResponseSchema = z
-  .object({ code: z.string(), expires_at: z.string() })
-  .transform((value) => ({
-    code: value["code"],
-    expiresAt: value["expires_at"],
-  }));
-export type IssuedOTPResponse = z.output<typeof issuedOTPResponseSchema>;
+export const appointmentListResponseSchema = z.object({
+  items: z
+    .array(appointmentSchema)
+    .nullish()
+    .transform((value) => value ?? []),
+});
+export type AppointmentListResponse = z.output<
+  typeof appointmentListResponseSchema
+>;
 
 export const appointmentConfirmationSchema = z
   .object({
@@ -941,6 +1013,25 @@ export const appointmentConfirmationSchema = z
 export type AppointmentConfirmation = z.output<
   typeof appointmentConfirmationSchema
 >;
+
+export const appointmentDetailResponseSchema = z.object({
+  appointment: appointmentSchema,
+  confirmations: z
+    .array(appointmentConfirmationSchema)
+    .nullish()
+    .transform((value) => value ?? []),
+});
+export type AppointmentDetailResponse = z.output<
+  typeof appointmentDetailResponseSchema
+>;
+
+export const issuedOTPResponseSchema = z
+  .object({ code: z.string(), expires_at: z.string() })
+  .transform((value) => ({
+    code: value["code"],
+    expiresAt: value["expires_at"],
+  }));
+export type IssuedOTPResponse = z.output<typeof issuedOTPResponseSchema>;
 
 export const reportSchema = z
   .object({
