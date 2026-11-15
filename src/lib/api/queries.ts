@@ -1,19 +1,23 @@
 import {
   animalDetailResponseSchema,
   applicationDetailResponseSchema,
+  appointmentDetailResponseSchema,
+  appointmentListResponseSchema,
+  collectionResponseAnimalSchema,
   collectionResponseListAdopterApplicationsRowSchema,
   collectionResponseListAvailableAnimalsRowSchema,
   collectionResponseListOrganizationApplicationsRowSchema,
   collectionResponseListOrganizationConversationsRowSchema,
   collectionResponseListPreferredAnimalsRowSchema,
   collectionResponseListUserConversationsRowSchema,
+  collectionResponseMemberOrganizationResponseSchema,
   collectionResponseMessageSchema,
   collectionResponseOrganizationResponseSchema,
   memberListResponseSchema,
   organizationResponseSchema,
 } from "@/lib/backend/contracts";
 import { sessionSchema } from "@/lib/session";
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 import { ApiError, requestData } from "./client";
 import { queryKeys } from "./keys";
@@ -85,6 +89,43 @@ export function organizationsOptions(page = 1) {
       requestData(
         backendPath(`/v1/organizations?page=${page}&page_size=100`),
         collectionResponseOrganizationResponseSchema,
+        { signal },
+      ),
+  });
+}
+export function myOrganizationsOptions(page = 1) {
+  return queryOptions({
+    queryKey: [...queryKeys.myOrganizations, page],
+    queryFn: ({ signal }) =>
+      requestData(
+        backendPath(`/v1/me/organizations?page=${page}&page_size=100`),
+        collectionResponseMemberOrganizationResponseSchema,
+        { signal },
+      ),
+  });
+}
+export type AnimalInventoryStatus =
+  | "pending_organization"
+  | "available"
+  | "adoption_in_progress"
+  | "adopted"
+  | "unavailable"
+  | "under_review";
+export function animalInventoryOptions(
+  organizationId?: string,
+  status?: AnimalInventoryStatus,
+  page = 1,
+) {
+  const params = new URLSearchParams({ page: String(page), page_size: "20" });
+  if (organizationId && status) params.set("status", status);
+  return queryOptions({
+    queryKey: [...queryKeys.inventory(organizationId, status), page],
+    queryFn: ({ signal }) =>
+      requestData(
+        backendPath(
+          `${organizationId ? `/v1/organizations/${encodeURIComponent(organizationId)}/animals` : "/v1/me/animals"}?${params}`,
+        ),
+        collectionResponseAnimalSchema,
         { signal },
       ),
   });
@@ -176,6 +217,49 @@ export function messagesOptions(id: string) {
       ),
     staleTime: 0,
     refetchInterval: 4_000,
+  });
+}
+export function messageHistoryOptions(id: string) {
+  return infiniteQueryOptions({
+    queryKey: [...queryKeys.messages(id), "history"],
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam, signal }) => {
+      const params = new URLSearchParams({ page_size: "100" });
+      if (pageParam) params.set("before", pageParam);
+      return requestData(
+        backendPath(
+          `/v1/conversations/${encodeURIComponent(id)}/messages?${params}`,
+        ),
+        collectionResponseMessageSchema,
+        { signal },
+      );
+    },
+    getNextPageParam: (last) =>
+      last.items.length === 100 ? last.items.at(-1)?.id : undefined,
+    staleTime: 0,
+    refetchInterval: 4_000,
+  });
+}
+export function applicationAppointmentsOptions(id: string) {
+  return queryOptions({
+    queryKey: queryKeys.applicationAppointments(id),
+    queryFn: ({ signal }) =>
+      requestData(
+        backendPath(`/v1/applications/${encodeURIComponent(id)}/appointments`),
+        appointmentListResponseSchema,
+        { signal },
+      ),
+  });
+}
+export function appointmentOptions(id: string) {
+  return queryOptions({
+    queryKey: queryKeys.appointment(id),
+    queryFn: ({ signal }) =>
+      requestData(
+        backendPath(`/v1/appointments/${encodeURIComponent(id)}`),
+        appointmentDetailResponseSchema,
+        { signal },
+      ),
   });
 }
 export const locationOptions = queryOptions({

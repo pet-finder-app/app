@@ -78,15 +78,12 @@ test("preferences use the Go PUT contract and invalidate related caches", async 
   );
 });
 
-test("unsupported preference clears and posts never reach a fabricated route", async (t) => {
+test("unsupported standalone posts never reach a fabricated route", async (t) => {
   const client = createQueryClient();
   t.after(() => client.clear());
   t.mock.method(globalThis, "fetch", () => {
     assert.fail("unsupported operation made an HTTP request");
   });
-  await assert.rejects(
-    execute(client, apiMutations.hidePet(), { id: "animal", hidden: false }),
-  );
   await assert.rejects(
     execute(client, apiMutations.like(), { id: "post", type: "post" }),
   );

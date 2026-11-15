@@ -1,6 +1,7 @@
 import {
   adoptionApplicationSchema,
   animalImageResponseSchema,
+  animalImageSchema,
   animalPreferenceSchema,
   animalSchema,
   applicationCreatedResponseSchema,
@@ -33,6 +34,7 @@ const workflowMeta: ApiMutationMeta = {
     queryKeys.applications,
     queryKeys.conversations,
     queryKeys.animals,
+    queryKeys.appointments,
   ],
 };
 const body = (input: unknown, method = "POST") => ({
@@ -281,6 +283,34 @@ export const apiMutations = {
           { method: "DELETE" },
         ),
     }),
+  moderateImage: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.animal("moderate-image"),
+      meta: feedMeta,
+      mutationFn: (input: {
+        id: string;
+        imageId: string;
+        decision: "approved" | "rejected";
+      }) =>
+        requestData(
+          backendPath(
+            `/v1/animals/${encodeURIComponent(input.id)}/images/${encodeURIComponent(input.imageId)}/moderation`,
+          ),
+          animalImageSchema,
+          body({ decision: input.decision }),
+        ),
+    }),
+  clearPreference: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.animal("clear-preference"),
+      meta: feedMeta,
+      mutationFn: (id: string) =>
+        requestData(
+          backendPath(`/v1/animals/${encodeURIComponent(id)}/preference`),
+          z.null(),
+          { method: "DELETE" },
+        ),
+    }),
   like: () =>
     mutationOptions({
       mutationKey: mutationKeys.preference,
@@ -289,11 +319,22 @@ export const apiMutations = {
         type: "pet" | "post";
         id: string;
         onlyLike?: boolean;
+        liked?: boolean;
       }) => {
         if (input.type !== "pet")
           throw new Error(
             "Publicações independentes ainda não estão disponíveis.",
           );
+        if (input.liked && !input.onlyLike) {
+          await requestData(
+            backendPath(
+              `/v1/animals/${encodeURIComponent(input.id)}/preference`,
+            ),
+            z.null(),
+            { method: "DELETE" },
+          );
+          return { liked: false };
+        }
         const preference = await requestData(
           backendPath(`/v1/animals/${encodeURIComponent(input.id)}/preference`),
           animalPreferenceSchema,
@@ -307,10 +348,16 @@ export const apiMutations = {
       mutationKey: mutationKeys.preference,
       meta: feedMeta,
       mutationFn: async (input: { id: string; hidden?: boolean }) => {
-        if (input.hidden === false)
-          throw new Error(
-            "Para voltar a mostrar este animal, adicione-o aos favoritos. A remoção de preferências ainda não está disponível.",
+        if (input.hidden === false) {
+          await requestData(
+            backendPath(
+              `/v1/animals/${encodeURIComponent(input.id)}/preference`,
+            ),
+            z.null(),
+            { method: "DELETE" },
           );
+          return { disliked: false };
+        }
         const preference = await requestData(
           backendPath(`/v1/animals/${encodeURIComponent(input.id)}/preference`),
           animalPreferenceSchema,
@@ -358,6 +405,19 @@ export const apiMutations = {
           ),
           adoptionApplicationSchema,
           body({ decision: input.decision, reason: input.reason }),
+        ),
+    }),
+  withdrawApplication: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.application("withdraw"),
+      meta: workflowMeta,
+      mutationFn: (input: { id: string; reason: string }) =>
+        requestData(
+          backendPath(
+            `/v1/applications/${encodeURIComponent(input.id)}/withdrawal`,
+          ),
+          adoptionApplicationSchema,
+          body({ reason: input.reason }),
         ),
     }),
   sendMessage: () =>
