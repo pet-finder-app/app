@@ -141,7 +141,7 @@ export function FeedPostMenu({
             </form>
           ) : (
             <div className="flex flex-col gap-1">
-              {petId && !isHidden ? (
+              {petId ? (
                 <button
                   type="button"
                   disabled={isBusy}

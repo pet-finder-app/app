@@ -67,6 +67,7 @@ export function FeedPost({
         type: pet ? "pet" : "post",
         id: pet?.id ?? targetId,
         onlyLike,
+        liked: isLiked,
       });
       if (data.liked) setLikeAnimation((animation) => animation + 1);
       router.refresh();
@@ -122,9 +123,9 @@ export function FeedPost({
         <div className="flex items-center justify-between gap-3 px-4">
           <button
             type="button"
-            aria-label={`${isLiked ? "Nos favoritos:" : "Curtir"} ${pet?.name ?? "publicação"}`}
+            aria-label={`${isLiked ? "Remover dos favoritos:" : "Curtir"} ${pet?.name ?? "publicação"}`}
             aria-pressed={isLiked}
-            disabled={isLiking || isLiked}
+            disabled={isLiking}
             onClick={() => void handleLike()}
             className={cn(
               "-ml-2.5 flex size-11 shrink-0 items-center justify-center overflow-visible rounded-full hover:bg-secondary focus-visible:outline-2 focus-visible:outline-accent-tertiary disabled:opacity-60 motion-safe:transition-transform motion-safe:active:scale-90",
