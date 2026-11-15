@@ -127,7 +127,9 @@ export function ApplicationDetail({
 }) {
   const query = useQuery(applicationOptions(id));
   const decision = useMutation(apiMutations.applicationDecision());
+  const withdrawal = useMutation(apiMutations.withdrawApplication());
   const [reason, setReason] = useState("");
+  const [withdrawalReason, setWithdrawalReason] = useState("");
   const data = query.data;
   const isApplicant = data?.application.adopterId === userId;
   const answers = data?.screening
@@ -152,6 +154,17 @@ export function ApplicationDetail({
           >
             Ver animal
           </LinkButton>
+          {data.conversations.map((conversation) => (
+            <LinkButton
+              key={conversation.id}
+              variant="outline"
+              href={`/${isApplicant ? "adopter" : "ngo"}/conversations/${conversation.id}`}
+            >
+              {conversation.status === "closed"
+                ? "Ver conversa encerrada"
+                : "Abrir conversa com a ONG"}
+            </LinkButton>
+          ))}
           {data.application.decisionReason ? (
             <p>Resposta da organização: {data.application.decisionReason}</p>
           ) : null}
@@ -215,8 +228,59 @@ export function ApplicationDetail({
               </FormError>
             </section>
           ) : null}
-          {data.application.status === "approved" ? (
-            <AppointmentPanel applicationId={id} isApplicant={isApplicant} />
+          {isApplicant &&
+          ["submitted", "screening", "more_information_requested"].includes(
+            data.application.status,
+          ) ? (
+            <form
+              className="flex flex-col gap-3 border-t border-border-light pt-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (
+                  !withdrawal.isPending &&
+                  withdrawalReason.trim().length >= 5
+                )
+                  withdrawal.mutate({ id, reason: withdrawalReason.trim() });
+              }}
+            >
+              <h2 className="text-lg font-bold">Desistir da adoção</h2>
+              <p>
+                Ao desistir, seu pedido será retirado e a conversa será
+                encerrada.
+              </p>
+              <Textarea
+                id="application-withdrawal-reason"
+                label="Motivo da desistência"
+                required
+                minLength={5}
+                maxLength={2000}
+                value={withdrawalReason}
+                onChange={(event) => setWithdrawalReason(event.target.value)}
+                errorId="application-withdrawal-error"
+              />
+              <FormError id="application-withdrawal-error">
+                {withdrawal.error?.message}
+              </FormError>
+              <Button
+                type="submit"
+                variant="danger"
+                loading={withdrawal.isPending}
+                disabled={withdrawalReason.trim().length < 5}
+              >
+                Confirmar desistência
+              </Button>
+            </form>
+          ) : null}
+          {["approved", "completed", "cancelled"].includes(
+            data.application.status,
+          ) ? (
+            <AppointmentPanel
+              applicationId={id}
+              isApplicant={isApplicant}
+              canSchedule={
+                data.application.status === "approved" && !isApplicant
+              }
+            />
           ) : null}
           <section>
             <h2 className="font-bold">Histórico</h2>
