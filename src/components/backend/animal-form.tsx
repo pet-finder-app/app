@@ -11,6 +11,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
+import { AnimalImageManager } from "./animal-image-manager";
 import { QueryStatus } from "./query-status";
 
 const species = z.enum(["dog", "cat", "other"]);
@@ -320,11 +321,18 @@ export function AnimalForm({
     <>
       <QueryStatus query={query} />
       {query.data ? (
-        <AnimalEditor
-          initial={query.data.animal}
-          organization={organization}
-          user={user}
-        />
+        <>
+          <AnimalEditor
+            initial={query.data.animal}
+            organization={organization}
+            user={user}
+          />
+          <AnimalImageManager
+            data={query.data}
+            user={user}
+            selectedOrganizationId={organization?.id}
+          />
+        </>
       ) : null}
     </>
   );

@@ -49,7 +49,11 @@ export function AnimalDetail({
           <PostMediaCarousel
             post={{
               media: data.images
-                .filter((image) => /^https?:\/\//.test(image.storageKey))
+                .filter(
+                  (image) =>
+                    image.moderationStatus === "approved" &&
+                    /^https?:\/\//.test(image.storageKey),
+                )
                 .map((image) => ({ url: image.storageKey, type: "image" })),
             }}
             petName={data.animal.name}
