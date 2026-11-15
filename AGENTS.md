@@ -43,7 +43,8 @@ workflows. Do not implement missing backend features in Next.js.
   the backend OpenAPI contract. Keep snake_case at the integration boundary and
   map to camelCase internally. Validate responses before putting them in caches.
 - Mutations never retry automatically. Shared metadata invalidates related
-  resources; account/context changes cancel requests and clear private caches.
+  resources before refetching any composed queries; account/context changes
+  cancel requests and clear private caches.
 - CI gates the app build on lint and tests. Main pushes publish the standalone
   Docker image to GHCR and deploy through `.github/actions/deploy` and
   `deploy/run.sh`. Server runtime settings live in `DEPLOY_PATH/.env`; SSH Actions
@@ -68,19 +69,28 @@ workflows. Do not implement missing backend features in Next.js.
 - `/pets/[id]` uses Go animals and approved image URLs. Its carousel supports an
   opt-in full-screen viewer separate from Home's photo double-tap likes.
 - Adoption applications, screening, decisions, messages, appointments, OTPs, and
-  confirmations call existing Go routes. Do not invent workflow statuses or
-  agreement/signature records. Existing appointment reads are a backend gap.
+  confirmations call existing Go routes. Appointment lists and details restore
+  scheduling and confirmation history after reload. Application detail includes
+  accessible conversations; adopter withdrawal closes the linked conversation.
+  Do not invent workflow statuses or agreement/signature records.
 - Home filters, grid preview history, progressive batches, and scroll snapshots
   stay in `src/app/_components`. Shared presentation stays in `components/posts`.
   Preserve Next.js history fields and use its native History integration.
 - Go preferences are mutually exclusive `liked` and `not_interested` values.
-  Likes use idempotent PUT. There is no clear-preference endpoint; do not simulate
-  toggles or provide a successful unhide/unlike action.
+  Likes use idempotent PUT, including photo double-taps. DELETE clears a
+  preference for unlike/unhide; never replace a cleared preference with another
+  value to simulate removal.
 - Location cookies store approximate coordinates and an enabled preference.
   Disabled GPS must stay disabled. Discovery uses Go latitude/longitude filters;
   no local postal-code geocoding or ordering fallback is implemented.
-- Messages poll the actual Go endpoint. Do not invent unread counts or message
-  delivery receipts. Binary uploads, standalone posts, donations, follows,
+- `/ngo/organizations` lists active and invited memberships, including pending
+  organizations. Invitations do not grant inventory or administration access.
+  NGO inventory uses `/v1/organizations/{id}/animals` with server status filters;
+  advertiser inventory uses `/v1/me/animals`, independently of discovery.
+  Image moderation uses explicit publication permission from Go membership data.
+- Messages poll the actual Go endpoint and load older pages with the exclusive
+  `before` cursor. Preserve scroll position when loading history. Do not invent
+  unread counts or message delivery receipts. Binary uploads, standalone posts, donations, follows,
   notifications, and surrender workflows remain unsupported as documented.
 
 ## Component ownership

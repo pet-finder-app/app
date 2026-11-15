@@ -35,9 +35,11 @@ pnpm api:generate
 This updates `src/lib/backend/contracts.ts` and `routes.ts` from
 `../api/build/openapi.yaml`. Do not hand-edit generated files.
 
-Supported workflows include profiles, organizations and members, published animal
-discovery, preferences, adoption applications and screening, conversations, and
-appointment creation/confirmation. Available fields and operations follow Go's
+Supported workflows include profiles, organization memberships (including pending
+organizations), private animal inventories, published discovery, image moderation,
+preferences with unlike/unhide, adoption applications and screening, withdrawal,
+linked conversations with older message history, and appointment lists, details,
+scheduling, and confirmations. Available fields and operations follow Go's
 current contract. [UNSUPPORTED.md](UNSUPPORTED.md) lists missing routes and UI
 limitations for a follow-up backend issue. These features display an unavailable
 state; they do not write prototype records.
