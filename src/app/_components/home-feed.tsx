@@ -5,6 +5,7 @@ import {
   type FeedPostItem as HomeFeedItem,
 } from "@/components/posts/feed-post";
 import { Button } from "@/components/ui";
+import type { AnimalSpecies } from "@/lib/api/animals";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -31,6 +32,9 @@ type HomeFeedProps = {
   initialFilters?: FeedFilterState;
   initialPostId?: string | null;
   notices?: ReactNode;
+  /** Controlled species filter; the parent refetches discovery with it. */
+  species?: AnimalSpecies | null;
+  onSpeciesChange?: (species: AnimalSpecies | null) => void;
 };
 const PAGE_SIZE = 10;
 
@@ -43,9 +47,12 @@ export function HomeFeed({
     displayMode: "scroll",
     showHidden: false,
     locationEnabled: isLocationEnabled,
+    species: null,
   },
   initialPostId = null,
   notices,
+  species = initialFilters.species,
+  onSpeciesChange,
 }: HomeFeedProps) {
   const initialIndex =
     initialFilters.displayMode === "grid" && initialPostId
@@ -298,6 +305,27 @@ export function HomeFeed({
     });
   }
 
+  function handleSpeciesChange(next: AnimalSpecies | null) {
+    if (filterPreferencesRef.current.species === next) return;
+    const preferences = { ...filterPreferencesRef.current, species: next };
+    filterPreferencesRef.current = preferences;
+    // A new species is a new list: restart batches from the top of the feed.
+    const snapshot: FeedNavigationSnapshot = {
+      mode: displayMode,
+      isGridPreview: false,
+      itemId: null,
+      scrollY: 0,
+      visibleCount: batchSize,
+      showHidden,
+    };
+    activeSnapshotRef.current = snapshot;
+    pendingRestoreRef.current = snapshot;
+    writeFeedSnapshot("replace", snapshot, preferences);
+    setVisibleCount(batchSize);
+    setNavigationRevision((revision) => revision + 1);
+    onSpeciesChange?.(next);
+  }
+
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!hasMore || !sentinel || !("IntersectionObserver" in window)) return;
@@ -329,6 +357,8 @@ export function HomeFeed({
         isLocationActive={isLocationActive}
         isLocationEnabled={locationEnabled}
         onLocationEnabledChange={handleLocationEnabledChange}
+        species={species}
+        onSpeciesChange={onSpeciesChange ? handleSpeciesChange : undefined}
       />
       {notices}
       <ul

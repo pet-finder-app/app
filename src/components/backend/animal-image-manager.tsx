@@ -1,7 +1,8 @@
 "use client";
 
 import { Button, FormError } from "@/components/ui";
-import { apiMutations } from "@/lib/api/mutations";
+import { animalMutations } from "@/lib/api/animals";
+import { apiMutations, IMAGE_TYPES } from "@/lib/api/mutations";
 import { membersOptions } from "@/lib/api/queries";
 import type {
   AnimalDetailResponse,
@@ -9,6 +10,8 @@ import type {
 } from "@/lib/backend/contracts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import Image from "next/image";
+import { useState, type FormEvent } from "react";
+import { mediaHref } from "./labels";
 import { QueryStatus } from "./query-status";
 
 type AnimalImageManagerProps = {
@@ -38,6 +41,27 @@ export function AnimalImageManager({
   });
   const moderate = useMutation(apiMutations.moderateImage());
   const remove = useMutation(apiMutations.removeImage());
+  const upload = useMutation(animalMutations.uploadImage());
+  const [file, setFile] = useState<File | null>(null);
+  const [inputKey, setInputKey] = useState(0);
+  function handleUpload(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!file || upload.isPending) return;
+    upload.mutate(
+      {
+        id: data.animal.id,
+        file,
+        altText: data.animal.name,
+        position: data.images.length,
+      },
+      {
+        onSuccess: () => {
+          setFile(null);
+          setInputKey((key) => key + 1);
+        },
+      },
+    );
+  }
   const canModerate =
     user.roles.includes("admin") ||
     members.data?.items.some(
@@ -56,7 +80,7 @@ export function AnimalImageManager({
           <li key={image.id} className="flex flex-col gap-2">
             {/^https?:\/\//.test(image.storageKey) ? (
               <Image
-                src={image.storageKey}
+                src={mediaHref(image.storageKey)}
                 alt={image.altText || data.animal.name}
                 width={600}
                 height={450}
@@ -117,6 +141,38 @@ export function AnimalImageManager({
       <FormError id="image-manager-error">
         {moderate.error?.message ?? remove.error?.message}
       </FormError>
+      <form onSubmit={handleUpload} className="flex flex-col gap-2">
+        <label
+          htmlFor="animal-image-upload"
+          className="flex flex-col gap-1 font-medium"
+        >
+          Adicionar foto
+          <input
+            key={inputKey}
+            id="animal-image-upload"
+            type="file"
+            required
+            accept={IMAGE_TYPES.join(",")}
+            aria-describedby="animal-image-upload-hint"
+            className="text-sm"
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+          />
+          <span
+            id="animal-image-upload-hint"
+            className="text-sm text-neutral-600"
+          >
+            JPEG, PNG ou WebP de até 10 MB. A foto fica em análise antes de
+            aparecer na galeria pública.
+          </span>
+        </label>
+        <FormError id="image-upload-error">{upload.error?.message}</FormError>
+        {upload.isSuccess ? (
+          <p role="status">Foto enviada para análise.</p>
+        ) : null}
+        <Button type="submit" variant="outline" loading={upload.isPending}>
+          Enviar foto
+        </Button>
+      </form>
     </section>
   );
 }

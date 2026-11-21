@@ -1,7 +1,9 @@
 "use client";
 import { QueryStatus } from "@/components/backend/query-status";
 import { Button } from "@/components/ui";
+import type { AnimalSpecies } from "@/lib/api/animals";
 import { useAnimalsFeed } from "@/lib/api/use-animals-feed";
+import { useState } from "react";
 import type { FeedFilterState } from "./feed-query";
 import { HomeFeed } from "./home-feed";
 
@@ -13,7 +15,13 @@ export function AnimalsFeed({
   initialFilters,
   initialPostId,
 }: AnimalsFeedProps) {
-  const { items, query, preferences, location, coordinates } = useAnimalsFeed();
+  const [species, setSpecies] = useState<AnimalSpecies | null>(
+    initialFilters?.species ?? null,
+  );
+  const { items, query, preferences, location, coordinates } = useAnimalsFeed(
+    "discover",
+    species,
+  );
   return (
     <>
       <QueryStatus query={query} />
@@ -27,6 +35,8 @@ export function AnimalsFeed({
           }
           initialFilters={initialFilters}
           initialPostId={initialPostId}
+          species={species}
+          onSpeciesChange={setSpecies}
         />
       ) : null}
       {query.hasNextPage ? (

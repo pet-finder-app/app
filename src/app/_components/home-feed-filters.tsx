@@ -1,7 +1,9 @@
 "use client";
 
+import { SPECIES_LABELS } from "@/components/animals/animal-labels";
 import { LocationButton } from "@/components/location/location-button";
 import { Button, cn } from "@/components/ui";
+import { ANIMAL_SPECIES, type AnimalSpecies } from "@/lib/api/animals";
 import { ArrowLeft, EyeOff, Grid2X2, ScrollText } from "lucide-react";
 import type { Ref } from "react";
 import styles from "./home-feed-filters.module.css";
@@ -18,7 +20,18 @@ type HomeFeedFiltersProps = {
   isLocationActive: boolean;
   isLocationEnabled: boolean;
   onLocationEnabledChange?: (enabled: boolean) => void;
+  species?: AnimalSpecies | null;
+  /** Shows the species chips when discovery supports the filter. */
+  onSpeciesChange?: (species: AnimalSpecies | null) => void;
 };
+
+const SPECIES_OPTIONS: { value: AnimalSpecies | null; label: string }[] = [
+  { value: null, label: "Todas" },
+  ...ANIMAL_SPECIES.map((value) => ({ value, label: SPECIES_LABELS[value] })),
+];
+
+const SPECIES_BUTTON_CLASS =
+  "min-h-7! shrink-0 px-3! py-0! text-[11px]! active:scale-100! data-[selected=true]:font-bold";
 
 const MODE_BUTTON_CLASS =
   "relative z-10 h-full! min-h-6! gap-1! border-0! bg-transparent! px-2! py-0! text-[11px]! shadow-none! active:scale-100!";
@@ -33,6 +46,8 @@ export function HomeFeedFilters({
   isLocationActive,
   isLocationEnabled,
   onLocationEnabledChange,
+  species = null,
+  onSpeciesChange,
 }: HomeFeedFiltersProps) {
   return (
     <div
@@ -98,6 +113,27 @@ export function HomeFeedFilters({
       >
         <EyeOff className="size-3.5" aria-hidden="true" />
       </Button>
+      {onSpeciesChange && !onReturnToGrid ? (
+        <div
+          role="group"
+          aria-label="Espécie"
+          className="col-span-3 -mx-3 flex [scrollbar-width:none] gap-1.5 overflow-x-auto px-3"
+        >
+          {SPECIES_OPTIONS.map((option) => (
+            <Button
+              key={option.value ?? "all"}
+              variant="filter"
+              size="sm"
+              aria-pressed={species === option.value}
+              data-selected={species === option.value}
+              onClick={() => onSpeciesChange(option.value)}
+              className={SPECIES_BUTTON_CLASS}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

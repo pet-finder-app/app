@@ -4,13 +4,13 @@ import { LinkButton } from "@/components/ui";
 import { getCurrentUser } from "@/lib/backend/server";
 
 export default async function Page() {
-  await getCurrentUser();
+  const user = await getCurrentUser();
   return (
     <BackendShell title="Animais que encaminhei">
       <LinkButton href="/adopter/animals/new">
         Encaminhar animal para uma ONG
       </LinkButton>
-      <AnimalInventory />
+      <AnimalInventory userId={user.id} />
     </BackendShell>
   );
 }

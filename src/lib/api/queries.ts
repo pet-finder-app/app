@@ -5,7 +5,6 @@ import {
   appointmentListResponseSchema,
   collectionResponseAnimalSchema,
   collectionResponseListAdopterApplicationsRowSchema,
-  collectionResponseListAvailableAnimalsRowSchema,
   collectionResponseListOrganizationApplicationsRowSchema,
   collectionResponseListOrganizationConversationsRowSchema,
   collectionResponseListPreferredAnimalsRowSchema,
@@ -42,25 +41,6 @@ export const sessionOptions = queryOptions({
   staleTime: 0,
   refetchInterval: 60_000,
 });
-export function animalsOptions(
-  page = 1,
-  coordinates?: { lat: number; lon: number },
-) {
-  const params = new URLSearchParams({ page: String(page), page_size: "20" });
-  if (coordinates) {
-    params.set("latitude", String(coordinates.lat));
-    params.set("longitude", String(coordinates.lon));
-  }
-  return queryOptions({
-    queryKey: [...queryKeys.animals, "list", params.toString()],
-    queryFn: ({ signal }) =>
-      requestData(
-        backendPath(`/v1/animals?${params}`),
-        collectionResponseListAvailableAnimalsRowSchema,
-        { signal },
-      ),
-  });
-}
 export function animalOptions(id: string) {
   return queryOptions({
     queryKey: queryKeys.animal(id),
