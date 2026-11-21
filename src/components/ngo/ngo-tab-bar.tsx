@@ -1,6 +1,7 @@
 "use client";
 
 import { ProfileTabIcon } from "@/components/account/profile-tab-icon";
+import { useUnreadCounts } from "@/components/community/use-unread-counts";
 import feedbackStyles from "@/components/navigation/navigation-feedback.module.css";
 import {
   NavigationTabLink,
@@ -9,9 +10,11 @@ import {
 import { usePressFeedback } from "@/components/navigation/use-press-feedback";
 import { ActionBar, Button, cn, iconSize, LinkButton } from "@/components/ui";
 import {
+  Bell,
   Heart,
   House,
   MessageCircle,
+  Newspaper,
   PawPrint,
   Plus,
   type LucideIcon,
@@ -37,12 +40,17 @@ const TABS: NgoTab[] = [
     label: "Criar: cadastrar pet ou novo post",
     icon: Plus,
   },
-  // Reserved navigation tab for future adopter chat support.
   {
     type: "icon",
     href: "/ngo/messages",
     label: "Mensagens",
     icon: MessageCircle,
+  },
+  {
+    type: "icon",
+    href: "/ngo/notifications",
+    label: "Avisos",
+    icon: Bell,
   },
   {
     type: "component",
@@ -56,23 +64,16 @@ const TABS: NgoTab[] = [
 const dip = (index: number) =>
   Math.round(1.2 * (index - (TABS.length - 1) / 2) ** 2);
 
-type NgoTabBarProps = {
-  unreadCount?: number;
-  unreadMessageCount?: number;
-};
-
 /** Fixed NGO navigation for dashboard, profile, notifications, and messages. */
-export function NgoTabBar({
-  unreadCount = 0,
-  unreadMessageCount = 0,
-}: NgoTabBarProps) {
+export function NgoTabBar() {
   const pathname = usePathname();
+  const unread = useUnreadCounts();
   const createDialog = useRef<HTMLDialogElement>(null);
   const createPressFeedback = usePressFeedback();
 
   const badgeCount: Record<string, number> = {
-    "/ngo/notifications": unreadCount,
-    "/ngo/messages": unreadMessageCount,
+    "/ngo/notifications": unread.notifications,
+    "/ngo/messages": unread.messages,
   };
 
   return (
@@ -162,6 +163,15 @@ export function NgoTabBar({
           >
             <PawPrint className={iconSize.md} aria-hidden="true" />
             Cadastrar pet
+          </LinkButton>
+          <LinkButton
+            href="/ngo/posts/new"
+            size="lg"
+            variant="outline"
+            onClick={() => createDialog.current?.close()}
+          >
+            <Newspaper className={iconSize.md} aria-hidden="true" />
+            Nova publicação
           </LinkButton>
           <Button
             variant="pill"
