@@ -2,6 +2,7 @@
 import { Button, FormError, LinkButton } from "@/components/ui";
 import { queryKeys } from "@/lib/api/keys";
 import { apiMutations } from "@/lib/api/mutations";
+import { nextPageParam } from "@/lib/api/pagination";
 import { myOrganizationsOptions } from "@/lib/api/queries";
 import {
   useInfiniteQuery,
@@ -21,10 +22,10 @@ export function OrganizationSelection() {
     initialPageParam: 1,
     queryFn: ({ pageParam }) =>
       client.fetchQuery(myOrganizationsOptions(pageParam)),
-    getNextPageParam: (last, _pages, page) =>
-      last.items.length === 100 ? page + 1 : undefined,
+    getNextPageParam: nextPageParam,
   });
   const mutation = useMutation(apiMutations.selectOrganization());
+  const response = useMutation(apiMutations.respondToInvitation());
   const [error, setError] = useState<string | null>(null);
   async function select(id: string) {
     setError(null);
@@ -51,23 +52,60 @@ export function OrganizationSelection() {
       query.data.pages.every((page) => page.items.length === 0) ? (
         <p>Você ainda não tem vínculos com organizações.</p>
       ) : null}
-      <FormError id="organization-selection-error">{error}</FormError>
+      <FormError id="organization-selection-error">
+        {error ?? response.error?.message}
+      </FormError>
       {query.data?.pages
         .flatMap((page) => page.items)
-        .map(({ organization, membershipStatus }) => (
-          <Button
-            key={organization.id}
-            variant="outline"
-            disabled={mutation.isPending || membershipStatus !== "active"}
-            onClick={() => void select(organization.id)}
-          >
-            {organization.name} ·{" "}
-            {membershipStatus === "invited"
-              ? "Convite pendente — sem acesso à administração"
-              : (VERIFICATION_LABELS[organization.verificationStatus] ??
-                "Verificação não informada")}
-          </Button>
-        ))}
+        .map(({ organization, membershipStatus }) =>
+          membershipStatus === "invited" ? (
+            <div
+              key={organization.id}
+              className="flex flex-col gap-2 rounded-xl border border-border-light p-3"
+            >
+              <p>
+                <span className="font-bold">{organization.name}</span> convidou
+                você para a equipe. O convite só dá acesso depois de aceito.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  loading={response.isPending}
+                  onClick={() =>
+                    response.mutate({
+                      organizationId: organization.id,
+                      decision: "accepted",
+                    })
+                  }
+                >
+                  Aceitar convite
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={response.isPending}
+                  onClick={() =>
+                    response.mutate({
+                      organizationId: organization.id,
+                      decision: "declined",
+                    })
+                  }
+                >
+                  Recusar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              key={organization.id}
+              variant="outline"
+              disabled={mutation.isPending}
+              onClick={() => void select(organization.id)}
+            >
+              {organization.name} ·{" "}
+              {VERIFICATION_LABELS[organization.verificationStatus] ??
+                "Verificação não informada"}
+            </Button>
+          ),
+        )}
       {query.hasNextPage ? (
         <Button
           onClick={() => void query.fetchNextPage()}
