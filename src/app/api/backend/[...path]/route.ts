@@ -31,7 +31,11 @@ async function forward(
   try {
     const body =
       request.method === "GET" ? undefined : await request.arrayBuffer();
-    if (body && body.byteLength > 1_048_576)
+    // Binary media uploads follow Go's 10 MiB per-file limit; JSON stays small.
+    const limit = /^\/v1\/media\/[^/]+\/content$/.test(pathname)
+      ? 10 * 1_048_576
+      : 1_048_576;
+    if (body && body.byteLength > limit)
       return NextResponse.json(
         { message: "A solicitação excede o tamanho permitido." },
         { status: 413 },
@@ -51,6 +55,8 @@ async function forward(
       request.cookies.get(REFRESH_COOKIE)?.value,
     );
     const isUnauthorized = await isAuthenticationFailure(upstream);
+    const isMediaDownload =
+      request.method === "GET" && /^\/v1\/media\/[^/]+$/.test(pathname);
     const response = new NextResponse(
       upstream.status === 204 ? null : upstream.body,
       {
@@ -58,13 +64,30 @@ async function forward(
         headers: {
           "Content-Type":
             upstream.headers.get("Content-Type") ?? "application/json",
-          "Cache-Control": "no-store",
+          // Media bytes are immutable; keep Go's caching policy for them. Every
+          // other API response is private, changing data and is never cached.
+          "Cache-Control":
+            isMediaDownload && upstream.ok
+              ? (upstream.headers.get("Cache-Control") ?? "no-store")
+              : "no-store",
+          "X-Content-Type-Options": "nosniff",
         },
       },
     );
+    const disposition = upstream.headers.get("Content-Disposition");
+    if (disposition) response.headers.set("Content-Disposition", disposition);
     const requestId = upstream.headers.get("X-Request-ID");
     if (requestId) response.headers.set("X-Request-ID", requestId);
-    if (tokens) setSessionCookies(response, tokens);
+    if (tokens) {
+      setSessionCookies(response, tokens);
+      // A response carrying rotated session cookies must never be shared.
+      const policy = response.headers.get("Cache-Control") ?? "";
+      if (policy.startsWith("public"))
+        response.headers.set(
+          "Cache-Control",
+          policy.replace(/^public/, "private"),
+        );
+    }
     if (isUnauthorized) clearSessionCookies(response);
     return response;
   } catch {

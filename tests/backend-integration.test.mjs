@@ -219,6 +219,7 @@ test("application details recover accessible conversation references after reloa
         animal_species: animal.species,
         animal_size: animal.size,
         adopter_name: "Pessoa",
+        adopter_verification_status: "verified",
         adopter_email: "person@example.test",
         organization_name: organization.name,
       },

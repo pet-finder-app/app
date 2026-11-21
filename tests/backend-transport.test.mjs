@@ -16,6 +16,8 @@ const user = {
   phone: null,
   location: null,
   roles: ["adopter"],
+  profile: {},
+  verification_status: "unverified",
   created_at: null,
   updated_at: null,
 };
@@ -65,7 +67,7 @@ test("proxy allowlist follows Go's documented routes and excludes auth/socket fo
   assert.equal(isBackendRoute("PUT", "/v1/animals/id/preference"), true);
   for (const route of [
     "/v1/auth/login",
-    "/v1/posts",
+    "/v1/unknown",
     "/v1/animals/../me",
     "/v1/animals/a%2fb",
     "/v1/conversations/id/ws",

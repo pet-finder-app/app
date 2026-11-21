@@ -18,6 +18,8 @@ const user = {
   phone: null,
   location: null,
   roles: ["adopter", "advertiser"],
+  profile: {},
+  verification_status: "unverified",
   created_at: null,
   updated_at: null,
 };
@@ -86,6 +88,29 @@ test("unsupported standalone posts never reach a fabricated route", async (t) =>
   });
   await assert.rejects(
     execute(client, apiMutations.like(), { id: "post", type: "post" }),
+  );
+});
+
+test("post reports use the Go post subject", async (t) => {
+  const client = createQueryClient();
+  t.after(() => client.clear());
+  t.mock.method(globalThis, "fetch", async (url, options) => {
+    assert.equal(url, "/api/backend/v1/reports");
+    assert.deepEqual(JSON.parse(options.body), {
+      category: "other",
+      description: "Publicação pede pagamento antecipado.",
+      subject_type: "post",
+      subject_id: "post-id",
+    });
+    return Response.json({}, { status: 201 });
+  });
+  await assert.rejects(
+    execute(client, apiMutations.report(), {
+      targetType: "post",
+      targetId: "post-id",
+      reason: "Publicação pede pagamento antecipado.",
+    }),
+    /Resposta inválida/,
   );
 });
 

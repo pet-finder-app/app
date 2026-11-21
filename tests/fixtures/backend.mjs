@@ -6,6 +6,8 @@ export const user = {
   phone: null,
   location: null,
   roles: ["adopter", "advertiser"],
+  profile: {},
+  verification_status: "unverified",
   created_at: null,
   updated_at: null,
 };
@@ -18,6 +20,8 @@ export const organization = {
   location: null,
   official_channels: { email: "ngo@example.test", phone: null, website: null },
   verification_status: "pending",
+  slug: "ong-de-teste",
+  profile: {},
   verified_at: null,
   created_at: null,
   updated_at: null,
@@ -56,6 +60,7 @@ export const animal = {
   unavailable_reason: null,
   updated_at: null,
   vaccinated: null,
+  attributes: {},
 };
 export const image = {
   id: "40000000-0000-4000-8000-000000000001",

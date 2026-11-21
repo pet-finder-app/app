@@ -30,7 +30,14 @@ const registrationSchema = credentialsSchema.extend({
 const organizationSelectionSchema = z.object({
   organizationId: z.string().uuid(),
 });
+const forgotPasswordSchema = z.object({ email: z.string().email() });
+const resetPasswordSchema = z.object({
+  token: z.string().min(32).max(200),
+  password: z.string().min(12).max(72),
+});
 const contextSchema = z.enum([
+  "forgot-password",
+  "reset-password",
   "login",
   "register",
   "logout",
@@ -61,6 +68,47 @@ async function handle(
       { status: 403 },
     );
   try {
+    if (action === "forgot-password" || action === "reset-password") {
+      const input: unknown = await request.json();
+      const parsed =
+        action === "forgot-password"
+          ? forgotPasswordSchema.safeParse(input)
+          : resetPasswordSchema.safeParse(input);
+      if (!parsed.success)
+        return NextResponse.json(
+          {
+            message:
+              action === "forgot-password"
+                ? "Informe um e-mail válido."
+                : "A nova senha deve ter entre 12 e 72 caracteres.",
+          },
+          { status: 400 },
+        );
+      const upstream = await fetchBackend(`/v1/auth/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      if (upstream.status === 503)
+        return NextResponse.json(
+          { message: "O envio de e-mails está indisponível no momento." },
+          { status: 503 },
+        );
+      if (!upstream.ok)
+        return NextResponse.json(
+          {
+            message:
+              action === "reset-password"
+                ? "O link de redefinição é inválido ou expirou. Solicite outro."
+                : "Não foi possível solicitar a recuperação. Tente novamente.",
+          },
+          { status: upstream.status },
+        );
+      const response = NextResponse.json({ ok: true });
+      // A reset revokes every session of the account, including this browser's.
+      if (action === "reset-password") clearSessionCookies(response);
+      return response;
+    }
     if (action === "login" || action === "register") {
       const input: unknown = await request.json();
       let wire: unknown;

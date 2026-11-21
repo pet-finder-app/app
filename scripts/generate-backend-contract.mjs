@@ -95,40 +95,8 @@ function schema(value, property = "") {
   if (property === "LocationResponse") result += ".nullable()";
   return result;
 }
-for (const type of [
-  "UserResponse",
-  "AuthSessionResponse",
-  "OrganizationResponse",
-  "CollectionResponseOrganizationResponse",
-  "CollectionResponseMemberOrganizationResponse",
-  "CollectionResponseAnimal",
-  "Animal",
-  "AnimalDetailResponse",
-  "AnimalImageResponse",
-  "AnimalImage",
-  "CollectionResponseListAvailableAnimalsRow",
-  "CollectionResponseListPreferredAnimalsRow",
-  "AnimalPreference",
-  "CollectionResponseListAdopterApplicationsRow",
-  "CollectionResponseListOrganizationApplicationsRow",
-  "ApplicationCreatedResponse",
-  "ApplicationDetailResponse",
-  "AdoptionApplication",
-  "ApplicationScreening",
-  "CollectionResponseListUserConversationsRow",
-  "CollectionResponseListOrganizationConversationsRow",
-  "CollectionResponseMessage",
-  "MessageResponse",
-  "Appointment",
-  "AppointmentListResponse",
-  "AppointmentDetailResponse",
-  "IssuedOTPResponse",
-  "AppointmentConfirmation",
-  "Report",
-  "CollectionResponseListOpenReportsRow",
-  "MemberListResponse",
-  "OrganizationMember",
-]) {
+// Every backend schema is generated so features never edit this list.
+for (const type of Object.keys(definitions).sort()) {
   if (!definitions[type]) throw new Error(`Missing backend schema: ${type}`);
   reference(type);
 }

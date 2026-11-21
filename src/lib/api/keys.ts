@@ -7,6 +7,8 @@ export const queryKeys = {
   myOrganizations: ["organizations", "memberships"],
   organization: (id: string) => ["organizations", id] as const,
   members: (id: string) => ["organizations", id, "members"] as const,
+  paymentDetails: (id: string) =>
+    ["organizations", id, "payment-details"] as const,
   animals: ["animals"],
   animal: (id: string) => ["animals", "detail", id] as const,
   inventory: (organizationId?: string, status?: string) =>
@@ -29,6 +31,11 @@ export const queryKeys = {
     ["appointments", "application", id] as const,
   appointment: (id: string) => ["appointments", "detail", id] as const,
   reports: ["reports"],
+  verification: (organizationId?: string) =>
+    ["verification", organizationId ?? "me"] as const,
+  verificationQueue: (status: string, page: number) =>
+    ["verification", "queue", status, page] as const,
+  verificationReview: (id: string) => ["verification", "review", id] as const,
   location: ["location"],
 } as const;
 export const mutationKeys = {
@@ -42,4 +49,6 @@ export const mutationKeys = {
   appointment: (action: string) => ["appointments", action] as const,
   report: (action: string) => ["reports", action] as const,
   location: ["location", "save"],
+  verification: (action: string) => ["verification", action] as const,
+  media: ["media", "upload"],
 } as const;

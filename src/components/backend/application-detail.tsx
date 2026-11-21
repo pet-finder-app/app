@@ -23,18 +23,10 @@ const answersSchema = z.object({
   has_other_animals: z.boolean().optional(),
   accepts_follow_up: z.boolean().optional(),
 });
-function decodeAnswers(value: string) {
-  try {
-    const payload: unknown = JSON.parse(
-      new TextDecoder().decode(
-        Uint8Array.from(atob(value), (character) => character.charCodeAt(0)),
-      ),
-    );
-    const result = answersSchema.safeParse(payload);
-    return result.success ? result.data : null;
-  } catch {
-    return null;
-  }
+/** Go returns screening answers as a JSON object (JSONB), validated here. */
+function decodeAnswers(value: unknown) {
+  const result = answersSchema.safeParse(value);
+  return result.success ? result.data : null;
 }
 function ScreeningForm({ id }: { id: string }) {
   const mutation = useMutation(apiMutations.screening());
