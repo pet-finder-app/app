@@ -1,26 +1,65 @@
 "use client";
 import { ActionBar, Button, FormError, Input, cn } from "@/components/ui";
-import { apiMutations } from "@/lib/api/mutations";
+import { communityMutations } from "@/lib/api/community";
+import { apiMutations, sendMessageRequest } from "@/lib/api/mutations";
 import { messageHistoryOptions } from "@/lib/api/queries";
-import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import {
+  addMessageToHistory,
+  useChatSocket,
+  type ChatSendResult,
+} from "@/lib/api/use-chat-socket";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { formatDate } from "./labels";
 import { QueryStatus } from "./query-status";
 
-export function ChatThread({ id, userId }: { id: string; userId: string }) {
-  const query = useInfiniteQuery(messageHistoryOptions(id));
+/** Wait for bursts of real-time messages before advancing the read cursor. */
+const READ_DEBOUNCE_MS = 1_000;
+
+const CONNECTION_LABELS = {
+  connecting: "Conectando…",
+  open: "Conectado em tempo real",
+  offline: "Sem conexão em tempo real; atualizando periodicamente.",
+} as const;
+
+type ChatThreadProps = { id: string; userId: string };
+export function ChatThread({ id, userId }: ChatThreadProps) {
+  const client = useQueryClient();
+  const socket = useChatSocket(id);
+  const query = useInfiniteQuery(
+    messageHistoryOptions(id, socket.status === "open"),
+  );
   const scrollSnapshot = useRef<{ height: number; top: number } | null>(null);
   const newestMessage = useRef<string | null>(null);
   const shouldScrollToEnd = useRef(false);
   const mutation = useMutation({
     ...apiMutations.sendMessage(),
+    // The socket is preferred; REST keeps sending possible while it reconnects.
+    mutationFn: async (input: {
+      id: string;
+      text: string;
+    }): Promise<ChatSendResult> => {
+      if (socket.status === "open") return socket.send(input.text);
+      return sendMessageRequest(input);
+    },
     onMutate: () => {
       shouldScrollToEnd.current = true;
     },
     onError: () => {
       shouldScrollToEnd.current = false;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      addMessageToHistory(client, id, result.message);
       setText("");
     },
   });
@@ -34,6 +73,36 @@ export function ChatThread({ id, userId }: { id: string; userId: string }) {
     ).values(),
   ).reverse();
   const latestMessageId = messages.at(-1)?.id;
+  const { mutate: markRead } = useMutation(
+    communityMutations.markConversationRead(),
+  );
+  const lastReadMessage = useRef<string | null>(null);
+  // Mark the newest rendered message read while the page is visible. Go keeps
+  // the furthest cursor, so a late or repeated request never regresses it.
+  useEffect(() => {
+    if (!latestMessageId || latestMessageId === lastReadMessage.current) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const schedule = () => {
+      clearTimeout(timer);
+      if (document.visibilityState !== "visible") return;
+      timer = setTimeout(() => {
+        markRead(
+          { conversationId: id, messageId: latestMessageId },
+          {
+            onSuccess: () => {
+              lastReadMessage.current = latestMessageId;
+            },
+          },
+        );
+      }, READ_DEBOUNCE_MS);
+    };
+    schedule();
+    document.addEventListener("visibilitychange", schedule);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", schedule);
+    };
+  }, [id, latestMessageId, markRead]);
   useLayoutEffect(() => {
     if (scrollSnapshot.current && !query.isFetchingNextPage) {
       const snapshot = scrollSnapshot.current;
@@ -68,6 +137,9 @@ export function ChatThread({ id, userId }: { id: string; userId: string }) {
     <>
       <QueryStatus query={query} />
       <p className="text-sm">Conversa mediada pela organização.</p>
+      <p role="status" className="text-xs">
+        {CONNECTION_LABELS[socket.status]}
+      </p>
       {query.hasNextPage ? (
         <Button
           variant="outline"

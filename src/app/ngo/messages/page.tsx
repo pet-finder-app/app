@@ -6,11 +6,11 @@ export default async function Page() {
   await getCurrentUser();
   const organization = await getCurrentOrganization();
   return (
-    <BackendShell title="Conversas" organization={true}>
-      {true && !organization ? (
-        <OrganizationSelection />
+    <BackendShell title="Conversas" organization>
+      {organization ? (
+        <ConversationList organizationId={organization.id} />
       ) : (
-        <ConversationList organizationId={organization?.id} />
+        <OrganizationSelection />
       )}
     </BackendShell>
   );
