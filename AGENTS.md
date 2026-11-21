@@ -18,12 +18,13 @@ workflows. Do not implement missing backend features in Next.js.
 | `src/app/api/location`          | Browser location preference cookies                                     |
 | `src/app/**/_components`        | Page-owned components                                                   |
 | `src/components/backend`        | Reusable forms and workflows using the Go API                           |
+| `src/components/<feature>`      | Feature folders: `animals`, `community`, `donations`, `workflows`, …    |
 | `src/components/ui`             | Shared controls and surfaces                                            |
-| `src/lib/api`                   | React Query keys, queries, mutations, errors, and invalidation          |
+| `src/lib/api`                   | React Query keys, queries, mutations, pagination, and the chat socket   |
 | `src/lib/backend`               | Generated response schemas and route allowlist, transport, server reads |
 | `public/auth`                   | Decorative authentication photographs, never animal records             |
 | `tests`                         | Contract, cache, authentication, and interaction regression coverage    |
-| `UNSUPPORTED.md`                | Backend gaps and proposed routes for a later issue                      |
+| `docs/`                         | Human documentation; `docs/known-gaps.md` lists known limitations       |
 
 ### Rendering and data flow
 
@@ -53,28 +54,58 @@ workflows. Do not implement missing backend features in Next.js.
 - No JSON/JSONL stores, local accounts, seed records, mock API fallbacks, or local
   domain services are allowed. Tests may isolate transport fixtures from runtime.
 - Unsupported features show an explicit Portuguese unavailable state. List gaps
-  in `UNSUPPORTED.md`; do not create Next domain handlers or extend Go within a
+  in `docs/known-gaps.md`; do not create Next domain handlers or extend Go within a
   frontend-only migration.
+- Each feature keeps its React Query keys, queries and mutations in its own
+  module under `src/lib/api/` (`account`, `animals`, `community`, `donations`,
+  `workflows`). Upload files with `uploadMedia(file, purpose)` and display Go
+  media URLs with `mediaHref()`. `contracts.ts` contains every Go schema.
+- Go collections report `page.total` across all pages. Page with
+  `nextPageParam`/`hasNextPage`/`pageCount` from `src/lib/api/pagination.ts`;
+  never infer "more pages" from a full page.
 
 ### Routes and domain boundaries
 
 - `(auth)` keeps the shared photographic background mounted across `/login`,
   `/register`, and `/forgot-password`. Preserve slideshow state and reduced motion.
 - `/me` edits the actual Go user fields. Profile forms reuse `BottomSheet`, retain
-  drafts in parent state, and save inside the sheet. Password resets, account
-  deletion, and personal verification await backend routes.
+  drafts in parent state, and save inside the sheet. Personal verification
+  submits documents uploaded through `/v1/media` to `/v1/me/verification`.
+  Password recovery forwards through `/api/session/forgot-password` and
+  `/api/session/reset-password`. Account deletion (`DELETE /v1/me`) is on `/me`
+  behind a password confirmation; full personal and extended organization
+  profiles use `PATCH /v1/me` and `PATCH /v1/organizations/{id}`.
 - Backend accounts can be adopters and advertisers. NGO context is selected
   separately through `/ngo/organizations`; creation is `/ngo/register` and never
-  implies verification. Go enforces publication and membership permissions.
+  implies verification. Go enforces publication and membership permissions;
+  pages read the caller's member permissions with `getCurrentMembership()` only
+  to hide actions Go would refuse. Organization settings and verification are
+  shown to `can_manage_members` members, together with donation (PIX/bank)
+  details. Renaming a verified organization or changing its PIX key returns it
+  to review in Go; `VerificationLossDialog` warns before saving either change.
+  Agreement templates (`/ngo/settings/agreement`) belong to
+  `can_manage_applications` members, linked from the dashboard.
+  Personal verification only grants a `VerifiedBadge` (on `/me` and in the
+  NGO's application views); it does not gate any action. Administrators review
+  personal and organization evidence at `/admin/verifications`
+  (`platform_admin` only).
 - `/pets/[id]` uses Go animals and approved image URLs. Its carousel supports an
   opt-in full-screen viewer separate from Home's photo double-tap likes.
 - Adoption applications, screening, decisions, messages, appointments, OTPs, and
   confirmations call existing Go routes. Appointment lists and details restore
   scheduling and confirmation history after reload. Application detail includes
   accessible conversations; adopter withdrawal closes the linked conversation.
-  Do not invent workflow statuses or agreement/signature records.
-- Home filters, grid preview history, progressive batches, and scroll snapshots
-  stay in `src/app/_components`. Shared presentation stays in `components/posts`.
+  Agreements are immutable Go records signed with e-mailed codes; follow-up
+  reports come only from the adopter; surrenders and returns follow Go's
+  statuses and handover codes. Do not invent workflow statuses or
+  agreement/signature records.
+- Donations record direct transfers the donor reports (PIX or bank); Petfinder
+  never processes payments. The NGO confirms or marks them not found.
+- NGO posts, likes, follows, the following feed and notifications use Go's
+  community routes; notification links come from `audience` and
+  `application_id`, never from guessing the viewer's role.
+- Home filters (including species), grid preview history, progressive batches,
+  and scroll snapshots stay in `src/app/_components`. Shared presentation stays in `components/posts`.
   Preserve Next.js history fields and use its native History integration.
 - Go preferences are mutually exclusive `liked` and `not_interested` values.
   Likes use idempotent PUT, including photo double-taps. DELETE clears a
@@ -84,14 +115,21 @@ workflows. Do not implement missing backend features in Next.js.
   Disabled GPS must stay disabled. Discovery uses Go latitude/longitude filters;
   no local postal-code geocoding or ordering fallback is implemented.
 - `/ngo/organizations` lists active and invited memberships, including pending
-  organizations. Invitations do not grant inventory or administration access.
+  organizations. Invitations grant no access until the invited person accepts
+  them with `PUT /v1/me/organizations/{id}/membership`.
   NGO inventory uses `/v1/organizations/{id}/animals` with server status filters;
   advertiser inventory uses `/v1/me/animals`, independently of discovery.
   Image moderation uses explicit publication permission from Go membership data.
-- Messages poll the actual Go endpoint and load older pages with the exclusive
-  `before` cursor. Preserve scroll position when loading history. Do not invent
-  unread counts or message delivery receipts. Binary uploads, standalone posts, donations, follows,
-  notifications, and surrender workflows remain unsupported as documented.
+- Chat uses the Go WebSocket (`useChatSocket`). The browser never sees the
+  access token: the proxy exchanges the HttpOnly session for a one-minute,
+  conversation-scoped ticket (`POST /v1/conversations/{id}/ws-ticket`) offered
+  as a `ticket.<ticket>` subprotocol directly to Go (Next route handlers cannot
+  proxy upgrades). Close code 4001 reconnects with a new ticket. While the
+  socket is down, history polls and sends fall back to REST. History loads older
+  pages with the exclusive `before` cursor; preserve scroll position. Do not
+  invent unread counts or delivery receipts: unread counts come from
+  `/v1/conversations/unread` and `/v1/notifications/unread`, and the thread
+  advances Go's read cursor. Known limitations live in `docs/known-gaps.md`.
 
 ## Component ownership
 
@@ -205,10 +243,9 @@ refactors, check types, lint, relevant tests, and the production build. For UI
 changes, also verify mobile layout and affected interactions. Documentation-only
 changes need formatting and factual review, not a full application build.
 
-Consult `README.md` for project context, `src/components/README.md` for component
-placement, `src/components/ui/README.md` for UI conventions, and
-`docs/adoption-workflow-plan.md` for adoption workflow context. Distinguish planned
-behavior in design documents from behavior implemented in the source.
+Consult `README.md` and `docs/` for project context, `src/components/README.md`
+for component placement, and `src/components/ui/README.md` for UI conventions.
+Keep `docs/` current when changing behavior described there.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
