@@ -1,14 +1,30 @@
+import { PasswordRecoveryForm } from "@/components/auth/password-recovery-form";
 import { PhotoAuthLayout } from "@/components/auth/photo-auth-layout";
+import type { Metadata } from "next";
 import Link from "next/link";
-export default function Page() {
+
+export const metadata: Metadata = { title: "Redefinir senha – Petfinder" };
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string | string[] }>;
+}) {
+  const { token } = await searchParams;
   return (
     <PhotoAuthLayout heading="Redefinir senha">
-      <p className="text-text-light">
-        A recuperação de senha ainda não está disponível.
-      </p>
-      <Link href="/login" className="text-text-light underline">
-        Voltar para entrar
-      </Link>
+      {typeof token === "string" && token.length >= 32 ? (
+        <PasswordRecoveryForm mode="reset" token={token} />
+      ) : (
+        <>
+          <p className="text-text-light">
+            Este link de redefinição é inválido. Solicite um novo.
+          </p>
+          <Link href="/forgot-password" className="text-text-light underline">
+            Recuperar senha
+          </Link>
+        </>
+      )}
     </PhotoAuthLayout>
   );
 }
