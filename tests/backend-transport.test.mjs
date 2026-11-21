@@ -238,3 +238,20 @@ test("same-origin checks honor the browser host when Next normalizes its bind ho
     false,
   );
 });
+
+test("same-origin checks honor a TLS-terminating reverse proxy", async () => {
+  const { isSameOrigin } =
+    await import("../src/lib/backend/session-cookies.ts");
+  const proxied = (origin) =>
+    new Request("http://127.0.0.1:3000/api/session/register", {
+      headers: {
+        Host: "petfinder.example",
+        "X-Forwarded-Proto": "https",
+        "X-Forwarded-Host": "petfinder.example",
+        Origin: origin,
+        "Sec-Fetch-Site": "same-origin",
+      },
+    });
+  assert.equal(isSameOrigin(proxied("https://petfinder.example")), true);
+  assert.equal(isSameOrigin(proxied("https://attacker.test")), false);
+});

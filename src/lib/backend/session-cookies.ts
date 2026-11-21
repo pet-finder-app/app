@@ -58,11 +58,28 @@ export function isSameOrigin(request: Request): boolean {
   const origin = request.headers.get("Origin");
   // Next may normalize request.url to its bind hostname. The browser-facing
   // Host header identifies the origin that actually received the request.
-  const expected = new URL(request.url);
-  const host = request.headers.get("Host");
-  if (host) expected.host = host;
+  // Behind a TLS-terminating reverse proxy the app itself sees plain HTTP, so
+  // honor the proxy's forwarded scheme/host. The app only binds to loopback in
+  // production, and browsers cannot set X-Forwarded-* on cross-site requests
+  // without a CORS preflight that Next never approves.
+  const url = new URL(request.url);
+  const first = (name: string) =>
+    request.headers.get(name)?.split(",")[0]?.trim() || undefined;
+  const forwardedProto = first("X-Forwarded-Proto");
+  const protocol =
+    forwardedProto === "http" || forwardedProto === "https"
+      ? `${forwardedProto}:`
+      : url.protocol;
+  const host = first("X-Forwarded-Host") ?? first("Host") ?? url.host;
+  // Build a fresh URL: assigning `url.host` without a port keeps the old one.
+  let expected: string;
+  try {
+    expected = new URL(`${protocol}//${host}`).origin;
+  } catch {
+    return false;
+  }
   return (
     request.headers.get("Sec-Fetch-Site") !== "cross-site" &&
-    (!origin || origin === expected.origin)
+    (!origin || origin === expected)
   );
 }
