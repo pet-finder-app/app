@@ -1,5 +1,3 @@
-"use client";
-
 import { iconSize } from "@/components/ui";
 import type { LucideIcon } from "lucide-react";
 import { useId } from "react";

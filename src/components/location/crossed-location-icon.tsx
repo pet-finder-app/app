@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/components/ui";
 import { MapPin } from "lucide-react";
 import { useId } from "react";

@@ -1,4 +1,5 @@
 "use client";
+import { VerificationLossDialog } from "@/components/ngo/verification-loss-dialog";
 import { Button, FormError, Input, Textarea } from "@/components/ui";
 import { apiMutations } from "@/lib/api/mutations";
 import type {
@@ -34,12 +35,24 @@ export function OrganizationForm({
   });
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [isConfirmingRename, setIsConfirmingRename] = useState(false);
   const isPending = create.isPending || update.isPending || select.isPending;
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isPending) return;
     setError(null);
     setSaved(false);
+    // Go sends a verified organization back to review when its name changes.
+    if (
+      organization?.verificationStatus === "verified" &&
+      draft.name.trim() !== organization.name
+    ) {
+      setIsConfirmingRename(true);
+      return;
+    }
+    void save();
+  }
+  async function save() {
     try {
       if (!organization && createdId) {
         await select.mutateAsync(createdId);
@@ -65,6 +78,7 @@ export function OrganizationForm({
       };
       if (organization) {
         await update.mutateAsync({ id: organization.id, changes: input });
+        setIsConfirmingRename(false);
         setSaved(true);
         router.refresh();
       } else {
@@ -75,6 +89,7 @@ export function OrganizationForm({
         router.refresh();
       }
     } catch (error: unknown) {
+      setIsConfirmingRename(false);
       setError(
         error instanceof Error
           ? error.message
@@ -184,6 +199,14 @@ export function OrganizationForm({
             ? "Abrir ONG cadastrada"
             : "Cadastrar ONG"}
       </Button>
+      {isConfirmingRename ? (
+        <VerificationLossDialog
+          change="o nome da ONG"
+          isBusy={update.isPending}
+          onConfirm={() => void save()}
+          onClose={() => setIsConfirmingRename(false)}
+        />
+      ) : null}
     </form>
   );
 }

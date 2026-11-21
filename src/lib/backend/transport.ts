@@ -117,8 +117,9 @@ export async function authenticatedBackendRequest(
   let tokens: AuthSessionResponse | null = null;
   if (!accessToken && refreshToken)
     tokens = await refreshBackendSession(refreshToken);
+  // Without a session, Go decides: public routes answer, protected ones 401.
   if (!accessToken && !tokens)
-    return { response: new Response(null, { status: 401 }), tokens: null };
+    return { response: await fetchBackend(path, init), tokens: null };
   let response = await fetchBackend(
     path,
     init,

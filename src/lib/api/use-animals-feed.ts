@@ -1,10 +1,11 @@
 "use client";
 import type { FeedPostItem as HomeFeedItem } from "@/components/posts/feed-post";
+import { animalQueries, type AnimalSpecies } from "@/lib/api/animals";
 import { ApiError } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/keys";
+import { hasNextPage } from "@/lib/api/pagination";
 import {
   animalOptions,
-  animalsOptions,
   locationOptions,
   preferencesOptions,
 } from "@/lib/api/queries";
@@ -14,6 +15,7 @@ import type {
 } from "@/lib/backend/contracts";
 import type { QueryClient } from "@tanstack/react-query";
 import {
+  keepPreviousData,
   useInfiniteQuery,
   useQuery,
   useQueryClient,
@@ -67,7 +69,44 @@ async function hydrateAnimal(
 }
 
 export type AnimalsFeedMode = "discover" | "liked" | "not_interested";
-export function useAnimalsFeed(mode: AnimalsFeedMode = "discover") {
+export type AnimalsFeedPage = {
+  items: HomeFeedItem[];
+  hasMore: boolean;
+  /** Matching animals across all pages, from Go's `page.total`. */
+  total: number;
+};
+
+/** One feed page: discovery honors location and species; preference lists ignore them. */
+export async function fetchAnimalsFeedPage(
+  client: QueryClient,
+  {
+    mode,
+    page,
+    coordinates = null,
+    species = null,
+  }: {
+    mode: AnimalsFeedMode;
+    page: number;
+    coordinates?: { lat: number; lon: number } | null;
+    species?: AnimalSpecies | null;
+  },
+): Promise<AnimalsFeedPage> {
+  const result =
+    mode === "discover"
+      ? await client.fetchQuery(
+          animalQueries.discover(page, coordinates ?? undefined, species),
+        )
+      : await client.fetchQuery(preferencesOptions(mode, page));
+  const items = await Promise.all(
+    result.items.map((animal) => hydrateAnimal(client, animal)),
+  );
+  return { items, hasMore: hasNextPage(result.page), total: result.page.total };
+}
+
+export function useAnimalsFeed(
+  mode: AnimalsFeedMode = "discover",
+  species: AnimalSpecies | null = null,
+) {
   const client = useQueryClient();
   const location = useQuery(locationOptions);
   const coordinates = location.data?.enabled ? location.data.coordinates : null;
@@ -85,45 +124,44 @@ export function useAnimalsFeed(mode: AnimalsFeedMode = "discover") {
           for (const animal of result.items)
             (value === "liked" ? liked : hidden).add(animal.id);
           if (value === "not_interested") hiddenAnimals.push(...result.items);
-          if (result.items.length < 100) break;
+          if (!hasNextPage(result.page)) break;
         }
       }
       const hiddenItems =
         mode === "discover"
           ? await Promise.all(
-              hiddenAnimals.map((animal) => hydrateAnimal(client, animal)),
+              hiddenAnimals.map(
+                async (animal) =>
+                  [
+                    animal.species,
+                    await hydrateAnimal(client, animal),
+                  ] as const,
+              ),
             )
           : [];
       return { liked, hidden, hiddenItems };
     },
   });
   const query = useInfiniteQuery({
-    queryKey: queryKeys.feed(
-      mode,
-      coordinates ? `${coordinates.lat},${coordinates.lon}` : "none",
-    ),
+    queryKey: [
+      ...queryKeys.feed(
+        mode,
+        coordinates ? `${coordinates.lat},${coordinates.lon}` : "none",
+      ),
+      mode === "discover" ? (species ?? "all") : "all",
+    ],
     initialPageParam: 1,
-    queryFn: async ({
-      pageParam,
-    }): Promise<{ items: HomeFeedItem[]; hasMore: boolean }> => {
-      const result =
-        mode === "discover"
-          ? await client.fetchQuery(
-              animalsOptions(pageParam, coordinates ?? undefined),
-            )
-          : await client.fetchQuery(preferencesOptions(mode, pageParam));
-      const items = await Promise.all(
-        result.items.map(async (animal): Promise<HomeFeedItem> => {
-          return hydrateAnimal(client, animal);
-        }),
-      );
-      return {
-        items,
-        hasMore: result.items.length === (mode === "discover" ? 20 : 100),
-      };
-    },
+    queryFn: ({ pageParam }) =>
+      fetchAnimalsFeedPage(client, {
+        mode,
+        page: pageParam,
+        coordinates,
+        species: mode === "discover" ? species : null,
+      }),
     getNextPageParam: (last, _pages, page) =>
       last.hasMore ? page + 1 : undefined,
+    // Keep the feed (and its filters) mounted while another filter loads.
+    placeholderData: keepPreviousData,
   });
   const items = useMemo(
     () =>
@@ -131,7 +169,12 @@ export function useAnimalsFeed(mode: AnimalsFeedMode = "discover") {
         new Map(
           [
             ...(query.data?.pages.flatMap((page) => page.items) ?? []),
-            ...(preferences.data?.hiddenItems ?? []),
+            // Hidden animals stay reachable through "Mostrar ocultos", within the species filter.
+            ...(preferences.data?.hiddenItems ?? [])
+              .filter(
+                ([animalSpecies]) => !species || animalSpecies === species,
+              )
+              .map(([, item]) => item),
           ].map((item) => [item.id, item]),
         ).values(),
       ).map((item) => ({
@@ -139,7 +182,8 @@ export function useAnimalsFeed(mode: AnimalsFeedMode = "discover") {
         liked: preferences.data?.liked.has(item.id) ?? item.liked,
         isHidden: preferences.data?.hidden.has(item.id) ?? item.isHidden,
       })),
-    [query.data, preferences.data],
+    [query.data, preferences.data, species],
   );
-  return { items, query, preferences, location, coordinates };
+  const total = query.data?.pages.at(-1)?.total ?? 0;
+  return { items, total, query, preferences, location, coordinates };
 }

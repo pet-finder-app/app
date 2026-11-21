@@ -6,14 +6,22 @@ import {
   LinkButton,
   Textarea,
 } from "@/components/ui";
+import {
+  canManageOrganization,
+  type ViewerAccess,
+} from "@/components/workflows/access";
+import { FollowupPanel } from "@/components/workflows/followup-panel";
+import { ReasonSheet } from "@/components/workflows/reason-sheet";
 import { apiMutations, type ScreeningInput } from "@/lib/api/mutations";
 import { applicationOptions } from "@/lib/api/queries";
+import { workflowMutations } from "@/lib/api/workflows";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { AppointmentPanel } from "./appointment-panel";
 import { APPLICATION_STATUS_LABELS, formatDate } from "./labels";
 import { QueryStatus } from "./query-status";
+import { VerifiedBadge } from "./verified-badge";
 
 const answersSchema = z.object({
   housing: z.string(),
@@ -23,18 +31,10 @@ const answersSchema = z.object({
   has_other_animals: z.boolean().optional(),
   accepts_follow_up: z.boolean().optional(),
 });
-function decodeAnswers(value: string) {
-  try {
-    const payload: unknown = JSON.parse(
-      new TextDecoder().decode(
-        Uint8Array.from(atob(value), (character) => character.charCodeAt(0)),
-      ),
-    );
-    const result = answersSchema.safeParse(payload);
-    return result.success ? result.data : null;
-  } catch {
-    return null;
-  }
+/** Go returns screening answers as a JSON object (JSONB), validated here. */
+function decodeAnswers(value: unknown) {
+  const result = answersSchema.safeParse(value);
+  return result.success ? result.data : null;
 }
 function ScreeningForm({ id }: { id: string }) {
   const mutation = useMutation(apiMutations.screening());
@@ -118,18 +118,54 @@ function ScreeningForm({ id }: { id: string }) {
     </form>
   );
 }
-export function ApplicationDetail({
-  id,
-  userId,
-}: {
+const CANCELLABLE_STATUSES = [
+  "submitted",
+  "screening",
+  "more_information_requested",
+  "approved",
+];
+function ApplicationCancellation({ id }: { id: string }) {
+  const cancellation = useMutation(workflowMutations.cancelApplication());
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <>
+      <Button variant="danger-ghost" onClick={() => setIsOpen(true)}>
+        Cancelar pedido
+      </Button>
+      {isOpen ? (
+        <ReasonSheet
+          title="Cancelar pedido de adoção"
+          description="O cancelamento encerra o pedido e a conversa com o adotante, cancela encontros pendentes e, se o pedido estava aprovado, deixa o animal disponível novamente. O motivo fica registrado no histórico e esta ação não pode ser desfeita."
+          label="Motivo do cancelamento"
+          confirmLabel="Cancelar pedido"
+          isBusy={cancellation.isPending}
+          error={cancellation.error?.message}
+          onConfirm={(reason) => cancellation.mutateAsync({ id, reason })}
+          onClose={() => {
+            setIsOpen(false);
+            cancellation.reset();
+          }}
+        />
+      ) : null}
+    </>
+  );
+}
+type ApplicationDetailProps = {
   id: string;
-  userId: string;
-}) {
+  access: ViewerAccess;
+};
+export function ApplicationDetail({ id, access }: ApplicationDetailProps) {
+  const userId = access.userId;
   const query = useQuery(applicationOptions(id));
   const decision = useMutation(apiMutations.applicationDecision());
+  const withdrawal = useMutation(apiMutations.withdrawApplication());
   const [reason, setReason] = useState("");
+  const [withdrawalReason, setWithdrawalReason] = useState("");
   const data = query.data;
   const isApplicant = data?.application.adopterId === userId;
+  const canManage =
+    !isApplicant &&
+    canManageOrganization(access, data?.application.organizationId);
   const answers = data?.screening
     ? decodeAnswers(data.screening.answers)
     : null;
@@ -141,6 +177,14 @@ export function ApplicationDetail({
           <h2 className="text-xl font-bold">
             Adoção de {data.application.animalName}
           </h2>
+          {isApplicant ? null : (
+            <p className="flex flex-wrap items-center gap-2">
+              Adotante: {data.application.adopterName}
+              <VerifiedBadge
+                status={data.application.adopterVerificationStatus}
+              />
+            </p>
+          )}
           <p>
             {APPLICATION_STATUS_LABELS[data.application.status] ??
               "Situação não informada"}
@@ -152,6 +196,17 @@ export function ApplicationDetail({
           >
             Ver animal
           </LinkButton>
+          {data.conversations.map((conversation) => (
+            <LinkButton
+              key={conversation.id}
+              variant="outline"
+              href={`/${isApplicant ? "adopter" : "ngo"}/conversations/${conversation.id}`}
+            >
+              {conversation.status === "closed"
+                ? "Ver conversa encerrada"
+                : "Abrir conversa com a ONG"}
+            </LinkButton>
+          ))}
           {data.application.decisionReason ? (
             <p>Resposta da organização: {data.application.decisionReason}</p>
           ) : null}
@@ -215,8 +270,95 @@ export function ApplicationDetail({
               </FormError>
             </section>
           ) : null}
-          {data.application.status === "approved" ? (
-            <AppointmentPanel applicationId={id} isApplicant={isApplicant} />
+          {isApplicant &&
+          ["submitted", "screening", "more_information_requested"].includes(
+            data.application.status,
+          ) ? (
+            <form
+              className="flex flex-col gap-3 border-t border-border-light pt-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (
+                  !withdrawal.isPending &&
+                  withdrawalReason.trim().length >= 5
+                )
+                  withdrawal.mutate({ id, reason: withdrawalReason.trim() });
+              }}
+            >
+              <h2 className="text-lg font-bold">Desistir da adoção</h2>
+              <p>
+                Ao desistir, seu pedido será retirado e a conversa será
+                encerrada.
+              </p>
+              <Textarea
+                id="application-withdrawal-reason"
+                label="Motivo da desistência"
+                required
+                minLength={5}
+                maxLength={2000}
+                value={withdrawalReason}
+                onChange={(event) => setWithdrawalReason(event.target.value)}
+                errorId="application-withdrawal-error"
+              />
+              <FormError id="application-withdrawal-error">
+                {withdrawal.error?.message}
+              </FormError>
+              <Button
+                type="submit"
+                variant="danger"
+                loading={withdrawal.isPending}
+                disabled={withdrawalReason.trim().length < 5}
+              >
+                Confirmar desistência
+              </Button>
+            </form>
+          ) : null}
+          {["approved", "completed"].includes(data.application.status) ? (
+            <section className="flex flex-col gap-2 border-t border-border-light pt-4">
+              <h2 className="text-lg font-bold">Termo de adoção</h2>
+              <p className="text-sm text-neutral-600">
+                O adotante e o representante da ONG assinam o termo com um
+                código enviado por e-mail.
+              </p>
+              <LinkButton
+                variant="outline"
+                href={`/adoptions/${encodeURIComponent(id)}/agreement`}
+              >
+                {canManage
+                  ? "Preparar ou ver o termo"
+                  : "Ver e assinar o termo"}
+              </LinkButton>
+            </section>
+          ) : null}
+          {data.application.status === "completed" ? (
+            <FollowupPanel
+              applicationId={id}
+              canSchedule={canManage}
+              isApplicant={isApplicant}
+            />
+          ) : null}
+          {isApplicant && data.application.status === "completed" ? (
+            <LinkButton
+              variant="outline"
+              href={`/adopter/surrenders/new?application=${encodeURIComponent(id)}`}
+            >
+              Devolver este animal à ONG
+            </LinkButton>
+          ) : null}
+          {canManage &&
+          CANCELLABLE_STATUSES.includes(data.application.status) ? (
+            <ApplicationCancellation id={id} />
+          ) : null}
+          {["approved", "completed", "cancelled"].includes(
+            data.application.status,
+          ) ? (
+            <AppointmentPanel
+              applicationId={id}
+              isApplicant={isApplicant}
+              canSchedule={
+                data.application.status === "approved" && !isApplicant
+              }
+            />
           ) : null}
           <section>
             <h2 className="font-bold">Histórico</h2>

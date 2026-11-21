@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui";
+import { conversationUnreadOptions } from "@/lib/api/community";
 import { conversationsOptions } from "@/lib/api/queries";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -14,6 +15,16 @@ export function ConversationList({
 }) {
   const [page, setPage] = useState(1);
   const query = useQuery(conversationsOptions(organizationId, page));
+  // Refresh unread counts together with the conversation list.
+  const unread = useQuery({
+    ...conversationUnreadOptions(),
+    refetchInterval: 15_000,
+  });
+  const unreadById = new Map<string, number>(
+    unread.data?.items.map(
+      (item) => [item.conversationId, item.unreadCount] as const,
+    ),
+  );
   return (
     <>
       <QueryStatus query={query} />
@@ -21,23 +32,40 @@ export function ConversationList({
         <p>Você ainda não tem conversas.</p>
       ) : null}
       <ul className="flex flex-col gap-3">
-        {query.data?.items.map((item) => (
-          <li key={item.id} className="border-b border-border-light pb-3">
-            <Link
-              className="block focus-visible:outline-2 focus-visible:outline-accent-tertiary"
-              href={`${organizationId ? "/ngo/conversations" : "/adopter/conversations"}/${item.id}`}
-            >
-              <h2 className="font-bold">{item.animalName}</h2>
-              <p>
-                {"counterpartyName" in item
-                  ? item.counterpartyName
-                  : item.organizationName}
-              </p>
-              <p className="truncate text-sm">{item.lastMessageBody}</p>
-              <time className="text-xs">{formatDate(item.lastMessageAt)}</time>
-            </Link>
-          </li>
-        ))}
+        {query.data?.items.map((item) => {
+          const unreadCount = unreadById.get(item.id) ?? 0;
+          return (
+            <li key={item.id} className="border-b border-border-light pb-3">
+              <Link
+                className="block focus-visible:outline-2 focus-visible:outline-accent-tertiary"
+                href={`${organizationId ? "/ngo/conversations" : "/adopter/conversations"}/${item.id}`}
+              >
+                <h2 className="flex items-center justify-between gap-2 font-bold">
+                  <span className="min-w-0 truncate">{item.animalName}</span>
+                  {unreadCount > 0 ? (
+                    <span className="shrink-0 rounded-full bg-red-700 px-2 py-0.5 text-xs text-white">
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                      <span className="sr-only">
+                        {unreadCount === 1
+                          ? " mensagem não lida"
+                          : " mensagens não lidas"}
+                      </span>
+                    </span>
+                  ) : null}
+                </h2>
+                <p>
+                  {"counterpartyName" in item
+                    ? item.counterpartyName
+                    : item.organizationName}
+                </p>
+                <p className="truncate text-sm">{item.lastMessageBody}</p>
+                <time className="text-xs">
+                  {formatDate(item.lastMessageAt)}
+                </time>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
       <div className="flex gap-3">
         <Button

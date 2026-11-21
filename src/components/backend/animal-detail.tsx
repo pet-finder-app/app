@@ -1,12 +1,16 @@
 "use client";
+import { AnimalAttributesList } from "@/components/animals/animal-attributes-list";
+import { LIFECYCLE_STATUS_LABELS } from "@/components/animals/animal-labels";
+import { FollowButton } from "@/components/community/follow-button";
 import { PostMediaCarousel } from "@/components/posts/post-media-carousel";
 import { Button, FormError, LinkButton, Textarea } from "@/components/ui";
 import { apiMutations } from "@/lib/api/mutations";
-import { animalOptions } from "@/lib/api/queries";
+import { animalOptions, organizationOptions } from "@/lib/api/queries";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { ANIMAL_STATUS_LABELS, formatDate } from "./labels";
+import { formatDate, mediaHref } from "./labels";
 import { QueryStatus } from "./query-status";
 
 const SEX_LABELS: Record<string, string> = {
@@ -28,6 +32,12 @@ export function AnimalDetail({
   const application = useMutation(apiMutations.createApplication());
   const [introduction, setIntroduction] = useState("");
   const router = useRouter();
+  const responsibleOrganizationId =
+    query.data?.animal.responsibleOrganizationId ?? null;
+  const organization = useQuery({
+    ...organizationOptions(responsibleOrganizationId ?? ""),
+    enabled: Boolean(responsibleOrganizationId),
+  });
   function requestAdoption(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (application.isPending) return;
@@ -49,15 +59,22 @@ export function AnimalDetail({
           <PostMediaCarousel
             post={{
               media: data.images
-                .filter((image) => /^https?:\/\//.test(image.storageKey))
-                .map((image) => ({ url: image.storageKey, type: "image" })),
+                .filter(
+                  (image) =>
+                    image.moderationStatus === "approved" &&
+                    /^https?:\/\//.test(image.storageKey),
+                )
+                .map((image) => ({
+                  url: mediaHref(image.storageKey),
+                  type: "image",
+                })),
             }}
             petName={data.animal.name}
             tone="bg-secondary"
             enablePhotoViewer
           />
           <p>
-            {ANIMAL_STATUS_LABELS[data.animal.status] ??
+            {LIFECYCLE_STATUS_LABELS[data.animal.status] ??
               "Situação não informada"}
           </p>
           <p className="whitespace-pre-line">{data.animal.description}</p>
@@ -65,27 +82,37 @@ export function AnimalDetail({
             {data.animal.city} · {data.animal.stateCode}
           </p>
           <dl className="grid grid-cols-2 gap-2">
-            <dt>Sexo</dt>
+            <dt className="font-medium">Sexo</dt>
             <dd>{SEX_LABELS[data.animal.sex] ?? "Não informado"}</dd>
-            <dt>Nascimento aproximado</dt>
+            <dt className="font-medium">Nascimento aproximado</dt>
             <dd>{formatDate(data.animal.birthDate)}</dd>
-            <dt>Vacinação</dt>
-            <dd>
-              {data.animal.vaccinated === null
-                ? "Não informada"
-                : data.animal.vaccinated
-                  ? "Vacinado"
-                  : "Não vacinado"}
-            </dd>
-            <dt>Castração</dt>
-            <dd>
-              {data.animal.neutered === null
-                ? "Não informada"
-                : data.animal.neutered
-                  ? "Castrado"
-                  : "Não castrado"}
-            </dd>
           </dl>
+          <AnimalAttributesList animal={data.animal} />
+          {organization.data ? (
+            <section
+              aria-label="ONG responsável"
+              className="flex flex-col gap-2 border-t border-border-light pt-3"
+            >
+              <p>
+                ONG responsável:{" "}
+                <Link
+                  href={`/organizations/${encodeURIComponent(organization.data.id)}`}
+                  className="font-medium underline"
+                >
+                  {organization.data.name}
+                </Link>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <FollowButton organizationId={organization.data.id} />
+                <LinkButton
+                  href={`/adopter/donate/${encodeURIComponent(organization.data.id)}`}
+                  variant="outline"
+                >
+                  Doar para a ONG
+                </LinkButton>
+              </div>
+            </section>
+          ) : null}
           {data.animal.healthNotes ? (
             <p>Saúde: {data.animal.healthNotes}</p>
           ) : null}

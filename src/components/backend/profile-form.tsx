@@ -1,7 +1,30 @@
 "use client";
 import { LogoutButton } from "@/components/account/logout-button";
-import { Button, FormError, Input, LinkButton } from "@/components/ui";
+import {
+  isPersonalVerificationAtRisk,
+  PersonalVerificationLossDialog,
+} from "@/components/account/personal-verification-loss-dialog";
+import { MediaUploadField } from "@/components/media/media-upload-field";
+import {
+  Button,
+  Checkbox,
+  FormError,
+  Input,
+  LinkButton,
+  Textarea,
+} from "@/components/ui";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import {
+  accountErrorMessage,
+  accountMutations,
+  isSameValue,
+  normalizePersonalProfile,
+  PROFILE_LIMITS,
+  splitLines,
+  toPersonalProfileInput,
+  validatePersonalProfile,
+  type PersonalProfileInput,
+} from "@/lib/api/account";
 import { apiMutations } from "@/lib/api/mutations";
 import type {
   OrganizationResponse,
@@ -9,7 +32,44 @@ import type {
 } from "@/lib/backend/contracts";
 import { useMutation } from "@tanstack/react-query";
 import { UserRound } from "lucide-react";
-import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState, type ReactNode } from "react";
+import { mediaHref } from "./labels";
+import { VerifiedBadge } from "./verified-badge";
+
+type ProfileSection =
+  "photo" | "personal" | "address" | "adoption" | "documents";
+const SECTION_TITLES: Record<ProfileSection, string> = {
+  photo: "Foto de perfil",
+  personal: "Dados pessoais",
+  address: "Endereço",
+  adoption: "Moradia e preferências",
+  documents: "Documentos pessoais",
+};
+const SECTIONS = Object.keys(SECTION_TITLES).filter(
+  (key): key is ProfileSection => key in SECTION_TITLES,
+);
+
+/** Multi-line list fields are edited as text and split on save. */
+type ProfileDraft = Omit<
+  PersonalProfileInput,
+  "socialLinks" | "preferences"
+> & {
+  socialLinks: string;
+  preferences: string;
+};
+const toDraft = (profile: PersonalProfileInput): ProfileDraft => ({
+  ...profile,
+  socialLinks: profile.socialLinks.join("\n"),
+  preferences: profile.preferences.join("\n"),
+});
+const fromDraft = (draft: ProfileDraft): PersonalProfileInput =>
+  normalizePersonalProfile({
+    ...draft,
+    socialLinks: splitLines(draft.socialLinks),
+    preferences: splitLines(draft.preferences),
+  });
 
 export function ProfileForm({
   user,
@@ -18,6 +78,7 @@ export function ProfileForm({
   user: UserResponse;
   organization: OrganizationResponse | null;
 }) {
+  const router = useRouter();
   const [draft, setDraft] = useState({
     name: user.name,
     phone: user.phone ?? "",
@@ -28,6 +89,20 @@ export function ProfileForm({
   const [error, setError] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const update = useMutation(apiMutations.updateProfile());
+  const updateProfile = useMutation(accountMutations.updatePersonalProfile());
+  const [savedProfile, setSavedProfile] = useState(() =>
+    normalizePersonalProfile(toPersonalProfileInput(user.profile)),
+  );
+  const [profileDraft, setProfileDraft] = useState(() => toDraft(savedProfile));
+  const [verificationStatus, setVerificationStatus] = useState(
+    user.verificationStatus,
+  );
+  const [section, setSection] = useState<ProfileSection | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [isProfileSaved, setIsProfileSaved] = useState(false);
+  const [isConfirmingLoss, setIsConfirmingLoss] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
   async function save() {
     if (update.isPending) return;
     setError(null);
@@ -68,15 +143,263 @@ export function ProfileForm({
       );
     }
   }
+
+  function requestProfileSave() {
+    if (updateProfile.isPending) return;
+    setProfileError(null);
+    setIsProfileSaved(false);
+    if (isUploading) {
+      setProfileError("Aguarde o envio dos arquivos terminar.");
+      return;
+    }
+    const profile = fromDraft(profileDraft);
+    const invalid = validatePersonalProfile(profile);
+    if (invalid) {
+      setProfileError(invalid);
+      return;
+    }
+    // Go resets personal verification whenever the profile is sent.
+    if (isSameValue(profile, savedProfile)) {
+      setIsProfileSaved(true);
+      return;
+    }
+    if (isPersonalVerificationAtRisk(verificationStatus)) {
+      setIsConfirmingLoss(true);
+      return;
+    }
+    void saveProfile();
+  }
+
+  async function saveProfile() {
+    try {
+      const result = await updateProfile.mutateAsync({
+        profile: fromDraft(profileDraft),
+      });
+      const next = normalizePersonalProfile(
+        toPersonalProfileInput(result.profile),
+      );
+      setSavedProfile(next);
+      setProfileDraft(toDraft(next));
+      setVerificationStatus(result.verificationStatus);
+      setIsConfirmingLoss(false);
+      setIsProfileSaved(true);
+      router.refresh();
+    } catch (failure: unknown) {
+      setIsConfirmingLoss(false);
+      setProfileError(accountErrorMessage(failure, "profile"));
+    }
+  }
+
+  function openSection(next: ProfileSection) {
+    setProfileError(null);
+    setIsProfileSaved(false);
+    setSection(next);
+  }
+
+  const setAddress = (
+    key: keyof PersonalProfileInput["address"],
+    value: string,
+  ) =>
+    setProfileDraft({
+      ...profileDraft,
+      address: { ...profileDraft.address, [key]: value },
+    });
+
+  const sectionFields: Record<ProfileSection, ReactNode> = {
+    photo: (
+      <MediaUploadField
+        id="profile-avatar"
+        label="Foto de perfil"
+        purpose="avatar"
+        hint="JPEG, PNG ou WebP, até 10 MB."
+        value={profileDraft.avatarUrl ? [profileDraft.avatarUrl] : []}
+        onChange={(urls) =>
+          setProfileDraft({ ...profileDraft, avatarUrl: urls[0] ?? "" })
+        }
+        onBusyChange={setIsUploading}
+      />
+    ),
+    personal: (
+      <>
+        <Input
+          id="profile-cpf"
+          label="CPF"
+          inputMode="numeric"
+          autoComplete="off"
+          hint="Somente números, 11 dígitos."
+          maxLength={14}
+          value={profileDraft.cpf}
+          onChange={(event) =>
+            setProfileDraft({ ...profileDraft, cpf: event.target.value })
+          }
+        />
+        <Input
+          id="profile-birth-date"
+          label="Data de nascimento"
+          type="date"
+          max={new Date().toISOString().slice(0, 10)}
+          value={profileDraft.birthDate}
+          onChange={(event) =>
+            setProfileDraft({ ...profileDraft, birthDate: event.target.value })
+          }
+        />
+        <Input
+          id="profile-occupation"
+          label="Profissão"
+          maxLength={PROFILE_LIMITS.occupation}
+          value={profileDraft.occupation}
+          onChange={(event) =>
+            setProfileDraft({ ...profileDraft, occupation: event.target.value })
+          }
+        />
+        <Textarea
+          id="profile-biography"
+          label="Sobre você"
+          maxLength={PROFILE_LIMITS.biography}
+          value={profileDraft.biography}
+          onChange={(event) =>
+            setProfileDraft({ ...profileDraft, biography: event.target.value })
+          }
+        />
+        <Textarea
+          id="profile-social-links"
+          label="Redes sociais"
+          hint={`Um endereço completo por linha (https://...), até ${PROFILE_LIMITS.socialLinks}.`}
+          value={profileDraft.socialLinks}
+          onChange={(event) =>
+            setProfileDraft({
+              ...profileDraft,
+              socialLinks: event.target.value,
+            })
+          }
+        />
+      </>
+    ),
+    address: (
+      <>
+        <Input
+          id="profile-postal-code"
+          label="CEP"
+          inputMode="numeric"
+          autoComplete="postal-code"
+          maxLength={PROFILE_LIMITS.postalCode}
+          value={profileDraft.address.postalCode}
+          onChange={(event) => setAddress("postalCode", event.target.value)}
+        />
+        <Input
+          id="profile-street"
+          label="Rua"
+          autoComplete="address-line1"
+          maxLength={PROFILE_LIMITS.street}
+          value={profileDraft.address.street}
+          onChange={(event) => setAddress("street", event.target.value)}
+        />
+        <Input
+          id="profile-number"
+          label="Número"
+          maxLength={PROFILE_LIMITS.number}
+          value={profileDraft.address.number}
+          onChange={(event) => setAddress("number", event.target.value)}
+        />
+        <Input
+          id="profile-complement"
+          label="Complemento"
+          autoComplete="address-line2"
+          maxLength={PROFILE_LIMITS.complement}
+          value={profileDraft.address.complement}
+          onChange={(event) => setAddress("complement", event.target.value)}
+        />
+        <Input
+          id="profile-neighborhood"
+          label="Bairro"
+          maxLength={PROFILE_LIMITS.neighborhood}
+          value={profileDraft.address.neighborhood}
+          onChange={(event) => setAddress("neighborhood", event.target.value)}
+        />
+        <p className="text-xs text-neutral-600">
+          Cidade e estado ficam em &quot;Identificação e localização&quot;.
+        </p>
+      </>
+    ),
+    adoption: (
+      <>
+        <Textarea
+          id="profile-housing"
+          label="Moradia"
+          hint="Tipo de casa, espaço disponível, quem mora com você."
+          maxLength={PROFILE_LIMITS.housing}
+          value={profileDraft.housing}
+          onChange={(event) =>
+            setProfileDraft({ ...profileDraft, housing: event.target.value })
+          }
+        />
+        <Textarea
+          id="profile-preferences"
+          label="Preferências de adoção"
+          hint={`Uma preferência por linha, até ${PROFILE_LIMITS.preferences}. Ex.: cães de porte pequeno.`}
+          value={profileDraft.preferences}
+          onChange={(event) =>
+            setProfileDraft({
+              ...profileDraft,
+              preferences: event.target.value,
+            })
+          }
+        />
+        <Checkbox
+          id="profile-allow-contact"
+          label="Permitir que ONGs entrem em contato comigo"
+          checked={profileDraft.allowOrganizationContact}
+          onChange={(event) =>
+            setProfileDraft({
+              ...profileDraft,
+              allowOrganizationContact: event.target.checked,
+            })
+          }
+        />
+      </>
+    ),
+    documents: (
+      <MediaUploadField
+        id="profile-documents"
+        label="Documentos"
+        purpose="document"
+        multiple
+        maxFiles={PROFILE_LIMITS.personalDocuments}
+        hint="PDF, JPEG, PNG ou WebP, até 10 MB cada. Ficam privados; para verificar sua identidade use a seção Verificação."
+        value={profileDraft.documents}
+        onChange={(urls) =>
+          setProfileDraft({ ...profileDraft, documents: urls })
+        }
+        onBusyChange={setIsUploading}
+      />
+    ),
+  };
+
   return (
     <>
       <header className="flex items-center gap-3">
-        <UserRound
-          className="size-12 rounded-full bg-secondary p-2 text-accent-tertiary"
-          aria-hidden="true"
-        />
+        {savedProfile.avatarUrl ? (
+          <span className="relative size-12 shrink-0 overflow-hidden rounded-full outline-2 outline-accent-tertiary">
+            <Image
+              src={mediaHref(savedProfile.avatarUrl)}
+              alt="Sua foto de perfil"
+              fill
+              unoptimized
+              sizes="48px"
+              className="object-cover"
+            />
+          </span>
+        ) : (
+          <UserRound
+            className="size-12 rounded-full bg-secondary p-2 text-accent-tertiary"
+            aria-hidden="true"
+          />
+        )}
         <div>
-          <h2 className="text-xl font-bold">{draft.name}</h2>
+          <h2 className="flex flex-wrap items-center gap-2 text-xl font-bold">
+            {draft.name}
+            <VerifiedBadge status={verificationStatus} />
+          </h2>
           <p>{user.email}</p>
         </div>
       </header>
@@ -91,6 +414,17 @@ export function ProfileForm({
       >
         Identificação e localização
       </Button>
+      {SECTIONS.map((key) => (
+        <Button
+          key={key}
+          variant="outline"
+          className="justify-start"
+          aria-haspopup="dialog"
+          onClick={() => openSection(key)}
+        >
+          {SECTION_TITLES[key]}
+        </Button>
+      ))}
       {isOpen ? (
         <BottomSheet
           title="Identificação e localização"
@@ -147,6 +481,43 @@ export function ProfileForm({
           </div>
         </BottomSheet>
       ) : null}
+      {section ? (
+        <BottomSheet
+          title={SECTION_TITLES[section]}
+          isBusy={updateProfile.isPending || isUploading}
+          onClose={() => setSection(null)}
+          footer={
+            <>
+              <FormError id="personal-profile-error">{profileError}</FormError>
+              {isProfileSaved ? <p role="status">Alterações salvas.</p> : null}
+              <Button
+                onClick={requestProfileSave}
+                loading={updateProfile.isPending}
+                disabled={isUploading}
+              >
+                Salvar alterações
+              </Button>
+            </>
+          }
+        >
+          <div className="flex flex-col gap-4">
+            {isPersonalVerificationAtRisk(verificationStatus) ? (
+              <p className="text-xs text-neutral-600">
+                Alterar estes dados reinicia a verificação da sua identidade.
+              </p>
+            ) : null}
+            {sectionFields[section]}
+          </div>
+        </BottomSheet>
+      ) : null}
+      {isConfirmingLoss ? (
+        <PersonalVerificationLossDialog
+          status={verificationStatus}
+          isBusy={updateProfile.isPending}
+          onConfirm={() => void saveProfile()}
+          onClose={() => setIsConfirmingLoss(false)}
+        />
+      ) : null}
       {organization ? (
         <LinkButton href="/ngo/dashboard">
           Administrar {organization.name}
@@ -160,6 +531,9 @@ export function ProfileForm({
       </LinkButton>
       <LinkButton href="/adopter/animals/new" variant="outline">
         Encaminhar animal para uma ONG
+      </LinkButton>
+      <LinkButton href="/adopter/animals" variant="outline">
+        Animais que encaminhei
       </LinkButton>
       <LinkButton href="/adopter/adoptions" variant="outline">
         Meus pedidos de adoção

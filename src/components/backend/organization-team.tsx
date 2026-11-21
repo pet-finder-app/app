@@ -44,25 +44,30 @@ export function OrganizationTeam({
     <>
       <QueryStatus query={query} />
       <ul className="flex flex-col gap-3">
-        {query.data?.items.map((member) => (
-          <li key={member.id}>
-            <p className="font-bold">{member.displayName}</p>
-            <p>{member.email}</p>
-            <p>{ROLE_LABELS[member.memberRole] ?? "Membro"}</p>
-            {canManageMembers && member.userId && member.userId !== userId ? (
-              <Button
-                variant="outline"
-                loading={remove.isPending}
-                onClick={() => {
-                  if (member.userId)
-                    remove.mutate({ organizationId, userId: member.userId });
-                }}
-              >
-                Remover membro
-              </Button>
-            ) : null}
-          </li>
-        ))}
+        {query.data?.items
+          .filter((member) => ["active", "invited"].includes(member.status))
+          .map((member) => (
+            <li key={member.id}>
+              <p className="font-bold">{member.displayName}</p>
+              <p>{member.email}</p>
+              <p>
+                {ROLE_LABELS[member.memberRole] ?? "Membro"}
+                {member.status === "invited" ? " · Convite pendente" : null}
+              </p>
+              {canManageMembers && member.userId && member.userId !== userId ? (
+                <Button
+                  variant="outline"
+                  loading={remove.isPending}
+                  onClick={() => {
+                    if (member.userId)
+                      remove.mutate({ organizationId, userId: member.userId });
+                  }}
+                >
+                  Remover membro
+                </Button>
+              ) : null}
+            </li>
+          ))}
       </ul>
       {canManageMembers ? (
         <form onSubmit={submit} className="flex flex-col gap-3">

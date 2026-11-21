@@ -1,6 +1,7 @@
 import {
   adoptionApplicationSchema,
   animalImageResponseSchema,
+  animalImageSchema,
   animalPreferenceSchema,
   animalSchema,
   applicationCreatedResponseSchema,
@@ -11,13 +12,16 @@ import {
   messageResponseSchema,
   organizationMemberSchema,
   organizationResponseSchema,
+  paymentDetailsSchema,
   reportSchema,
+  uploadResponseSchema,
   userResponseSchema,
+  verificationRecordSchema,
 } from "@/lib/backend/contracts";
 import { toWire } from "@/lib/backend/wire";
 import { mutationOptions } from "@tanstack/react-query";
 import { z } from "zod";
-import { jsonBody, requestData } from "./client";
+import { jsonBody, requestData, requestJson } from "./client";
 import { mutationKeys, queryKeys } from "./keys";
 import type { ApiMutationMeta } from "./meta";
 import { backendPath } from "./queries";
@@ -33,9 +37,11 @@ const workflowMeta: ApiMutationMeta = {
     queryKeys.applications,
     queryKeys.conversations,
     queryKeys.animals,
+    queryKeys.appointments,
   ],
 };
-const body = (input: unknown, method = "POST") => ({
+/** JSON request init with camelCase keys converted to Go's snake_case. */
+export const body = (input: unknown, method = "POST") => ({
   ...jsonBody(toWire(input)),
   method,
 });
@@ -44,6 +50,16 @@ export type RegisterInput = {
   email: string;
   password: string;
   acceptedTerms: boolean;
+};
+export type PaymentDetailsInput = {
+  method: "pix" | "bank_transfer";
+  instructions: string;
+  pixKey?: string;
+  bankName?: string;
+  bankBranch?: string;
+  bankAccount?: string;
+  accountHolder: string;
+  published: boolean;
 };
 export type LocationInput = {
   city: string;
@@ -92,6 +108,68 @@ export type AppointmentInput = {
   instructions?: string;
 };
 
+/** REST message delivery, also the fallback while the chat socket reconnects. */
+export function sendMessageRequest(input: { id: string; text: string }) {
+  return requestData(
+    backendPath(`/v1/conversations/${encodeURIComponent(input.id)}/messages`),
+    messageResponseSchema,
+    body({ body: input.text }),
+  );
+}
+
+export const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+export const DOCUMENT_TYPES = ["application/pdf", ...IMAGE_TYPES] as const;
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+/** Go media purposes; PDF is accepted only for documents and surrenders. */
+export type MediaPurpose =
+  "avatar" | "animal" | "post" | "document" | "followup" | "surrender";
+type MediaType = (typeof DOCUMENT_TYPES)[number];
+const isMediaType = (value: string): value is MediaType =>
+  DOCUMENT_TYPES.some((type) => type === value);
+
+/**
+ * Store a file through the Go media API (initiate, then upload exact bytes)
+ * and return its id and URL. Go validates size, detected type and quota.
+ */
+export async function uploadMedia(file: File, purpose: MediaPurpose) {
+  const allowsPdf = purpose === "document" || purpose === "surrender";
+  if (
+    !isMediaType(file.type) ||
+    (file.type === "application/pdf" && !allowsPdf)
+  )
+    throw new Error(
+      allowsPdf
+        ? "Envie um arquivo PDF, JPEG, PNG ou WebP."
+        : "Envie uma imagem JPEG, PNG ou WebP.",
+    );
+  if (file.size < 1 || file.size > MAX_UPLOAD_BYTES)
+    throw new Error("Cada arquivo deve ter no máximo 10 MB.");
+  const upload = await requestData(
+    backendPath("/v1/media"),
+    uploadResponseSchema,
+    body({
+      filename: file.name,
+      contentType: file.type,
+      byteSize: file.size,
+      purpose,
+    }),
+  );
+  await requestJson(
+    backendPath(`/v1/media/${encodeURIComponent(upload.id)}/content`),
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/octet-stream" },
+      body: file,
+    },
+  );
+  return upload;
+}
+
+/** Store a private verification document. */
+export function uploadDocument(file: File) {
+  return uploadMedia(file, "document");
+}
+
 export const apiMutations = {
   login: () =>
     mutationOptions({
@@ -99,6 +177,20 @@ export const apiMutations = {
       meta: identity,
       mutationFn: (input: { email: string; password: string }) =>
         requestData("/api/session/login", accountResult, jsonBody(input)),
+    }),
+  forgotPassword: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.auth("forgot-password"),
+      meta: { isPublic: true },
+      mutationFn: (input: { email: string }) =>
+        requestData("/api/session/forgot-password", okSchema, jsonBody(input)),
+    }),
+  resetPassword: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.auth("reset-password"),
+      meta: identity,
+      mutationFn: (input: { token: string; password: string }) =>
+        requestData("/api/session/reset-password", okSchema, jsonBody(input)),
     }),
   register: () =>
     mutationOptions({
@@ -197,6 +289,85 @@ export const apiMutations = {
           body({ email: input.email, role: input.role }),
         ),
     }),
+  updatePaymentDetails: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.organization("payment-details"),
+      // A changed PIX key can return the organization to verification.
+      meta: { invalidates: [queryKeys.organizations, queryKeys.session] },
+      mutationFn: (input: {
+        organizationId: string;
+        details: PaymentDetailsInput;
+      }) =>
+        requestData(
+          backendPath(
+            `/v1/organizations/${encodeURIComponent(input.organizationId)}/payment-details`,
+          ),
+          paymentDetailsSchema,
+          body(input.details, "PUT"),
+        ),
+    }),
+  respondToInvitation: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.organization("respond-invitation"),
+      meta: { invalidates: [queryKeys.organizations] },
+      mutationFn: (input: {
+        organizationId: string;
+        decision: "accepted" | "declined";
+      }) =>
+        requestData(
+          backendPath(
+            `/v1/me/organizations/${encodeURIComponent(input.organizationId)}/membership`,
+          ),
+          organizationMemberSchema,
+          body({ decision: input.decision }, "PUT"),
+        ),
+    }),
+  submitVerification: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.verification("submit"),
+      meta: {
+        invalidates: [
+          ["verification"],
+          queryKeys.profile,
+          queryKeys.organizations,
+          queryKeys.session,
+        ],
+      },
+      mutationFn: async (input: {
+        organizationId?: string;
+        files: File[];
+        notes: string;
+      }) => {
+        const documents: string[] = [];
+        for (const file of input.files)
+          documents.push((await uploadDocument(file)).url);
+        const path = input.organizationId
+          ? `/v1/organizations/${encodeURIComponent(input.organizationId)}/verification-submissions`
+          : "/v1/me/verification";
+        return requestData(
+          backendPath(path),
+          verificationRecordSchema,
+          body({ documents, notes: input.notes.trim() || undefined }),
+        );
+      },
+    }),
+  reviewVerification: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.verification("review"),
+      meta: { invalidates: [["verification"]] },
+      mutationFn: (input: {
+        id: string;
+        decision: "under_review" | "approved" | "rejected";
+        reason: string;
+      }) =>
+        requestData(
+          backendPath(
+            `/v1/verifications/${encodeURIComponent(input.id)}/decision`,
+          ),
+          verificationRecordSchema,
+          body({ decision: input.decision, reason: input.reason }),
+        ),
+    }),
   removeMember: () =>
     mutationOptions({
       mutationKey: mutationKeys.organization("remove-member"),
@@ -281,6 +452,34 @@ export const apiMutations = {
           { method: "DELETE" },
         ),
     }),
+  moderateImage: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.animal("moderate-image"),
+      meta: feedMeta,
+      mutationFn: (input: {
+        id: string;
+        imageId: string;
+        decision: "approved" | "rejected";
+      }) =>
+        requestData(
+          backendPath(
+            `/v1/animals/${encodeURIComponent(input.id)}/images/${encodeURIComponent(input.imageId)}/moderation`,
+          ),
+          animalImageSchema,
+          body({ decision: input.decision }),
+        ),
+    }),
+  clearPreference: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.animal("clear-preference"),
+      meta: feedMeta,
+      mutationFn: (id: string) =>
+        requestData(
+          backendPath(`/v1/animals/${encodeURIComponent(id)}/preference`),
+          z.null(),
+          { method: "DELETE" },
+        ),
+    }),
   like: () =>
     mutationOptions({
       mutationKey: mutationKeys.preference,
@@ -289,11 +488,22 @@ export const apiMutations = {
         type: "pet" | "post";
         id: string;
         onlyLike?: boolean;
+        liked?: boolean;
       }) => {
         if (input.type !== "pet")
           throw new Error(
             "Publicações independentes ainda não estão disponíveis.",
           );
+        if (input.liked && !input.onlyLike) {
+          await requestData(
+            backendPath(
+              `/v1/animals/${encodeURIComponent(input.id)}/preference`,
+            ),
+            z.null(),
+            { method: "DELETE" },
+          );
+          return { liked: false };
+        }
         const preference = await requestData(
           backendPath(`/v1/animals/${encodeURIComponent(input.id)}/preference`),
           animalPreferenceSchema,
@@ -307,10 +517,16 @@ export const apiMutations = {
       mutationKey: mutationKeys.preference,
       meta: feedMeta,
       mutationFn: async (input: { id: string; hidden?: boolean }) => {
-        if (input.hidden === false)
-          throw new Error(
-            "Para voltar a mostrar este animal, adicione-o aos favoritos. A remoção de preferências ainda não está disponível.",
+        if (input.hidden === false) {
+          await requestData(
+            backendPath(
+              `/v1/animals/${encodeURIComponent(input.id)}/preference`,
+            ),
+            z.null(),
+            { method: "DELETE" },
           );
+          return { disliked: false };
+        }
         const preference = await requestData(
           backendPath(`/v1/animals/${encodeURIComponent(input.id)}/preference`),
           animalPreferenceSchema,
@@ -360,18 +576,24 @@ export const apiMutations = {
           body({ decision: input.decision, reason: input.reason }),
         ),
     }),
+  withdrawApplication: () =>
+    mutationOptions({
+      mutationKey: mutationKeys.application("withdraw"),
+      meta: workflowMeta,
+      mutationFn: (input: { id: string; reason: string }) =>
+        requestData(
+          backendPath(
+            `/v1/applications/${encodeURIComponent(input.id)}/withdrawal`,
+          ),
+          adoptionApplicationSchema,
+          body({ reason: input.reason }),
+        ),
+    }),
   sendMessage: () =>
     mutationOptions({
       mutationKey: mutationKeys.message,
       meta: { invalidates: [queryKeys.conversations] },
-      mutationFn: (input: { id: string; text: string }) =>
-        requestData(
-          backendPath(
-            `/v1/conversations/${encodeURIComponent(input.id)}/messages`,
-          ),
-          messageResponseSchema,
-          body({ body: input.text }),
-        ),
+      mutationFn: sendMessageRequest,
     }),
   createAppointment: () =>
     mutationOptions({
@@ -441,22 +663,17 @@ export const apiMutations = {
         targetType: "pet" | "post";
         targetId: string;
         reason: string;
-      }) => {
-        if (input.targetType !== "pet")
-          throw new Error(
-            "Denúncias de publicações independentes ainda não estão disponíveis.",
-          );
-        return requestData(
+      }) =>
+        requestData(
           backendPath("/v1/reports"),
           reportSchema,
           body({
             category: "other",
             description: input.reason,
-            subjectType: "animal",
+            subjectType: input.targetType === "pet" ? "animal" : "post",
             subjectId: input.targetId,
           }),
-        );
-      },
+        ),
     }),
   location: () =>
     mutationOptions({

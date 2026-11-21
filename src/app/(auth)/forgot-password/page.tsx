@@ -1,14 +1,13 @@
+import { PasswordRecoveryForm } from "@/components/auth/password-recovery-form";
 import { PhotoAuthLayout } from "@/components/auth/photo-auth-layout";
-import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Recuperar senha – Petfinder" };
+
 export default function Page() {
   return (
     <PhotoAuthLayout heading="Recuperar senha">
-      <p className="text-text-light">
-        A recuperação de senha ainda não está disponível.
-      </p>
-      <Link href="/login" className="text-text-light underline">
-        Voltar para entrar
-      </Link>
+      <PasswordRecoveryForm mode="request" />
     </PhotoAuthLayout>
   );
 }

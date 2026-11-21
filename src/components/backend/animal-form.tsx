@@ -1,6 +1,20 @@
 "use client";
+import {
+  AnimalAttributesFields,
+  attributesDraftFrom,
+  attributesInputFrom,
+} from "@/components/animals/animal-attributes-fields";
+import { SPECIES_LABELS } from "@/components/animals/animal-labels";
+import { AnimalLifecyclePanel } from "@/components/animals/animal-lifecycle-panel";
 import { Button, FormError, Input, Select, Textarea } from "@/components/ui";
-import { apiMutations, type AnimalInput } from "@/lib/api/mutations";
+import {
+  ANIMAL_SPECIES,
+  animalMutations,
+  animalSpeciesSchema,
+  parseAnimalAttributes,
+  type AnimalDraftInput,
+} from "@/lib/api/animals";
+import { apiMutations, IMAGE_TYPES } from "@/lib/api/mutations";
 import { animalOptions, organizationsOptions } from "@/lib/api/queries";
 import type {
   Animal,
@@ -11,9 +25,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
+import { AnimalImageManager } from "./animal-image-manager";
 import { QueryStatus } from "./query-status";
 
-const species = z.enum(["dog", "cat", "other"]);
 const sex = z.enum(["male", "female", "unknown"]);
 const size = z.enum(["small", "medium", "large", "extra_large"]);
 function AnimalEditor({
@@ -28,17 +42,19 @@ function AnimalEditor({
   isPrivate?: boolean;
 }) {
   const router = useRouter();
-  const save = useMutation(apiMutations.saveAnimal());
-  const image = useMutation(apiMutations.addImage());
+  const save = useMutation(animalMutations.save());
+  const image = useMutation(animalMutations.uploadImage());
   const status = useMutation(apiMutations.animalStatus());
   const organizations = useQuery({
     ...organizationsOptions(),
     enabled: Boolean(isPrivate && !initial),
   });
   const [savedId, setSavedId] = useState(initial?.id);
-  const [draft, setDraft] = useState<AnimalInput>({
+  const [draft, setDraft] = useState<AnimalDraftInput>({
     name: initial?.name ?? "",
-    species: species.parse(initial?.species ?? "dog"),
+    species: animalSpeciesSchema
+      .catch("other")
+      .parse(initial?.species ?? "dog"),
     sex: sex.parse(initial?.sex ?? "unknown"),
     size: size.parse(initial?.size ?? "medium"),
     description: initial?.description ?? "",
@@ -61,7 +77,13 @@ function AnimalEditor({
       countryCode: initial?.countryCode ?? "BR",
     },
   });
-  const [photoUrl, setPhotoUrl] = useState("");
+  const [attributes, setAttributes] = useState(() =>
+    attributesDraftFrom(
+      initial ? parseAnimalAttributes(initial.attributes) : null,
+      initial,
+    ),
+  );
+  const [photo, setPhoto] = useState<File | null>(null);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const isPending = save.isPending || image.isPending || status.isPending;
@@ -70,13 +92,16 @@ function AnimalEditor({
     if (isPending) return;
     setError(null);
     try {
-      const animal = await save.mutateAsync({ id: savedId, animal: draft });
+      const animal = await save.mutateAsync({
+        id: savedId,
+        animal: { ...draft, attributes: attributesInputFrom(attributes) },
+      });
       setSavedId(animal.id);
-      if (photoUrl) {
+      if (photo) {
         try {
           await image.mutateAsync({
             id: animal.id,
-            url: photoUrl,
+            file: photo,
             altText: animal.name,
             position: 0,
           });
@@ -132,13 +157,15 @@ function AnimalEditor({
           id="animal-species"
           label="Espécie"
           value={draft.species}
-          options={[
-            { value: "dog", label: "Cão" },
-            { value: "cat", label: "Gato" },
-            { value: "other", label: "Outro" },
-          ]}
+          options={ANIMAL_SPECIES.map((value) => ({
+            value,
+            label: SPECIES_LABELS[value],
+          }))}
           onChange={(event) =>
-            setDraft({ ...draft, species: species.parse(event.target.value) })
+            setDraft({
+              ...draft,
+              species: animalSpeciesSchema.parse(event.target.value),
+            })
           }
         />
         <Select
@@ -243,21 +270,35 @@ function AnimalEditor({
             })
           }
         />
-        <Input
-          id="animal-photo-url"
-          label="Link público de uma foto (opcional)"
-          type="url"
-          pattern="https?://.*"
-          value={photoUrl}
-          onChange={(event) => setPhotoUrl(event.target.value)}
-          hint="A foto será analisada antes de aparecer na galeria pública."
-        />
+        <AnimalAttributesFields value={attributes} onChange={setAttributes} />
+        {initial ? null : (
+          <label
+            htmlFor="animal-photo"
+            className="flex flex-col gap-1 font-medium"
+          >
+            Foto do animal (opcional)
+            <input
+              id="animal-photo"
+              type="file"
+              accept={IMAGE_TYPES.join(",")}
+              aria-describedby="animal-photo-hint"
+              className="text-sm"
+              onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
+            />
+            <span id="animal-photo-hint" className="text-sm text-neutral-600">
+              JPEG, PNG ou WebP de até 10 MB. A foto será analisada antes de
+              aparecer na galeria pública.
+            </span>
+          </label>
+        )}
         <FormError id="animal-save-error">{error}</FormError>
         <Button type="submit" loading={isPending}>
           Salvar animal
         </Button>
       </form>
-      {initial && organization?.id === initial.responsibleOrganizationId ? (
+      {initial &&
+      initial.status !== "archived" &&
+      organization?.id === initial.responsibleOrganizationId ? (
         <div className="mt-4 flex flex-col gap-3">
           <Input
             id="animal-status-reason"
@@ -320,11 +361,23 @@ export function AnimalForm({
     <>
       <QueryStatus query={query} />
       {query.data ? (
-        <AnimalEditor
-          initial={query.data.animal}
-          organization={organization}
-          user={user}
-        />
+        <>
+          <AnimalEditor
+            initial={query.data.animal}
+            organization={organization}
+            user={user}
+          />
+          <AnimalImageManager
+            data={query.data}
+            user={user}
+            selectedOrganizationId={organization?.id}
+          />
+          <AnimalLifecyclePanel
+            animal={query.data.animal}
+            user={user}
+            selectedOrganizationId={organization?.id}
+          />
+        </>
       ) : null}
     </>
   );
