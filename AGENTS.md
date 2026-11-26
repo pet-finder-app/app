@@ -67,7 +67,10 @@ workflows. Do not implement missing backend features in Next.js.
 ### Routes and domain boundaries
 
 - `(auth)` keeps the shared photographic background mounted across `/login`,
-  `/register`, and `/forgot-password`. Preserve slideshow state and reduced motion.
+  `/register`, `/forgot-password`, and `/reset-password`. Preserve slideshow
+  state and reduced motion. The layout also keeps the typed e-mail
+  (`AuthEmailDraftProvider`) in memory across those screens; never put it in
+  the URL or browser storage.
 - `/me` edits the actual Go user fields. Profile forms reuse `BottomSheet`, retain
   drafts in parent state, and save inside the sheet. Personal verification
   submits documents uploaded through `/v1/media` to `/v1/me/verification`.

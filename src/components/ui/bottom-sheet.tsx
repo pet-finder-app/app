@@ -11,6 +11,7 @@ import {
   type Ref,
 } from "react";
 import styles from "./bottom-sheet.module.css";
+import { cn } from "./cn";
 
 export type BottomSheetHandle = { close: () => void };
 
@@ -19,6 +20,8 @@ type BottomSheetProps = {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Centers the title, for short confirmation or status sheets. */
+  align?: "start" | "center";
   isBusy?: boolean;
   onClose: () => void;
 };
@@ -37,6 +40,7 @@ export function BottomSheet({
   title,
   children,
   footer,
+  align = "start",
   isBusy = false,
   onClose,
 }: BottomSheetProps) {
@@ -201,7 +205,16 @@ export function BottomSheet({
         <span aria-hidden="true" />
       </button>
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 id={`${id}-title`} className="text-lg font-bold">
+        {align === "center" ? (
+          <span className="size-11 shrink-0" aria-hidden="true" />
+        ) : null}
+        <h2
+          id={`${id}-title`}
+          className={cn(
+            "text-lg font-bold",
+            align === "center" && "flex-1 text-center",
+          )}
+        >
           {title}
         </h2>
         <button
@@ -209,7 +222,7 @@ export function BottomSheet({
           aria-label="Fechar formulário"
           disabled={isBusy}
           onClick={() => handleClose()}
-          className="flex size-11 items-center justify-center rounded-full hover:bg-secondary focus-visible:outline-2 focus-visible:outline-accent-tertiary"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-secondary focus-visible:outline-2 focus-visible:outline-accent-tertiary"
         >
           <X className="size-5" aria-hidden="true" />
         </button>

@@ -1,11 +1,11 @@
 "use client";
 
+import { useAuthEmailDraft } from "@/components/auth/auth-email-draft";
+import { AuthPasswordInput } from "@/components/auth/auth-password-input";
 import styles from "@/components/auth/photo-auth-layout.module.css";
 import { FormError } from "@/components/ui";
-import { iconSize } from "@/components/ui/icon";
 import { apiMutations } from "@/lib/api/mutations";
 import { useMutation } from "@tanstack/react-query";
-import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -16,9 +16,8 @@ type LoginFormProps = { destination: string };
 
 export function LoginForm({ destination }: LoginFormProps) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useAuthEmailDraft();
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const login = useMutation({
     ...apiMutations.login(),
     onSuccess: async () => {
@@ -56,33 +55,17 @@ export function LoginForm({ destination }: LoginFormProps) {
 
       <div className={styles.field}>
         <label htmlFor="password">Senha</label>
-        <div className={styles.password}>
-          <input
-            id="password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="current-password"
-            required
-            placeholder="Senha"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            aria-invalid={Boolean(error) || undefined}
-            aria-describedby={error ? ERROR_ID : undefined}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-            aria-pressed={showPassword}
-            className={styles.passwordToggle}
-          >
-            {showPassword ? (
-              <EyeOff className={iconSize.lg} aria-hidden="true" />
-            ) : (
-              <Eye className={iconSize.lg} aria-hidden="true" />
-            )}
-          </button>
-        </div>
+        <AuthPasswordInput
+          id="password"
+          name="password"
+          autoComplete="current-password"
+          required
+          placeholder="Senha"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          aria-invalid={Boolean(error) || undefined}
+          aria-describedby={error ? ERROR_ID : undefined}
+        />
       </div>
 
       <Link href="/forgot-password" className={styles.forgotPassword}>

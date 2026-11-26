@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuthEmailDraft } from "@/components/auth/auth-email-draft";
 import {
   Button,
   Checkbox,
@@ -44,7 +45,7 @@ export function RegisterForm({ onBack, afterSignup = "/" }: RegisterFormProps) {
   const router = useRouter();
   const authMutation = useMutation(apiMutations.register());
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useAuthEmailDraft();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
