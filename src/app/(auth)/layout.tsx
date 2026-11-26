@@ -1,3 +1,4 @@
+import { AuthEmailDraftProvider } from "@/components/auth/auth-email-draft";
 import { PetSlideshow } from "@/components/auth/pet-slideshow";
 import styles from "@/components/auth/photo-auth-layout.module.css";
 import type { ReactNode } from "react";
@@ -7,7 +8,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className={styles.authShell}>
       <PetSlideshow />
-      {children}
+      <AuthEmailDraftProvider>{children}</AuthEmailDraftProvider>
     </div>
   );
 }

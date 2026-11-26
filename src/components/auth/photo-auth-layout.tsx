@@ -2,6 +2,16 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import styles from "./photo-auth-layout.module.css";
 
+/** Footer for auth screens that lead back to sign-in instead of registration. */
+export const LOGIN_FOOTER = (
+  <>
+    Mudou de ideia?{" "}
+    <Link href="/login">
+      <strong>Faça seu login</strong>
+    </Link>
+  </>
+);
+
 export function PhotoAuthLayout({
   children,
   registration = false,

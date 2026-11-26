@@ -98,7 +98,7 @@ primary-green checkmark when an explicit alternative is needed.
 | `FormError` | Always-mounted form alert; fields reference its id through errorId. |
 | `Card`, `CardTitle`, `CardDescription` | Shared content surfaces. Card tone controls the background. |
 | `Badge` | Neutral, informational, success, warning, and danger status labels. |
-| `BottomSheet` | Modal panel with a draggable handle, animated dismissal, focus management, scroll lock, an independently scrolling body, and an optional fixed footer. Mount to open and unmount in `onClose`. |
+| `BottomSheet` | Modal panel with a draggable handle, animated dismissal, focus management, scroll lock, an independently scrolling body, and an optional fixed footer. `align="center"` centers the title for short status sheets. Mount to open and unmount in `onClose`. |
 | `Progress` | Progress indicator without built-in text. |
 | `Field`, `useFieldA11y`, `cn` | Shared field structure, accessibility, and class composition. |
 

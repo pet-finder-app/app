@@ -1,5 +1,8 @@
 import { PasswordRecoveryForm } from "@/components/auth/password-recovery-form";
-import { PhotoAuthLayout } from "@/components/auth/photo-auth-layout";
+import {
+  LOGIN_FOOTER,
+  PhotoAuthLayout,
+} from "@/components/auth/photo-auth-layout";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -12,7 +15,7 @@ export default async function Page({
 }) {
   const { token } = await searchParams;
   return (
-    <PhotoAuthLayout heading="Redefinir senha">
+    <PhotoAuthLayout heading="Redefinir senha" footer={LOGIN_FOOTER}>
       {typeof token === "string" && token.length >= 32 ? (
         <PasswordRecoveryForm mode="reset" token={token} />
       ) : (
