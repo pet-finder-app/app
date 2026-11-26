@@ -9,6 +9,10 @@ export type PageShellProps = HTMLAttributes<HTMLElement> & {
   hasActionBar?: boolean;
   /** Show the fixed application header; defaults to pages with a bottom bar. */
   hasHeader?: boolean;
+  /** Control at the right edge of the application header. */
+  headerAction?: ReactNode;
+  /** Edge-to-edge content directly below the header, without gutters or top padding. */
+  isFullBleed?: boolean;
   /** Page background: white by default, or primary green. */
   background?: "neutral" | "primary";
   children: ReactNode;
@@ -25,6 +29,8 @@ export function PageShell({
   width = "md",
   hasActionBar = false,
   hasHeader = hasActionBar,
+  headerAction,
+  isFullBleed = false,
   background = "neutral",
   className,
   children,
@@ -32,13 +38,21 @@ export function PageShell({
 }: PageShellProps) {
   return (
     <>
-      {hasHeader ? <AppHeader /> : null}
+      {hasHeader ? <AppHeader action={headerAction} /> : null}
       <main
         className={cn(
-          "flex min-h-dvh flex-col px-4 py-6",
+          "flex min-h-dvh flex-col",
+          isFullBleed ? "px-0" : "px-4",
           background === "primary" ? "bg-primary" : "bg-white",
-          hasActionBar && "pb-32",
-          hasHeader && "pt-[calc(4.5rem+env(safe-area-inset-top))]",
+          hasActionBar ? "pb-32" : "pb-6",
+          // cn only joins classes, so choose one top padding rather than overriding.
+          hasHeader
+            ? isFullBleed
+              ? "pt-[calc(3rem+env(safe-area-inset-top))]"
+              : "pt-[calc(4.5rem+env(safe-area-inset-top))]"
+            : isFullBleed
+              ? "pt-0"
+              : "pt-6",
           className,
         )}
         {...props}

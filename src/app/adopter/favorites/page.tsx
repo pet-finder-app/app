@@ -4,8 +4,8 @@ import { getCurrentUser } from "@/lib/backend/server";
 export default async function Page() {
   await getCurrentUser();
   return (
-    <BackendShell title="Favoritos">
-      <AnimalList mode="liked" />
+    <BackendShell title="Favoritos" isTitleHidden isFullBleed>
+      <AnimalList mode="liked" isFullBleed />
     </BackendShell>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 import { QueryStatus } from "@/components/backend/query-status";
-import { Button } from "@/components/ui";
+import { Button, LoadingState } from "@/components/ui";
 import type { AnimalSpecies } from "@/lib/api/animals";
 import { useAnimalsFeed } from "@/lib/api/use-animals-feed";
 import { useState } from "react";
@@ -24,8 +24,12 @@ export function AnimalsFeed({
   );
   return (
     <>
-      <QueryStatus query={query} />
-      <QueryStatus query={preferences} />
+      {/* The page is full-bleed; status and paging controls keep gutters. */}
+      <div className="flex flex-col gap-4 px-4 empty:hidden">
+        <QueryStatus query={query} hasPendingText={false} />
+        <QueryStatus query={preferences} hasPendingText={false} />
+      </div>
+      {query.isPending ? <LoadingState /> : null}
       {query.data ? (
         <HomeFeed
           items={items}
@@ -42,6 +46,7 @@ export function AnimalsFeed({
       {query.hasNextPage ? (
         <Button
           variant="outline"
+          className="mx-4"
           loading={query.isFetchingNextPage}
           onClick={() => void query.fetchNextPage()}
         >

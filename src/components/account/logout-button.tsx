@@ -1,6 +1,12 @@
 "use client";
 
-import { Button, FormError, iconSize, type ButtonProps } from "@/components/ui";
+import {
+  Button,
+  FormError,
+  iconSize,
+  MenuButton,
+  type ButtonProps,
+} from "@/components/ui";
 import {
   BottomSheet,
   type BottomSheetHandle,
@@ -18,6 +24,8 @@ type LogoutButtonProps = Omit<
 > & {
   /** Use the thin-border profile/dashboard styling. */
   brutal?: boolean;
+  /** Render as a danger row inside a MenuList. */
+  menu?: boolean;
   /** Ask for confirmation in a modal before ending the session. */
   confirm?: boolean;
 };
@@ -26,6 +34,7 @@ export function LogoutButton({
   variant = "outline",
   size = "sm",
   brutal = false,
+  menu = false,
   confirm = false,
   ...props
 }: LogoutButtonProps) {
@@ -94,9 +103,8 @@ export function LogoutButton({
     </Button>
   );
 
-  return (
+  const dialog = (
     <>
-      {trigger}
       {!confirm && error ? (
         <FormError id={`${id}-error`}>{error}</FormError>
       ) : null}
@@ -139,6 +147,28 @@ export function LogoutButton({
           </div>
         </BottomSheet>
       ) : null}
+    </>
+  );
+
+  if (menu)
+    return (
+      <MenuButton
+        icon={LogOut}
+        tone="danger"
+        disabled={!confirm && isLoggingOut}
+        aria-busy={(!confirm && isLoggingOut) || undefined}
+        aria-haspopup={confirm ? "dialog" : undefined}
+        onClick={handlePress}
+        dialog={dialog}
+      >
+        {!confirm && isLoggingOut ? "Saindo..." : "Sair"}
+      </MenuButton>
+    );
+
+  return (
+    <>
+      {trigger}
+      {dialog}
     </>
   );
 }
