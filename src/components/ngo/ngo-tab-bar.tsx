@@ -10,7 +10,6 @@ import {
 import { usePressFeedback } from "@/components/navigation/use-press-feedback";
 import { ActionBar, Button, cn, iconSize, LinkButton } from "@/components/ui";
 import {
-  Bell,
   Heart,
   House,
   MessageCircle,
@@ -47,12 +46,6 @@ const TABS: NgoTab[] = [
     icon: MessageCircle,
   },
   {
-    type: "icon",
-    href: "/ngo/notifications",
-    label: "Avisos",
-    icon: Bell,
-  },
-  {
     type: "component",
     href: "/me",
     label: "Perfil",
@@ -64,7 +57,7 @@ const TABS: NgoTab[] = [
 const dip = (index: number) =>
   Math.round(1.2 * (index - (TABS.length - 1) / 2) ** 2);
 
-/** Fixed NGO navigation for dashboard, profile, notifications, and messages. */
+/** Fixed NGO navigation for dashboard, applications, creation, messages, and profile. */
 export function NgoTabBar() {
   const pathname = usePathname();
   const unread = useUnreadCounts();
@@ -72,7 +65,6 @@ export function NgoTabBar() {
   const createPressFeedback = usePressFeedback();
 
   const badgeCount: Record<string, number> = {
-    "/ngo/notifications": unread.notifications,
     "/ngo/messages": unread.messages,
   };
 

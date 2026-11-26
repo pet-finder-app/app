@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/backend/server";
 export default async function Page() {
   await getCurrentUser();
   return (
-    <BackendShell title="Conversas">
+    <BackendShell title="Conversas" isTitleHidden isFullBleed>
       <ConversationList />
     </BackendShell>
   );

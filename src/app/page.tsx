@@ -1,4 +1,5 @@
 import { AdopterTabBar } from "@/components/adopter/adopter-tab-bar";
+import { NotificationsButton } from "@/components/community/notifications-button";
 import { PageShell } from "@/components/ui";
 import { getCurrentUser } from "@/lib/backend/server";
 import { isLocationEnabled } from "@/lib/location";
@@ -14,7 +15,11 @@ export default async function HomePage({
   const params = await searchParams;
   const filters = readFeedQuery(params, await isLocationEnabled());
   return (
-    <PageShell hasActionBar className="px-0">
+    <PageShell
+      hasActionBar
+      headerAction={<NotificationsButton href="/adopter/notifications" />}
+      isFullBleed
+    >
       <AnimalsFeed
         initialFilters={filters}
         initialPostId={typeof params.post === "string" ? params.post : null}

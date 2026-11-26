@@ -4,8 +4,9 @@ import {
   FeedPost,
   type FeedPostItem as HomeFeedItem,
 } from "@/components/posts/feed-post";
-import { Button } from "@/components/ui";
+import { Button, EmptyState } from "@/components/ui";
 import type { AnimalSpecies } from "@/lib/api/animals";
+import { PawPrint } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
@@ -399,12 +400,14 @@ export function HomeFeed({
             Ver mais publicações
           </Button>
         </div>
-      ) : (
+      ) : visibleItems.length ? (
         <p className="px-4 py-8 text-center text-sm text-neutral-600">
-          {visibleItems.length
-            ? "Você viu todas as publicações por enquanto."
-            : "Nenhuma publicação para mostrar no momento."}
+          Você viu todas as publicações por enquanto.
         </p>
+      ) : (
+        <EmptyState icon={PawPrint}>
+          Nenhuma publicação para mostrar no momento.
+        </EmptyState>
       )}
     </>
   );

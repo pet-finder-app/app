@@ -92,13 +92,16 @@ primary-green checkmark when an explicit alternative is needed.
 | `Input`, `Select`, `Textarea` | Controls with accessible labels, hints, and errors. Always supply id and label. |
 | `PasswordInput` | Reuses `Input` with an independent show/hide eye button. Supports the same tones, hints, and validation props. |
 | `Checkbox` | Accent-green checked box with a theme-black tick and an associated label that may contain links. |
-| `FileInput` | File selection and metadata. |
+| `FileInput` | Single-file dropzone holding a real `File`: drag and drop or click/keyboard to browse, `accept` and `maxSize` checks with a Portuguese message, and a removable file card. |
 | `PhotoInput` | Multiple photo selection with previews and individual removal. |
 | `MediaInput` | Multiple photos/videos with previews; retain actual Files for multipart uploads. |
 | `FormError` | Always-mounted form alert; fields reference its id through errorId. |
 | `Card`, `CardTitle`, `CardDescription` | Shared content surfaces. Card tone controls the background. |
 | `Badge` | Neutral, informational, success, warning, and danger status labels. |
 | `BottomSheet` | Modal panel with a draggable handle, animated dismissal, focus management, scroll lock, an independently scrolling body, and an optional fixed footer. `align="center"` centers the title for short status sheets. Mount to open and unmount in `onClose`. |
+| `MenuList`, `MenuLink`, `MenuButton` | Flat rows with a leading Lucide icon, left-aligned label, a top line on each row and a bottom line on the last; no shadow or outer border. `tone="danger"` for destructive rows; `title` adds a heading above the rows and drops the first row's top line. `MenuButton` takes a `description` line (e.g. a status) and keeps its `dialog` inside the row. |
+| `EmptyState` | Grey Lucide icon above a grey message, centered in the remaining page height. Use it when a list has no items. |
+| `LoadingState` | Grey spinner centered in the remaining page height, announced as "Carregando..." (static with reduced motion). Pass `hasPendingText={false}` to `QueryStatus` when using it. |
 | `Progress` | Progress indicator without built-in text. |
 | `Field`, `useFieldA11y`, `cn` | Shared field structure, accessibility, and class composition. |
 
@@ -132,8 +135,10 @@ const ERROR_ID = "login-error";
 ## Page shells and authentication
 
 Application pages use `PageShell` for centered content and mobile gutters.
-Its default background is white. The home feed removes outer gutters for
-edge-to-edge media, while its headers, captions, and controls retain padding.
+Its default background is white. The home feed uses `isFullBleed` to remove the
+gutters and top padding for edge-to-edge media directly below the header, while
+its captions and controls retain padding. `cn` only joins classes and cannot
+override a shell class, so add a prop rather than passing `px-0`.
 Home filters use the `Button` filter variant: white with a theme border by
 default, accent green with dark text when `aria-checked` or `data-selected` is
 true. Location and hidden-pet toggles are icon-only on the left and right; a
@@ -165,7 +170,9 @@ buttons, backdrop clicks, and Escape use the same exit animation. Keep the modal
 and background scroll lock until the animation completes; hide actions update
 the feed afterward. Reduced-motion preferences disable sheet animations.
 Pages with `hasActionBar` also show the fixed PETFINDER header and reserve space
-above the content. Use `hasHeader` to override that default when needed. Page
+above the content. Use `hasHeader` to override that default when needed.
+`headerAction` places a control at the header's right edge; navigated pages use
+it for the notifications bell, which is not a bottom navigation tab. Page
 headings belong inside the same content bounds. Forms with fixed actions use
 `ActionBar`, aligned with the page width and device safe area. Bottom navigation
 uses compact padding while keeping 44 px touch targets and bottom safe-area space.

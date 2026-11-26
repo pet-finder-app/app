@@ -1,5 +1,4 @@
 "use client";
-import { LogoutButton } from "@/components/account/logout-button";
 import {
   isPersonalVerificationAtRisk,
   PersonalVerificationLossDialog,
@@ -10,7 +9,8 @@ import {
   Checkbox,
   FormError,
   Input,
-  LinkButton,
+  MenuButton,
+  MenuList,
   Textarea,
 } from "@/components/ui";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
@@ -26,16 +26,24 @@ import {
   type PersonalProfileInput,
 } from "@/lib/api/account";
 import { apiMutations } from "@/lib/api/mutations";
-import type {
-  OrganizationResponse,
-  UserResponse,
-} from "@/lib/backend/contracts";
+import type { UserResponse } from "@/lib/backend/contracts";
 import { useMutation } from "@tanstack/react-query";
-import { UserRound } from "lucide-react";
+import {
+  Camera,
+  Check,
+  FileText,
+  House,
+  IdCard,
+  MapPin,
+  ShieldCheck,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { mediaHref } from "./labels";
+import { mediaHref, PERSONAL_VERIFICATION_LABELS } from "./labels";
+import { VerificationPanel } from "./verification-panel";
 import { VerifiedBadge } from "./verified-badge";
 
 type ProfileSection =
@@ -46,6 +54,13 @@ const SECTION_TITLES: Record<ProfileSection, string> = {
   address: "Endereço",
   adoption: "Moradia e preferências",
   documents: "Documentos pessoais",
+};
+const SECTION_ICONS: Record<ProfileSection, LucideIcon> = {
+  photo: Camera,
+  personal: UserRound,
+  address: MapPin,
+  adoption: House,
+  documents: FileText,
 };
 const SECTIONS = Object.keys(SECTION_TITLES).filter(
   (key): key is ProfileSection => key in SECTION_TITLES,
@@ -71,13 +86,7 @@ const fromDraft = (draft: ProfileDraft): PersonalProfileInput =>
     preferences: splitLines(draft.preferences),
   });
 
-export function ProfileForm({
-  user,
-  organization,
-}: {
-  user: UserResponse;
-  organization: OrganizationResponse | null;
-}) {
+export function ProfileForm({ user }: { user: UserResponse }) {
   const router = useRouter();
   const [draft, setDraft] = useState({
     name: user.name,
@@ -97,11 +106,18 @@ export function ProfileForm({
   const [verificationStatus, setVerificationStatus] = useState(
     user.verificationStatus,
   );
+  // Adopt Go's status when a server refresh delivers a newer one.
+  const [serverStatus, setServerStatus] = useState(user.verificationStatus);
+  if (user.verificationStatus !== serverStatus) {
+    setServerStatus(user.verificationStatus);
+    setVerificationStatus(user.verificationStatus);
+  }
   const [section, setSection] = useState<ProfileSection | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [isProfileSaved, setIsProfileSaved] = useState(false);
   const [isConfirmingLoss, setIsConfirmingLoss] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isVerificationOpen, setIsVerificationOpen] = useState(false);
 
   async function save() {
     if (update.isPending) return;
@@ -396,35 +412,71 @@ export function ProfileForm({
           />
         )}
         <div>
-          <h2 className="flex flex-wrap items-center gap-2 text-xl font-bold">
-            {draft.name}
-            <VerifiedBadge status={verificationStatus} />
-          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="flex flex-wrap items-center gap-2 text-xl font-bold">
+              {draft.name}
+              <VerifiedBadge status={verificationStatus} isIconOnly />
+            </h2>
+            {verificationStatus === "unverified" ||
+            verificationStatus === "rejected" ? (
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => setIsVerificationOpen(true)}
+                className="inline-flex min-h-6 -translate-y-px items-center gap-1 rounded-full border border-dashed border-accent-tertiary px-2 text-xs font-semibold text-accent-tertiary hover:border-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-tertiary"
+              >
+                <Check className="size-3" strokeWidth={3} aria-hidden="true" />
+                Verificar conta
+              </button>
+            ) : null}
+          </div>
           <p>{user.email}</p>
         </div>
       </header>
-      <Button
-        variant="outline"
-        className="justify-start"
-        aria-haspopup="dialog"
-        onClick={() => {
-          setError(null);
-          setIsOpen(true);
-        }}
-      >
-        Identificação e localização
-      </Button>
-      {SECTIONS.map((key) => (
-        <Button
-          key={key}
-          variant="outline"
-          className="justify-start"
+      <MenuList title="Perfil">
+        <MenuButton
+          icon={IdCard}
           aria-haspopup="dialog"
-          onClick={() => openSection(key)}
+          onClick={() => {
+            setError(null);
+            setIsOpen(true);
+          }}
         >
-          {SECTION_TITLES[key]}
-        </Button>
-      ))}
+          Identificação e localização
+        </MenuButton>
+        {SECTIONS.map((key) => (
+          <MenuButton
+            key={key}
+            icon={SECTION_ICONS[key]}
+            aria-haspopup="dialog"
+            onClick={() => openSection(key)}
+          >
+            {SECTION_TITLES[key]}
+          </MenuButton>
+        ))}
+        <MenuButton
+          icon={ShieldCheck}
+          aria-haspopup="dialog"
+          description={
+            PERSONAL_VERIFICATION_LABELS[verificationStatus] ??
+            "Situação não informada"
+          }
+          onClick={() => setIsVerificationOpen(true)}
+        >
+          Verificação
+        </MenuButton>
+      </MenuList>
+      {isVerificationOpen ? (
+        <BottomSheet
+          title="Verificação"
+          onClose={() => setIsVerificationOpen(false)}
+        >
+          <VerificationPanel
+            hasHeading={false}
+            onSubmitted={() => router.refresh()}
+          />
+        </BottomSheet>
+      ) : null}
       {isOpen ? (
         <BottomSheet
           title="Identificação e localização"
@@ -518,30 +570,6 @@ export function ProfileForm({
           onClose={() => setIsConfirmingLoss(false)}
         />
       ) : null}
-      {organization ? (
-        <LinkButton href="/ngo/dashboard">
-          Administrar {organization.name}
-        </LinkButton>
-      ) : null}
-      <LinkButton href="/ngo/organizations" variant="outline">
-        Minhas organizações
-      </LinkButton>
-      <LinkButton href="/ngo/register" variant="outline">
-        Cadastrar uma ONG
-      </LinkButton>
-      <LinkButton href="/adopter/animals/new" variant="outline">
-        Encaminhar animal para uma ONG
-      </LinkButton>
-      <LinkButton href="/adopter/animals" variant="outline">
-        Animais que encaminhei
-      </LinkButton>
-      <LinkButton href="/adopter/adoptions" variant="outline">
-        Meus pedidos de adoção
-      </LinkButton>
-      <LogoutButton confirm variant="danger-ghost" />
-      <a href="/terms" className="text-sm underline">
-        Termos de uso e política de privacidade
-      </a>
     </>
   );
 }

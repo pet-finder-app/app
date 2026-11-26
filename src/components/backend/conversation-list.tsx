@@ -1,8 +1,10 @@
 "use client";
-import { Button } from "@/components/ui";
+import { Button, EmptyState, LoadingState } from "@/components/ui";
 import { conversationUnreadOptions } from "@/lib/api/community";
+import { hasNextPage } from "@/lib/api/pagination";
 import { conversationsOptions } from "@/lib/api/queries";
 import { useQuery } from "@tanstack/react-query";
+import { MessagesSquare } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { formatDate } from "./labels";
@@ -25,19 +27,26 @@ export function ConversationList({
       (item) => [item.conversationId, item.unreadCount] as const,
     ),
   );
+  // Go's total decides whether more pages exist; never infer it from a full page.
+  const hasNext = query.data ? hasNextPage(query.data.page) : false;
   return (
     <>
-      <QueryStatus query={query} />
+      <div className="flex flex-col gap-4 px-4 empty:hidden">
+        <QueryStatus query={query} hasPendingText={false} />
+      </div>
+      {query.isPending ? <LoadingState /> : null}
       {query.data && !query.data.items.length ? (
-        <p>Você ainda não tem conversas.</p>
+        <EmptyState icon={MessagesSquare}>
+          Você ainda não tem conversas.
+        </EmptyState>
       ) : null}
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col">
         {query.data?.items.map((item) => {
           const unreadCount = unreadById.get(item.id) ?? 0;
           return (
-            <li key={item.id} className="border-b border-border-light pb-3">
+            <li key={item.id} className="border-b border-border-light">
               <Link
-                className="block focus-visible:outline-2 focus-visible:outline-accent-tertiary"
+                className="block px-4 py-3 hover:bg-primary-faint focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent-tertiary"
                 href={`${organizationId ? "/ngo/conversations" : "/adopter/conversations"}/${item.id}`}
               >
                 <h2 className="flex items-center justify-between gap-2 font-bold">
@@ -67,22 +76,25 @@ export function ConversationList({
           );
         })}
       </ul>
-      <div className="flex gap-3">
-        <Button
-          variant="outline"
-          disabled={page === 1 || query.isFetching}
-          onClick={() => setPage(page - 1)}
-        >
-          Anterior
-        </Button>
-        <Button
-          variant="outline"
-          disabled={query.isFetching || (query.data?.items.length ?? 0) < 100}
-          onClick={() => setPage(page + 1)}
-        >
-          Próxima
-        </Button>
-      </div>
+      {/* Shown while a later page exists, or to return from the last one. */}
+      {hasNext || page > 1 ? (
+        <div className="flex gap-3 px-4">
+          <Button
+            variant="outline"
+            disabled={page === 1 || query.isFetching}
+            onClick={() => setPage(page - 1)}
+          >
+            Voltar
+          </Button>
+          <Button
+            variant="outline"
+            disabled={!hasNext || query.isFetching}
+            onClick={() => setPage(page + 1)}
+          >
+            Próxima
+          </Button>
+        </div>
+      ) : null}
     </>
   );
 }

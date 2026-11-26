@@ -6,11 +6,13 @@ export default async function Page() {
   await getCurrentUser();
   const organization = await getCurrentOrganization();
   return (
-    <BackendShell title="Conversas" organization>
+    <BackendShell title="Conversas" organization isTitleHidden isFullBleed>
       {organization ? (
         <ConversationList organizationId={organization.id} />
       ) : (
-        <OrganizationSelection />
+        <div className="px-4 pt-6">
+          <OrganizationSelection />
+        </div>
       )}
     </BackendShell>
   );

@@ -4,8 +4,13 @@ import { useId } from "react";
 
 type QueryStatusProps = {
   query: { isPending: boolean; error: Error | null; refetch: () => unknown };
+  /** Set false when the page shows its own loading indicator. */
+  hasPendingText?: boolean;
 };
-export function QueryStatus({ query }: QueryStatusProps) {
+export function QueryStatus({
+  query,
+  hasPendingText = true,
+}: QueryStatusProps) {
   const errorId = useId();
   if (query.error)
     return (
@@ -16,5 +21,7 @@ export function QueryStatus({ query }: QueryStatusProps) {
         </Button>
       </div>
     );
-  return query.isPending ? <p role="status">Carregando...</p> : null;
+  return hasPendingText && query.isPending ? (
+    <p role="status">Carregando...</p>
+  ) : null;
 }
